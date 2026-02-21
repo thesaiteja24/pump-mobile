@@ -96,7 +96,7 @@ export default function WorkoutCard({
             contentFit="cover"
           />
 
-          <View className="flex-col items-start">
+          <View className="flex-col items-start gap-1">
             <Text className="text-base text-black dark:text-white">
               {workout?.user?.firstName} {workout?.user?.lastName}
             </Text>

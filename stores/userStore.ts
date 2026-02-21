@@ -4,6 +4,8 @@ import {
   followUserService,
   getSuggestedUsersService,
   getUserDataService,
+  getUserFollowersService,
+  getUserFollowingService,
   searchUsersService,
   unFollowUserService,
   updateProfilePicService,
@@ -48,6 +50,8 @@ type UserState = {
   getSuggestedUsers: () => Promise<any>;
   followUser: (targetUserId: string) => Promise<any>;
   unFollowUser: (targetUserId: string) => Promise<any>;
+  getUserFollowers: (userId: string) => Promise<any>;
+  getUserFollowing: (userId: string) => Promise<any>;
 };
 
 const initialState = {
@@ -73,16 +77,22 @@ export const useUser = create<UserState>((set) => ({
           userId: res.data?.id || "",
           countryCode: res.data?.countryCode || "",
           phone: res.data?.phone || "",
+          phoneE164: res.data?.phoneE164 || "",
+          email: res.data?.email || "",
+          googleId: res.data?.googleId || "",
           firstName: res.data?.firstName || "",
           lastName: res.data?.lastName || "",
-          phoneE164: res.data?.phoneE164 || "",
-          profilePicUrl: res.data?.profilePicUrl || null,
           dateOfBirth: res.data?.dateOfBirth || null,
+          gender: res.data?.gender || null,
           preferredWeightUnit: res.data?.preferredWeightUnit,
           preferredLengthUnit: res.data?.preferredLengthUnit,
           height: res.data?.height || null,
           weight: res.data?.weight || null,
+          profilePicUrl: res.data?.profilePicUrl || null,
           role: res.data?.role,
+          privacyPolicyAcceptedAt: res.data?.privacyPolicyAcceptedAt || null,
+          followersCount: res.data?.followersCount || 0,
+          followingCount: res.data?.followingCount || 0,
           createdAt: res.data?.createdAt,
           updatedAt: res.data?.updatedAt,
         });
@@ -295,6 +305,30 @@ export const useUser = create<UserState>((set) => ({
           [targetUserId]: false,
         },
       }));
+    }
+  },
+
+  getUserFollowers: async (userId: string) => {
+    set({ isLoading: true });
+    try {
+      const res = await getUserFollowersService(userId);
+      set({ isLoading: false });
+      return res;
+    } catch (error) {
+      set({ isLoading: false });
+      return { success: false, error };
+    }
+  },
+
+  getUserFollowing: async (userId: string) => {
+    set({ isLoading: true });
+    try {
+      const res = await getUserFollowingService(userId);
+      set({ isLoading: false });
+      return res;
+    } catch (error) {
+      set({ isLoading: false });
+      return { success: false, error };
     }
   },
 }));

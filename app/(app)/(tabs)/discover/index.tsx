@@ -125,7 +125,7 @@ export default function DiscoverScreen() {
               </Text>
             </View>
           }
-          // ListFooterComponent={<View className="mb-[20%]" />}
+          ListFooterComponent={<View className="mb-[20%]" />}
         />
       )}
     </SafeAreaView>

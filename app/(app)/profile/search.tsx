@@ -71,6 +71,7 @@ export default function Search() {
   const [refreshing, setRefreshing] = useState(false);
 
   const currentUserId = useAuth((state) => state.user?.userId);
+  const getUserData = useUser((state) => state.getUserData);
   const searchUsers = useUser((state) => state.searchUsers);
   const resetSearchedUser = useUser((state) => state.resetSearchedUser);
   const getSuggestedUsers = useUser((state) => state.getSuggestedUsers);
@@ -171,14 +172,16 @@ export default function Search() {
             profilePicUrl={item.profilePicUrl}
             isFollowing={item.isFollowing}
             followLoading={!!followLoading[item.id]}
-            onPressFollow={() => {
+            onPressFollow={async () => {
               if (!currentUserId) return;
 
               if (item.isFollowing) {
-                unFollowUser(item.id);
+                await unFollowUser(item.id);
               } else {
-                followUser(item.id);
+                await followUser(item.id);
               }
+
+              await getUserData(currentUserId);
             }}
           />
         )}

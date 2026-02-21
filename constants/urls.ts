@@ -22,6 +22,8 @@ export const UPDATE_USER_DATA_ENDPOINT = (id: string) => `/users/${id}`;
 export const SEARCH_USERS_ENDPOINT = (query: string) =>
   `/users/search?query=${query}`;
 export const FOLLOW_USER_ENDPOINT = (id: string) => `/users/${id}/follow`;
+export const USER_FOLLOWERS_ENDPOINT = (id: string) => `/users/${id}/followers`;
+export const USER_FOLLOWING_ENDPOINT = (id: string) => `/users/${id}/following`;
 export const SUGGESTED_USERS_ENDPOINT = `/users/suggestions`;
 
 // Equipment Endpoints

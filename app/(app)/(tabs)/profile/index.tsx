@@ -125,7 +125,7 @@ export default function ProfileScreen() {
                 Followers
               </Text>
               <Text className="text-base font-medium text-neutral-900 dark:text-neutral-100">
-                100
+                {user?.followersCount ?? 0}
               </Text>
             </Pressable>
             <Pressable
@@ -137,7 +137,7 @@ export default function ProfileScreen() {
                 Following
               </Text>
               <Text className="text-base font-medium text-neutral-900 dark:text-neutral-100">
-                100
+                {user?.followingCount ?? 0}
               </Text>
             </Pressable>
           </View>

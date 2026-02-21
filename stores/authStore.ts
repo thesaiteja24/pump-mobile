@@ -4,6 +4,7 @@ import { setAccessToken } from "@/services/api";
 import { sendOtpService, verifyOtpService } from "@/services/authService";
 import * as SecureStore from "expo-secure-store";
 import { create } from "zustand";
+import { Gender } from "./onboardingStore";
 import { LengthUnits, WeightUnits } from "./userStore";
 
 export interface User {
@@ -11,18 +12,23 @@ export interface User {
   countryCode?: string;
   phone?: string;
   phoneE164?: string;
+  email?: string;
+  googleId?: string;
   firstName?: string;
   lastName?: string;
   dateOfBirth?: string | null;
+  gender?: Gender;
   preferredWeightUnit?: WeightUnits;
   preferredLengthUnit?: LengthUnits;
   height?: number | null;
   weight?: number | null;
   profilePicUrl?: string | null;
   role?: string;
+  privacyPolicyAcceptedAt?: string | null;
+  followersCount?: number;
+  followingCount?: number;
   createdAt?: string;
   updatedAt?: string;
-  privacyPolicyAcceptedAt?: string | null;
 }
 
 type AuthState = {
