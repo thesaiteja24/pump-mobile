@@ -161,24 +161,40 @@ export default function WorkoutCard({
 
 			{/* Social Interactions */}
 			<View className="mt-4 flex-row items-center justify-start gap-4">
-				<MaterialCommunityIcons
-					onPress={() => console.log('Liked')}
-					name="heart-outline"
-					size={24}
-					color={isDark ? 'white' : 'black'}
-				/>
-				<FontAwesome
-					onPress={() => commentsModalRef.current?.present()}
-					name="comments-o"
-					size={24}
-					color={isDark ? 'white' : 'black'}
-				/>
-				<Ionicons
-					onPress={() => console.log('Shared')}
-					name="share-outline"
-					size={24}
-					color={isDark ? 'white' : 'black'}
-				/>
+				<View className="flex flex-row items-center justify-center gap-2">
+					<MaterialCommunityIcons
+						onPress={() => console.log('Liked')}
+						name="heart-outline"
+						size={24}
+						color={isDark ? 'white' : 'black'}
+					/>
+					<View>
+						{workout.likesCount > 0 && (
+							<Text className="text-base text-black dark:text-white">{workout.likesCount}</Text>
+						)}
+					</View>
+				</View>
+				<View className="flex flex-row items-center justify-center gap-2">
+					<FontAwesome
+						onPress={() => commentsModalRef.current?.present()}
+						name="comments-o"
+						size={24}
+						color={isDark ? 'white' : 'black'}
+					/>
+					<View>
+						{workout.commentsCount > 0 && (
+							<Text className="text-base text-black dark:text-white">{workout.commentsCount}</Text>
+						)}
+					</View>
+				</View>
+				<View>
+					<Ionicons
+						onPress={() => console.log('Shared')}
+						name="share-outline"
+						size={24}
+						color={isDark ? 'white' : 'black'}
+					/>
+				</View>
 			</View>
 
 			<CommentsModal ref={commentsModalRef} workoutId={workout.id} />

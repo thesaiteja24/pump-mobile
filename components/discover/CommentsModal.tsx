@@ -67,7 +67,7 @@ const CommentItem = ({
 		setExpanded(!expanded)
 	}
 
-	const hasReplies = comment._count.replies > 0
+	const hasReplies = (comment._count?.replies || 0) > 0
 
 	// YouTube style vertical line alignment
 	const avatarSize = 34 // Slightly smaller to match YouTube
@@ -127,14 +127,18 @@ const CommentItem = ({
 				{/* Action to view replies based on context */}
 				{hasReplies && depth === 0 && !isThreadParent && onViewReplies && (
 					<TouchableOpacity className="mt-1 flex-row items-center" onPress={() => onViewReplies(comment)}>
-						<Text className="text-[13px] font-bold text-blue-500">{comment._count.replies} replies</Text>
+						<Text className="text-[13px] font-bold text-blue-500">
+							{comment._count?.replies || 0} replies
+						</Text>
 					</TouchableOpacity>
 				)}
 
 				{/* Nested inline replies for deeper levels */}
 				{hasReplies && depth > 0 && !expanded && (
 					<TouchableOpacity className="mt-1 flex-row items-center" onPress={toggleExpand}>
-						<Text className="text-[13px] font-bold text-blue-500">{comment._count.replies} replies</Text>
+						<Text className="text-[13px] font-bold text-blue-500">
+							{comment._count?.replies || 0} replies
+						</Text>
 					</TouchableOpacity>
 				)}
 
@@ -361,7 +365,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 				keyboardShouldPersistTaps="handled"
 			>
 				{/* View 1: Main Comments */}
-				<View style={{ width: screenWidth, flex: 1 }}>
+				<View key="main-comments" style={{ width: screenWidth, flex: 1 }}>
 					<View className="flex-row items-center justify-between border-b px-4 pb-3" style={{ borderColor }}>
 						<Text className="text-lg font-bold" style={{ color: textColor }}>
 							Comments{' '}
@@ -412,7 +416,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 				</View>
 
 				{/* View 2: Replies Thread */}
-				<View style={{ width: screenWidth, flex: 1 }}>
+				<View key="replies-thread" style={{ width: screenWidth, flex: 1 }}>
 					<View className="flex-row items-center border-b px-4 pb-3" style={{ borderColor }}>
 						<TouchableOpacity onPress={handleBackToMain} className="mr-3">
 							<Ionicons name="arrow-back" size={24} color={textColor} />

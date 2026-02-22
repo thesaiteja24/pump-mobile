@@ -1,7 +1,7 @@
-import { useThemeColor } from "@/hooks/useThemeColor";
-import { formatSeconds } from "@/utils/time";
-import { useEffect, useState } from "react";
-import { Text } from "react-native";
+import { useThemeColor } from '@/hooks/useThemeColor'
+import { formatSeconds } from '@/utils/time'
+import { useEffect, useState } from 'react'
+import { Text } from 'react-native'
 
 /* --------------------------------------------------
    Types
@@ -13,16 +13,16 @@ import { Text } from "react-native";
  * Displays the time elapsed since a fixed start Date.
  */
 export interface ElapsedTimeWallClockProps {
-  /**
-   * Start time of the timer.
-   * The component will show the elapsed time since this Date.
-   */
-  startTime: Date;
+	/**
+	 * Start time of the timer.
+	 * The component will show the elapsed time since this Date.
+	 */
+	startTime: Date
 
-  /**
-   * Optional text styling for the displayed timer.
-   */
-  textClassName?: string;
+	/**
+	 * Optional text styling for the displayed timer.
+	 */
+	textClassName?: string
 }
 
 /**
@@ -31,23 +31,23 @@ export interface ElapsedTimeWallClockProps {
  * Displays a base duration plus optional running time.
  */
 export interface ElapsedTimeAccumulatedProps {
-  /**
-   * Base duration in seconds already accumulated.
-   *
-   * @default 0
-   */
-  baseSeconds?: number;
+	/**
+	 * Base duration in seconds already accumulated.
+	 *
+	 * @default 0
+	 */
+	baseSeconds?: number
 
-  /**
-   * Timestamp (in milliseconds) when the timer started running.
-   * If omitted or null, the timer will not increment.
-   */
-  runningSince?: number | null;
+	/**
+	 * Timestamp (in milliseconds) when the timer started running.
+	 * If omitted or null, the timer will not increment.
+	 */
+	runningSince?: number | null
 
-  /**
-   * Optional text styling for the displayed timer.
-   */
-  textClassName?: string;
+	/**
+	 * Optional text styling for the displayed timer.
+	 */
+	textClassName?: string
 }
 
 /**
@@ -57,9 +57,7 @@ export interface ElapsedTimeAccumulatedProps {
  * - Wall clock mode → provide `startTime`
  * - Accumulated mode → provide `baseSeconds` and/or `runningSince`
  */
-export type ElapsedTimeProps =
-  | ElapsedTimeWallClockProps
-  | ElapsedTimeAccumulatedProps;
+export type ElapsedTimeProps = ElapsedTimeWallClockProps | ElapsedTimeAccumulatedProps
 
 /* --------------------------------------------------
    Component
@@ -86,48 +84,39 @@ export type ElapsedTimeProps =
  * <ElapsedTime baseSeconds={120} runningSince={Date.now()} />
  */
 export function ElapsedTime(props: ElapsedTimeProps) {
-  const [now, setNow] = useState(Date.now());
-  const colors = useThemeColor();
+	const [now, setNow] = useState(Date.now())
+	const colors = useThemeColor()
 
-  const isWallClock = "startTime" in props;
-  const runningSince = !isWallClock ? props.runningSince : null;
+	const isWallClock = 'startTime' in props
+	const runningSince = !isWallClock ? props.runningSince : null
 
-  useEffect(() => {
-    if (!isWallClock && !runningSince) return;
+	useEffect(() => {
+		if (!isWallClock && !runningSince) return
 
-    const id = setInterval(() => {
-      setNow(Date.now());
-    }, 1000);
+		const id = setInterval(() => {
+			setNow(Date.now())
+		}, 1000)
 
-    return () => clearInterval(id);
-  }, [isWallClock, runningSince]);
+		return () => clearInterval(id)
+	}, [isWallClock, runningSince])
 
-  let totalSeconds = 0;
+	let totalSeconds = 0
 
-  if (isWallClock) {
-    totalSeconds = Math.max(
-      0,
-      Math.floor((now - props.startTime.getTime()) / 1000),
-    );
-  } else {
-    const base = props.baseSeconds ?? 0;
-    const running =
-      runningSince != null
-        ? Math.max(0, Math.floor((now - runningSince) / 1000))
-        : 0;
+	if (isWallClock) {
+		totalSeconds = Math.max(0, Math.floor((now - props.startTime.getTime()) / 1000))
+	} else {
+		const base = props.baseSeconds ?? 0
+		const running = runningSince != null ? Math.max(0, Math.floor((now - runningSince) / 1000)) : 0
 
-    totalSeconds = base + running;
-  }
+		totalSeconds = base + running
+	}
 
-  return (
-    <Text
-      className={
-        props.textClassName ??
-        "text-lg font-semibold"
-      }
-      style={!props.textClassName ? { color: colors.text } : undefined}
-    >
-      {formatSeconds(totalSeconds)}
-    </Text>
-  );
+	return (
+		<Text
+			className={props.textClassName ?? 'text-lg font-semibold'}
+			style={!props.textClassName ? { color: colors.text } : undefined}
+		>
+			{formatSeconds(totalSeconds)}
+		</Text>
+	)
 }

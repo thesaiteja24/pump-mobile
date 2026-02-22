@@ -1,5 +1,5 @@
-import { Redirect, useLocalSearchParams } from "expo-router";
-import React from "react";
+import { Redirect, useLocalSearchParams } from 'expo-router'
+import React from 'react'
 
 /**
  * reliable deep linking redirector.
@@ -8,8 +8,8 @@ import React from "react";
  * where AuthGuard and other logic reside.
  */
 export default function ShareRedirect() {
-  const { shareId } = useLocalSearchParams<{ shareId: string }>();
+	const { shareId } = useLocalSearchParams<{ shareId: string }>()
 
-  // Use replace to avoid keeping this redirect in the history stack
-  return <Redirect href={`/(app)/template/share/${shareId}`} />;
+	// Use replace to avoid keeping this redirect in the history stack
+	return <Redirect href={`/(app)/template/share/${shareId}`} />
 }

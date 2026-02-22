@@ -129,7 +129,10 @@ export const useEngagementStore = create<EngagementState>((set, get) => ({
 			const response = await createCommentService(workoutId, { content })
 
 			if (response.success) {
-				const newComment = response.data
+				const newComment = {
+					...response.data,
+					_count: response.data._count || { replies: 0 },
+				}
 
 				set(prev => {
 					const existing = prev.comments[workoutId] || []
@@ -162,7 +165,10 @@ export const useEngagementStore = create<EngagementState>((set, get) => ({
 			const response = await createCommentService(workoutId, { content, parentId })
 
 			if (response.success) {
-				const newReply = response.data
+				const newReply = {
+					...response.data,
+					_count: response.data._count || { replies: 0 },
+				}
 
 				set(prev => {
 					// Helper to increment reply count anywhere
@@ -173,7 +179,7 @@ export const useEngagementStore = create<EngagementState>((set, get) => ({
 										...item,
 										_count: {
 											...item._count,
-											replies: item._count.replies + 1,
+											replies: (item._count?.replies || 0) + 1,
 										},
 									}
 								: item

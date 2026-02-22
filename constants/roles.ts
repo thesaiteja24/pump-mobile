@@ -1,8 +1,8 @@
 export const ROLES = Object.freeze({
-  systemAdmin: "systemAdmin",
-  gymAdmin: "gymAdmin",
-  trainer: "trainer",
-  member: "member",
-});
+	systemAdmin: 'systemAdmin',
+	gymAdmin: 'gymAdmin',
+	trainer: 'trainer',
+	member: 'member',
+})
 
-export type Role = (typeof ROLES)[keyof typeof ROLES];
+export type Role = (typeof ROLES)[keyof typeof ROLES]

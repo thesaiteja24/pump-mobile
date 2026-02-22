@@ -1,215 +1,206 @@
-import { registerUnauthorizedHandler } from "@/lib/authSession";
-import { clearTemplateQueue, clearWorkoutQueue } from "@/lib/sync/queue";
-import { setAccessToken } from "@/services/api";
-import { sendOtpService, verifyOtpService } from "@/services/authService";
-import * as SecureStore from "expo-secure-store";
-import { create } from "zustand";
-import { Gender } from "./onboardingStore";
-import { LengthUnits, WeightUnits } from "./userStore";
+import { registerUnauthorizedHandler } from '@/lib/authSession'
+import { clearTemplateQueue, clearWorkoutQueue } from '@/lib/sync/queue'
+import { setAccessToken } from '@/services/api'
+import { sendOtpService, verifyOtpService } from '@/services/authService'
+import * as SecureStore from 'expo-secure-store'
+import { create } from 'zustand'
+import { Gender } from './onboardingStore'
+import { LengthUnits, WeightUnits } from './userStore'
 
 export interface User {
-  userId?: string;
-  countryCode?: string;
-  phone?: string;
-  phoneE164?: string;
-  email?: string;
-  googleId?: string;
-  firstName?: string;
-  lastName?: string;
-  dateOfBirth?: string | null;
-  gender?: Gender;
-  preferredWeightUnit?: WeightUnits;
-  preferredLengthUnit?: LengthUnits;
-  height?: number | null;
-  weight?: number | null;
-  profilePicUrl?: string | null;
-  role?: string;
-  privacyPolicyAcceptedAt?: string | null;
-  followersCount?: number;
-  followingCount?: number;
-  createdAt?: string;
-  updatedAt?: string;
+	userId?: string
+	countryCode?: string
+	phone?: string
+	phoneE164?: string
+	email?: string
+	googleId?: string
+	firstName?: string
+	lastName?: string
+	dateOfBirth?: string | null
+	gender?: Gender
+	preferredWeightUnit?: WeightUnits
+	preferredLengthUnit?: LengthUnits
+	height?: number | null
+	weight?: number | null
+	profilePicUrl?: string | null
+	role?: string
+	privacyPolicyAcceptedAt?: string | null
+	followersCount?: number
+	followingCount?: number
+	createdAt?: string
+	updatedAt?: string
 }
 
 type AuthState = {
-  user: User | null;
-  accessToken: string | null;
-  isAuthenticated: boolean;
+	user: User | null
+	accessToken: string | null
+	isAuthenticated: boolean
 
-  // Boot invariant
-  hasRestored: boolean;
+	// Boot invariant
+	hasRestored: boolean
 
-  // UI state
-  isLoading: boolean;
-  isGoogleLoading: boolean;
+	// UI state
+	isLoading: boolean
+	isGoogleLoading: boolean
 
-  hasSeenOnboarding: boolean;
-  completeOnboarding: () => Promise<void>;
+	hasSeenOnboarding: boolean
+	completeOnboarding: () => Promise<void>
 
-  sendOtp: (payload: any) => Promise<any>;
-  verifyOtp: (payload: any) => Promise<any>;
-  googleLogin: (
-    idToken: string,
-    privacyAccepted?: boolean,
-    privacyPolicyVersion?: string | null,
-  ) => Promise<any>;
-  restoreFromStorage: () => Promise<void>;
-  setUser: (user: Partial<User>) => void;
-  logout: () => Promise<void>;
-};
+	sendOtp: (payload: any) => Promise<any>
+	verifyOtp: (payload: any) => Promise<any>
+	googleLogin: (idToken: string, privacyAccepted?: boolean, privacyPolicyVersion?: string | null) => Promise<any>
+	restoreFromStorage: () => Promise<void>
+	setUser: (user: Partial<User>) => void
+	logout: () => Promise<void>
+}
 
 export const useAuth = create<AuthState>((set, get) => ({
-  user: null,
-  accessToken: null,
-  isAuthenticated: false,
-  isLoading: false,
-  isGoogleLoading: false,
-  hasRestored: false,
-  hasSeenOnboarding: false,
+	user: null,
+	accessToken: null,
+	isAuthenticated: false,
+	isLoading: false,
+	isGoogleLoading: false,
+	hasRestored: false,
+	hasSeenOnboarding: false,
 
-  completeOnboarding: async () => {
-    set({ hasSeenOnboarding: true });
-    await SecureStore.setItemAsync("hasSeenOnboarding", "true");
-  },
+	completeOnboarding: async () => {
+		set({ hasSeenOnboarding: true })
+		await SecureStore.setItemAsync('hasSeenOnboarding', 'true')
+	},
 
-  googleLogin: async (idToken, privacyAccepted, privacyPolicyVersion) => {
-    set({ isGoogleLoading: true });
-    try {
-      const { googleLoginService } = require("@/services/authService"); // Lazy import to avoid cycle if any
-      const res = await googleLoginService(
-        idToken,
-        privacyAccepted,
-        privacyPolicyVersion,
-      );
+	googleLogin: async (idToken, privacyAccepted, privacyPolicyVersion) => {
+		set({ isGoogleLoading: true })
+		try {
+			const { googleLoginService } = require('@/services/authService') // Lazy import to avoid cycle if any
+			const res = await googleLoginService(idToken, privacyAccepted, privacyPolicyVersion)
 
-      if (res.success) {
-        const { accessToken, user } = res.data;
-        if (accessToken) {
-          await SecureStore.setItemAsync("accessToken", accessToken);
-          setAccessToken(accessToken);
-        }
-        if (user) {
-          await SecureStore.setItemAsync("user", JSON.stringify(user));
-        }
-        set({
-          user,
-          accessToken,
-          isAuthenticated: true,
-        });
-      }
-      return res;
-    } finally {
-      set({ isLoading: false, isGoogleLoading: false });
-    }
-  },
+			if (res.success) {
+				const { accessToken, user } = res.data
+				if (accessToken) {
+					await SecureStore.setItemAsync('accessToken', accessToken)
+					setAccessToken(accessToken)
+				}
+				if (user) {
+					await SecureStore.setItemAsync('user', JSON.stringify(user))
+				}
+				set({
+					user,
+					accessToken,
+					isAuthenticated: true,
+				})
+			}
+			return res
+		} finally {
+			set({ isLoading: false, isGoogleLoading: false })
+		}
+	},
 
-  sendOtp: async (payload) => {
-    set({ isLoading: true });
-    try {
-      return await sendOtpService(payload);
-    } finally {
-      set({ isLoading: false });
-    }
-  },
+	sendOtp: async payload => {
+		set({ isLoading: true })
+		try {
+			return await sendOtpService(payload)
+		} finally {
+			set({ isLoading: false })
+		}
+	},
 
-  verifyOtp: async (payload) => {
-    set({ isLoading: true });
-    try {
-      const res = await verifyOtpService(payload);
+	verifyOtp: async payload => {
+		set({ isLoading: true })
+		try {
+			const res = await verifyOtpService(payload)
 
-      if (res.success) {
-        const { accessToken, user } = res.data;
+			if (res.success) {
+				const { accessToken, user } = res.data
 
-        if (accessToken) {
-          await SecureStore.setItemAsync("accessToken", accessToken);
-          setAccessToken(accessToken);
-        }
-        if (user) {
-          await SecureStore.setItemAsync("user", JSON.stringify(user));
-        }
+				if (accessToken) {
+					await SecureStore.setItemAsync('accessToken', accessToken)
+					setAccessToken(accessToken)
+				}
+				if (user) {
+					await SecureStore.setItemAsync('user', JSON.stringify(user))
+				}
 
-        set({
-          user,
-          accessToken,
-          isAuthenticated: true,
-        });
-      }
+				set({
+					user,
+					accessToken,
+					isAuthenticated: true,
+				})
+			}
 
-      return res;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
+			return res
+		} finally {
+			set({ isLoading: false })
+		}
+	},
 
-  restoreFromStorage: async () => {
-    if (get().hasRestored) return; // idempotent
+	restoreFromStorage: async () => {
+		if (get().hasRestored) return // idempotent
 
-    try {
-      const token = await SecureStore.getItemAsync("accessToken");
-      const userJson = await SecureStore.getItemAsync("user");
-      const hasSeenOnboarding =
-        await SecureStore.getItemAsync("hasSeenOnboarding");
+		try {
+			const token = await SecureStore.getItemAsync('accessToken')
+			const userJson = await SecureStore.getItemAsync('user')
+			const hasSeenOnboarding = await SecureStore.getItemAsync('hasSeenOnboarding')
 
-      set({ hasSeenOnboarding: hasSeenOnboarding === "true" });
+			set({ hasSeenOnboarding: hasSeenOnboarding === 'true' })
 
-      if (token) {
-        setAccessToken(token);
-        set({
-          accessToken: token,
-          user: userJson ? JSON.parse(userJson) : null,
-          isAuthenticated: true,
-        });
-      }
-    } catch {
-      set({
-        accessToken: null,
-        user: null,
-        isAuthenticated: false,
-      });
-    } finally {
-      set({ hasRestored: true });
-    }
-  },
+			if (token) {
+				setAccessToken(token)
+				set({
+					accessToken: token,
+					user: userJson ? JSON.parse(userJson) : null,
+					isAuthenticated: true,
+				})
+			}
+		} catch {
+			set({
+				accessToken: null,
+				user: null,
+				isAuthenticated: false,
+			})
+		} finally {
+			set({ hasRestored: true })
+		}
+	},
 
-  setUser: (partial) => {
-    const merged = { ...get().user, ...partial };
-    set({ user: merged });
-    SecureStore.setItemAsync("user", JSON.stringify(merged)).catch(() => {});
-  },
+	setUser: partial => {
+		const merged = { ...get().user, ...partial }
+		set({ user: merged })
+		SecureStore.setItemAsync('user', JSON.stringify(merged)).catch(() => {})
+	},
 
-  logout: async () => {
-    set({ isLoading: true });
+	logout: async () => {
+		set({ isLoading: true })
 
-    try {
-      await SecureStore.deleteItemAsync("accessToken");
-      await SecureStore.deleteItemAsync("user");
-    } finally {
-      set({
-        user: null,
-        accessToken: null,
-        isAuthenticated: false,
-        isLoading: false,
-      });
+		try {
+			await SecureStore.deleteItemAsync('accessToken')
+			await SecureStore.deleteItemAsync('user')
+		} finally {
+			set({
+				user: null,
+				accessToken: null,
+				isAuthenticated: false,
+				isLoading: false,
+			})
 
-      // Reset all related stores
-      // useEquipment.getState().resetState();
-      // useMuscleGroup.getState().resetState();
-      // useExercise.getState().resetState();
+			// Reset all related stores
+			// useEquipment.getState().resetState();
+			// useMuscleGroup.getState().resetState();
+			// useExercise.getState().resetState();
 
-      // Use require to avoid circular dependencies
-      const { useWorkout } = require("./workoutStore");
-      const { useTemplate } = require("./templateStore");
+			// Use require to avoid circular dependencies
+			const { useWorkout } = require('./workoutStore')
+			const { useTemplate } = require('./templateStore')
 
-      useWorkout.getState().resetState();
-      useTemplate.getState().resetState();
+			useWorkout.getState().resetState()
+			useTemplate.getState().resetState()
 
-      // Clear offline sync queues
-      clearWorkoutQueue();
-      clearTemplateQueue();
-    }
-  },
-}));
+			// Clear offline sync queues
+			clearWorkoutQueue()
+			clearTemplateQueue()
+		}
+	},
+}))
 
 registerUnauthorizedHandler(() => {
-  useAuth.getState().logout();
-});
+	useAuth.getState().logout()
+})
