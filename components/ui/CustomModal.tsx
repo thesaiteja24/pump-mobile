@@ -16,10 +16,22 @@ type Props = {
 	cancelText?: string
 	onConfirm?: () => Promise<void> | void
 	onCancel?: () => void
+	children?: React.ReactNode
 }
 
 export const CustomModal = forwardRef<ModalHandle, Props>(
-	({ title = 'Confirm', description, confirmText = 'Confirm', cancelText = 'Cancel', onConfirm, onCancel }, ref) => {
+	(
+		{
+			title = 'Confirm',
+			description,
+			confirmText = 'Confirm',
+			cancelText = 'Cancel',
+			onConfirm,
+			onCancel,
+			children,
+		},
+		ref
+	) => {
 		const colors = useThemeColor()
 		const isDark = useColorScheme() === 'dark'
 		const insets = useSafeAreaInsets()
@@ -79,28 +91,32 @@ export const CustomModal = forwardRef<ModalHandle, Props>(
 							</Text>
 						) : null}
 
-						{/* Actions */}
-						<View className="mt-8 flex-row gap-3">
-							{cancelText && (
-								<Button
-									className="flex-1"
-									title={cancelText}
-									variant="danger"
-									disabled={isLoading}
-									onPress={handleCancel}
-								/>
-							)}
+						{/* Custom Body (replaces Default Actions if provided) */}
+						{children ? (
+							<View className="mt-4">{children}</View>
+						) : (
+							<View className="mt-8 flex-row gap-3">
+								{cancelText && (
+									<Button
+										className="flex-1"
+										title={cancelText}
+										variant="danger"
+										disabled={isLoading}
+										onPress={handleCancel}
+									/>
+								)}
 
-							{confirmText && (
-								<Button
-									className="flex-1"
-									title={confirmText}
-									variant="primary"
-									loading={isLoading}
-									onPress={handleConfirm}
-								/>
-							)}
-						</View>
+								{confirmText && (
+									<Button
+										className="flex-1"
+										title={confirmText}
+										variant="primary"
+										loading={isLoading}
+										onPress={handleConfirm}
+									/>
+								)}
+							</View>
+						)}
 					</View>
 				</View>
 			</RNModal>

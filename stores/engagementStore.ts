@@ -1,4 +1,4 @@
-import { createCommentService, getCommentsService, getRepliesService } from '@/services/engagementService'
+import { createCommentService, deleteCommentService, getCommentsService } from '@/services/engagementService'
 import { create } from 'zustand'
 
 export interface UserSnippet {
@@ -22,6 +22,7 @@ export interface Comment {
 	_count: {
 		replies: number
 	}
+	replies?: Comment[] // Eager loaded Reddit-style nested replies
 }
 
 interface EngagementState {
@@ -38,6 +39,7 @@ interface EngagementState {
 	fetchReplies: (commentId: string, refresh?: boolean) => Promise<void>
 	addComment: (workoutId: string, content: string) => Promise<void>
 	addReply: (workoutId: string, parentId: string, content: string) => Promise<void>
+	deleteComment: (commentId: string) => Promise<void>
 }
 
 export const useEngagementStore = create<EngagementState>((set, get) => ({
@@ -67,18 +69,47 @@ export const useEngagementStore = create<EngagementState>((set, get) => ({
 			const fetchedComments = res.data.comments
 			const nextCursor = res.data.nextCursor
 
-			set(prev => ({
-				comments: {
-					...prev.comments,
-					[workoutId]: refresh ? fetchedComments : [...(prev.comments[workoutId] || []), ...fetchedComments],
-				},
-				cursors: {
-					...prev.cursors,
-					[workoutId]: nextCursor,
-				},
-			}))
+			set(prev => {
+				const mergedReplies = { ...prev.replies }
+
+				// Extract pre-fetched nested replies if present
+				fetchedComments.forEach((comment: Comment) => {
+					if (comment.replies && comment.replies.length > 0) {
+						mergedReplies[comment.id] = comment.replies
+					}
+				})
+
+				const existingComments = prev.comments[workoutId] || []
+				let newCommentsList = refresh ? fetchedComments : [...existingComments, ...fetchedComments]
+
+				// Deduplicate by ID
+				const seenCommentIds = new Set<string>()
+				newCommentsList = newCommentsList.filter((c: Comment) => {
+					if (seenCommentIds.has(c.id)) return false
+					seenCommentIds.add(c.id)
+					return true
+				})
+
+				return {
+					comments: {
+						...prev.comments,
+						[workoutId]: newCommentsList,
+					},
+					replies: mergedReplies,
+					cursors: {
+						...prev.cursors,
+						[workoutId]: nextCursor,
+					},
+				}
+			})
 		} catch (error) {
 			console.error('Failed to fetch comments', error)
+			set(prev => ({
+				cursors: {
+					...prev.cursors,
+					[workoutId]: null,
+				},
+			}))
 		} finally {
 			set(prev => ({
 				loading: false,
@@ -99,22 +130,50 @@ export const useEngagementStore = create<EngagementState>((set, get) => ({
 		}))
 
 		try {
-			const res = await getRepliesService(commentId, 10, cursor)
+			const res = await getCommentsService(commentId, 10, cursor, true)
 			const fetchedReplies = res.data.replies
 			const nextCursor = res.data.nextCursor
 
-			set(prev => ({
-				replies: {
-					...prev.replies,
-					[commentId]: refresh ? fetchedReplies : [...(prev.replies[commentId] || []), ...fetchedReplies],
-				},
-				cursors: {
-					...prev.cursors,
-					[commentId]: nextCursor,
-				},
-			}))
+			set(prev => {
+				const mergedReplies = { ...prev.replies }
+
+				// Extract pre-fetched deep nested replies if present
+				fetchedReplies.forEach((reply: Comment) => {
+					if (reply.replies && reply.replies.length > 0) {
+						mergedReplies[reply.id] = reply.replies
+					}
+				})
+
+				const existingReplies = mergedReplies[commentId] || []
+				let newRepliesList = refresh ? fetchedReplies : [...existingReplies, ...fetchedReplies]
+
+				// Deduplicate by ID
+				const seenReplyIds = new Set<string>()
+				newRepliesList = newRepliesList.filter((r: Comment) => {
+					if (seenReplyIds.has(r.id)) return false
+					seenReplyIds.add(r.id)
+					return true
+				})
+
+				return {
+					replies: {
+						...mergedReplies,
+						[commentId]: newRepliesList,
+					},
+					cursors: {
+						...prev.cursors,
+						[commentId]: nextCursor,
+					},
+				}
+			})
 		} catch (error) {
 			console.error('Failed to fetch replies', error)
+			set(prev => ({
+				cursors: {
+					...prev.cursors,
+					[commentId]: null,
+				},
+			}))
 		} finally {
 			set(prev => ({
 				loadingReplies: { ...prev.loadingReplies, [commentId]: false },
@@ -210,6 +269,39 @@ export const useEngagementStore = create<EngagementState>((set, get) => ({
 			throw error
 		} finally {
 			set({ replying: false })
+		}
+	},
+
+	deleteComment: async (commentId: string) => {
+		set(prev => ({ loadingComments: { ...prev.loadingComments, [commentId]: true } }))
+
+		try {
+			const response = await deleteCommentService(commentId)
+
+			if (response.success) {
+				set(prev => {
+					// Helper to remove comment from any list
+					const removeComment = (list: Comment[]) => list.filter(item => item.id !== commentId)
+
+					const newComments = Object.fromEntries(
+						Object.entries(prev.comments).map(([key, list]) => [key, removeComment(list)])
+					)
+
+					const newReplies = Object.fromEntries(
+						Object.entries(prev.replies).map(([key, list]) => [key, removeComment(list)])
+					)
+
+					return {
+						comments: newComments,
+						replies: newReplies,
+					}
+				})
+			}
+		} catch (error) {
+			console.error('Failed to delete comment', error)
+			throw error
+		} finally {
+			set(prev => ({ loadingComments: { ...prev.loadingComments, [commentId]: false } }))
 		}
 	},
 }))

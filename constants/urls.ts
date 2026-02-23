@@ -27,7 +27,6 @@ export const USER_FOLLOWERS_ENDPOINT = (id: string) => `/engagement/${id}/follow
 export const USER_FOLLOWING_ENDPOINT = (id: string) => `/engagement/${id}/following`
 
 export const WORKOUT_COMMENTS_ENDPOINT = (id: string) => `/engagement/${id}/comments`
-export const COMMENT_REPLIES_ENDPOINT = (id: string) => `/engagement/${id}/replies`
 
 // Equipment Endpoints
 export const EQUIPMENT_ENDPOINT = `/equipment`

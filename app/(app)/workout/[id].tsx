@@ -9,7 +9,7 @@ import { calculateWorkoutMetrics } from '@/utils/workout'
 import * as Crypto from 'expo-crypto'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useMemo, useRef } from 'react'
-import { ScrollView, Text, View } from 'react-native'
+import { BackHandler, ScrollView, Text, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
@@ -168,6 +168,17 @@ export default function WorkoutDetails() {
 			</View>
 		)
 	}
+
+	useEffect(() => {
+		const onBackPress = () => {
+			router.back()
+			return true
+		}
+
+		const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
+
+		return () => subscription.remove()
+	}, [])
 
 	const duration = formatDurationFromDates(workout.startTime, workout.endTime)
 

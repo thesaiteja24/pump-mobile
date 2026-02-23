@@ -1,4 +1,4 @@
-import { COMMENT_REPLIES_ENDPOINT, WORKOUT_COMMENTS_ENDPOINT } from '@/constants/urls'
+import { WORKOUT_COMMENTS_ENDPOINT } from '@/constants/urls'
 import { handleApiResponse } from '@/utils/handleApiResponse'
 import client from './api'
 
@@ -18,11 +18,12 @@ export async function createCommentService(workoutId: string, data: WorkoutComme
 	}
 }
 
-export async function getCommentsService(workoutId: string, limit: number = 20, cursor?: string) {
+export async function getCommentsService(workoutId: string, limit: number = 10, cursor?: string, isReply?: boolean) {
 	try {
 		const params = new URLSearchParams()
 		params.append('limit', limit.toString())
 		if (cursor) params.append('cursor', cursor)
+		if (isReply) params.append('isReply', 'true')
 
 		const url = `${WORKOUT_COMMENTS_ENDPOINT(workoutId)}?${params.toString()}`
 		const res = await client.get(url)
@@ -34,14 +35,9 @@ export async function getCommentsService(workoutId: string, limit: number = 20, 
 	}
 }
 
-export async function getRepliesService(commentId: string, limit: number = 10, cursor?: string) {
+export async function deleteCommentService(commentId: string) {
 	try {
-		const params = new URLSearchParams()
-		params.append('limit', limit.toString())
-		if (cursor) params.append('cursor', cursor)
-
-		const url = `${COMMENT_REPLIES_ENDPOINT(commentId)}?${params.toString()}`
-		const res = await client.get(url)
+		const res = await client.delete(WORKOUT_COMMENTS_ENDPOINT(commentId))
 
 		return handleApiResponse(res)
 	} catch (error: any) {

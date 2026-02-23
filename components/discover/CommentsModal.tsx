@@ -1,6 +1,8 @@
+import { CustomModal, ModalHandle } from '@/components/ui/CustomModal'
+import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
 import { Comment as EngagementComment, useEngagementStore } from '@/stores/engagementStore'
 import { formatTimeAgo } from '@/utils/time'
-import { Ionicons } from '@expo/vector-icons'
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import {
 	BottomSheetBackdrop,
 	BottomSheetFlatList,
@@ -11,6 +13,8 @@ import {
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import {
 	ActivityIndicator,
+	Alert,
+	BackHandler,
 	Dimensions,
 	Image,
 	Keyboard,
@@ -41,12 +45,14 @@ const placeholderToggleLike = () => {
 const CommentItem = ({
 	comment,
 	onReplyPress,
+	onOptionsPress,
 	onViewReplies,
 	isThreadParent = false,
 	depth = 0,
 }: {
 	comment: EngagementComment
 	onReplyPress: (comment: EngagementComment) => void
+	onOptionsPress: (comment: EngagementComment) => void
 	onViewReplies?: (comment: EngagementComment) => void
 	isThreadParent?: boolean
 	depth?: number
@@ -57,8 +63,11 @@ const CommentItem = ({
 
 	// For nested replies (depth > 0)
 	const replies = useEngagementStore(state => state.replies[comment.id])
-	const [expanded, setExpanded] = useState(false)
 	const fetchReplies = useEngagementStore(state => state.fetchReplies)
+
+	// Automatically expand if thread parent or a first-level nested reply with pre-fetched replies
+	const shouldBeExpandedByDefault = isThreadParent || (depth === 1 && !!replies && replies.length > 0)
+	const [expanded, setExpanded] = useState(shouldBeExpandedByDefault)
 
 	const toggleExpand = () => {
 		if (!expanded && !replies) {
@@ -68,87 +77,149 @@ const CommentItem = ({
 	}
 
 	const hasReplies = (comment._count?.replies || 0) > 0
+	const remainingRepliesCount = hasReplies ? comment._count.replies - (replies?.length || 0) : 0
 
 	// YouTube style vertical line alignment
-	const avatarSize = 34 // Slightly smaller to match YouTube
-	const paddingLeft = 16
+	const avatarSize = 24
 
-	return (
-		<View className="flex-row py-3" style={{ paddingLeft }}>
-			<View className="mr-3 items-center" style={{ width: avatarSize }}>
-				<Image
-					source={{
-						uri:
-							comment.user?.profilePicUrl ||
-							'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
+	const paddingStyles = {
+		flexDirection: 'row' as const,
+		paddingTop: depth === 1 ? 0 : 16,
+		paddingBottom: depth === 1 ? 32 : 0,
+		paddingLeft: depth > 0 ? 0 : 16,
+		paddingRight: depth > 1 ? 0 : 16,
+	}
+
+	const renderAvatarColumn = () => (
+		<View className="mr-2 items-center gap-4" style={{ width: avatarSize }}>
+			<Image
+				source={
+					comment.user?.profilePicUrl
+						? { uri: comment.user?.profilePicUrl }
+						: require('../../assets/images/icon.png')
+				}
+				style={{ width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 }}
+			/>
+			{/* Parent Vertical Timeline */}
+			{hasReplies && (expanded || isThreadParent) && (
+				<View
+					style={{
+						position: 'absolute',
+						top: 24,
+						bottom: 0,
+						left: avatarSize / 2 - 1,
+						width: 0.5,
+						backgroundColor: '#e5e7eb',
 					}}
-					style={{ width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 }}
 				/>
-				{/* Draw vertical line for nested replies if expanded */}
-				{expanded && hasReplies && (
-					<View
-						className="mt-2 flex-1 bg-neutral-300 dark:bg-neutral-700"
-						style={{ width: 1.5, marginBottom: -12 }}
+			)}
+			{/* Connecting Elbow Line for Nested Reply */}
+			{depth > 0 && (
+				<View
+					style={{
+						position: 'absolute',
+						top: -4, // 4 - 8 for vertical centering
+						left: -20,
+						width: 20,
+						height: 16,
+						borderLeftWidth: 0.5,
+						borderBottomWidth: 0.5,
+						borderColor: '#e5e7eb',
+						borderBottomLeftRadius: 8,
+					}}
+				/>
+			)}
+		</View>
+	)
+
+	const renderCommentHeader = () => (
+		<View className="flex-row items-center justify-between">
+			<View className="flex-row items-center">
+				<Text className="text-sm font-bold" style={{ color: textColor }}>
+					@{comment.user?.firstName || 'Unknown'}
+				</Text>
+				<Text className="ml-2 text-xs" style={{ color: subTextColor }}>
+					{formatTimeAgo(new Date(comment.createdAt))}
+				</Text>
+			</View>
+			<View style={{ width: 40, alignItems: 'flex-end' }}>
+				<TouchableOpacity onPress={() => onOptionsPress(comment)}>
+					<MaterialCommunityIcons name="dots-horizontal" size={24} color={textColor} />
+				</TouchableOpacity>
+			</View>
+		</View>
+	)
+
+	const renderCommentActions = () => (
+		<View className="mt-2 flex-row items-center pb-1">
+			<TouchableOpacity onPress={placeholderToggleLike} className="flex-row items-center">
+				<Ionicons name="heart-outline" size={20} color={textColor} />
+				<Text className="ml-1 text-xs font-medium" style={{ color: subTextColor }}>
+					{comment.likesCount > 0 ? comment.likesCount : ''}
+				</Text>
+			</TouchableOpacity>
+			<TouchableOpacity className="ml-5" onPress={() => onReplyPress(comment)}>
+				<Text className="text-xs font-semibold" style={{ color: textColor }}>
+					Reply
+				</Text>
+			</TouchableOpacity>
+
+			{/* Top-level View Replies Action */}
+			{hasReplies && depth === 0 && !isThreadParent && onViewReplies && (
+				<TouchableOpacity className="ml-5 flex-row items-center" onPress={() => onViewReplies(comment)}>
+					<Text className="text-sm font-semibold text-blue-500">{comment._count?.replies || 0} replies</Text>
+				</TouchableOpacity>
+			)}
+
+			{/* Inline Toggle Replies Action for nested levels */}
+			{hasReplies && depth > 0 && !expanded && !isThreadParent && (
+				<TouchableOpacity className="ml-5 flex-row items-center" onPress={toggleExpand}>
+					<Text className="text-sm font-semibold text-blue-500">{comment._count?.replies || 0} replies</Text>
+				</TouchableOpacity>
+			)}
+		</View>
+	)
+
+	const renderNestedReplies = () => {
+		if (!expanded || !replies) return null
+
+		return (
+			<View className="mt-2">
+				{replies.map(reply => (
+					<CommentItem
+						key={reply.id}
+						comment={reply}
+						depth={depth + 1}
+						onReplyPress={onReplyPress}
+						onOptionsPress={onOptionsPress}
 					/>
+				))}
+
+				{/* Paginated "Show more" button */}
+				{remainingRepliesCount > 0 && (
+					<TouchableOpacity
+						className="mt-2 flex-row items-center pt-1"
+						onPress={() => fetchReplies(comment.id, false)}
+					>
+						<Text className="text-sm font-bold text-blue-500">
+							Show {remainingRepliesCount} more replies
+						</Text>
+					</TouchableOpacity>
 				)}
 			</View>
+		)
+	}
 
-			<View className="flex-1 pr-4">
-				<View className="flex-row items-center">
-					<Text className="text-sm font-bold" style={{ color: textColor }}>
-						@{comment.user?.firstName || 'Unknown'}
-					</Text>
-					<Text className="ml-2 text-xs" style={{ color: subTextColor }}>
-						{formatTimeAgo(new Date(comment.createdAt))}
-					</Text>
-				</View>
-
+	return (
+		<View style={paddingStyles}>
+			{renderAvatarColumn()}
+			<View className="flex-1">
+				{renderCommentHeader()}
 				<Text className="mt-1 text-[15px]" style={{ color: textColor }}>
 					{comment.content}
 				</Text>
-
-				<View className="mt-2 flex-row items-center pb-1">
-					<TouchableOpacity onPress={placeholderToggleLike} className="flex-row items-center">
-						<Ionicons name="heart-outline" size={16} color={textColor} />
-						<Text className="ml-1 text-xs font-medium" style={{ color: subTextColor }}>
-							{comment.likesCount > 0 ? comment.likesCount : ''}
-						</Text>
-					</TouchableOpacity>
-					<TouchableOpacity onPress={placeholderToggleLike} className="ml-5">
-						<Ionicons name="heart-dislike-outline" size={16} color={textColor} />
-					</TouchableOpacity>
-					<TouchableOpacity className="ml-5" onPress={() => onReplyPress(comment)}>
-						<Text className="text-xs font-semibold" style={{ color: textColor }}>
-							Reply
-						</Text>
-					</TouchableOpacity>
-				</View>
-
-				{/* Action to view replies based on context */}
-				{hasReplies && depth === 0 && !isThreadParent && onViewReplies && (
-					<TouchableOpacity className="mt-1 flex-row items-center" onPress={() => onViewReplies(comment)}>
-						<Text className="text-[13px] font-bold text-blue-500">
-							{comment._count?.replies || 0} replies
-						</Text>
-					</TouchableOpacity>
-				)}
-
-				{/* Nested inline replies for deeper levels */}
-				{hasReplies && depth > 0 && !expanded && (
-					<TouchableOpacity className="mt-1 flex-row items-center" onPress={toggleExpand}>
-						<Text className="text-[13px] font-bold text-blue-500">
-							{comment._count?.replies || 0} replies
-						</Text>
-					</TouchableOpacity>
-				)}
-
-				{expanded && replies && (
-					<View className="mt-3">
-						{replies.map(reply => (
-							<CommentItem key={reply.id} comment={reply} depth={depth + 1} onReplyPress={onReplyPress} />
-						))}
-					</View>
-				)}
+				{renderCommentActions()}
+				{renderNestedReplies()}
 			</View>
 		</View>
 	)
@@ -264,9 +335,14 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 	const [viewingThreadId, setViewingThreadId] = useState<string | null>(null)
 	// Which comment we are explicitly replying to (can be thread root or a nested reply)
 	const [replyingTo, setReplyingTo] = useState<EngagementComment | null>(null)
+	const [selectedCommentForOptions, setSelectedCommentForOptions] = useState<EngagementComment | null>(null)
 
 	const sliderRef = useRef<ScrollView>(null)
 	const footerRef = useRef<any>(null)
+	const optionsModalRef = useRef<ModalHandle>(null)
+	const deleteModalRef = useRef<DeleteConfirmModalHandle>(null)
+
+	const deleteComment = useEngagementStore(state => state.deleteComment)
 
 	// Initial load tracking
 	const initializedWorkout = useRef<string | null>(null)
@@ -315,6 +391,11 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 		setReplyingTo(comment)
 	}
 
+	const handleOptionsPress = (comment: EngagementComment) => {
+		setSelectedCommentForOptions(comment)
+		optionsModalRef.current?.open()
+	}
+
 	const activeThreadComment = workoutComments.find(c => c.id === viewingThreadId)
 	const threadRepliesList = viewingThreadId ? replies[viewingThreadId] || [] : []
 
@@ -344,118 +425,189 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 		[workoutId, viewingThreadId, replyingTo]
 	)
 
-	return (
-		<BottomSheetModal
-			ref={bottomSheetModalRef}
-			snapPoints={snapPoints}
-			backdropComponent={renderBackdrop}
-			footerComponent={renderFooter}
-			enablePanDownToClose
-			onDismiss={handleClose}
-			backgroundStyle={{ backgroundColor: bgColor }}
-			handleIndicatorStyle={{ backgroundColor: isDark ? '#525252' : '#d1d5db' }}
-			keyboardBehavior="extend" // Important for iOS keyboard padding
-			enableDynamicSizing={false}
-		>
-			<ScrollView
-				ref={sliderRef}
-				horizontal
-				pagingEnabled
-				showsHorizontalScrollIndicator={false}
+	useEffect(() => {
+		const onBackPress = () => {
+			// If modal is not open → let default behavior happen
+			if (!bottomSheetModalRef.current) return false
+
+			// If inside replies → go back to main comments
+			if (viewingThreadId) {
+				handleBackToMain()
+				return true // prevent default back (app exit)
+			}
+
+			// If on main comments → close modal
+			bottomSheetModalRef.current?.dismiss()
+			return true // prevent default back
+		}
+
+		const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
+
+		return () => subscription.remove()
+	}, [viewingThreadId])
+
+	const renderMainComments = () => (
+		<View key="main-comments" style={{ width: screenWidth, flex: 1 }}>
+			<View className="flex-row items-center justify-between border-b px-4 pb-3" style={{ borderColor }}>
+				<Text className="text-lg font-bold" style={{ color: textColor }}>
+					Comments
+				</Text>
+				<TouchableOpacity onPress={() => bottomSheetModalRef.current?.dismiss()}>
+					<Ionicons name="close" size={24} color={textColor} />
+				</TouchableOpacity>
+			</View>
+
+			<BottomSheetFlatList
+				data={workoutComments}
+				keyExtractor={(item: EngagementComment) => item.id}
+				renderItem={({ item }: { item: EngagementComment }) => (
+					<CommentItem
+						comment={item}
+						onViewReplies={handleViewReplies}
+						onReplyPress={handleReplyPress}
+						onOptionsPress={handleOptionsPress}
+					/>
+				)}
+				contentContainerStyle={{ paddingBottom: '30%' }}
+				ListEmptyComponent={
+					<View className="items-center justify-center py-8">
+						{!isLoadingComments && workoutComments.length === 0 ? (
+							<Text className="text-neutral-500 dark:text-neutral-400">
+								No comments yet. Be the first!
+							</Text>
+						) : (
+							<ActivityIndicator size="small" color={textColor} />
+						)}
+					</View>
+				}
+				ListFooterComponent={
+					isLoadingComments && workoutComments.length > 0 ? (
+						<View className="items-center justify-center py-4">
+							<ActivityIndicator size="small" color={textColor} />
+						</View>
+					) : null
+				}
+				onEndReached={() => {
+					if (!isLoadingComments && workoutComments.length > 0) {
+						fetchComments(workoutId, false)
+					}
+				}}
+				onEndReachedThreshold={0.5}
 				keyboardShouldPersistTaps="handled"
+			/>
+		</View>
+	)
+
+	const renderRepliesThread = () => (
+		<View key="replies-thread" style={{ width: screenWidth, flex: 1 }}>
+			<View className="flex-row items-center border-b px-4 pb-3" style={{ borderColor }}>
+				<TouchableOpacity onPress={handleBackToMain} className="mr-3">
+					<Ionicons name="arrow-back" size={24} color={textColor} />
+				</TouchableOpacity>
+				<Text className="text-lg font-bold" style={{ color: textColor }}>
+					Replies
+				</Text>
+			</View>
+
+			<BottomSheetFlatList
+				data={activeThreadComment ? [activeThreadComment] : []}
+				keyExtractor={(item: EngagementComment) => item.id}
+				renderItem={({ item }: { item: EngagementComment }) => (
+					<CommentItem
+						comment={item}
+						depth={0}
+						isThreadParent={true}
+						onReplyPress={handleReplyPress}
+						onOptionsPress={handleOptionsPress}
+					/>
+				)}
+				contentContainerStyle={{ paddingBottom: '30%' }}
+				ListEmptyComponent={
+					<View className="items-center justify-center py-8">
+						{isLoadingReplies ? <ActivityIndicator size="small" color={textColor} /> : null}
+					</View>
+				}
+				ListFooterComponent={
+					isLoadingReplies && threadRepliesList.length > 0 ? (
+						<View className="items-center justify-center py-4">
+							<ActivityIndicator size="small" color={textColor} />
+						</View>
+					) : null
+				}
+				onEndReached={() => {
+					if (viewingThreadId && !isLoadingReplies && threadRepliesList.length > 0) {
+						fetchReplies(viewingThreadId, false)
+					}
+				}}
+				onEndReachedThreshold={0.5}
+				keyboardShouldPersistTaps="handled"
+			/>
+		</View>
+	)
+
+	return (
+		<>
+			<BottomSheetModal
+				ref={bottomSheetModalRef}
+				snapPoints={snapPoints}
+				backdropComponent={renderBackdrop}
+				footerComponent={renderFooter}
+				enablePanDownToClose
+				onDismiss={handleClose}
+				backgroundStyle={{ backgroundColor: bgColor }}
+				handleIndicatorStyle={{ backgroundColor: isDark ? '#525252' : '#d1d5db' }}
+				keyboardBehavior="extend" // Important for iOS keyboard padding
+				enableDynamicSizing={false}
 			>
-				{/* View 1: Main Comments */}
-				<View key="main-comments" style={{ width: screenWidth, flex: 1 }}>
-					<View className="flex-row items-center justify-between border-b px-4 pb-3" style={{ borderColor }}>
-						<Text className="text-lg font-bold" style={{ color: textColor }}>
-							Comments{' '}
-							<Text className="text-sm font-normal text-neutral-500">{workoutComments.length}</Text>
-						</Text>
-						<TouchableOpacity onPress={() => bottomSheetModalRef.current?.dismiss()}>
-							<Ionicons name="close" size={24} color={textColor} />
-						</TouchableOpacity>
-					</View>
+				<ScrollView
+					ref={sliderRef}
+					horizontal
+					pagingEnabled
+					showsHorizontalScrollIndicator={false}
+					keyboardShouldPersistTaps="handled"
+				>
+					{renderMainComments()}
+					{renderRepliesThread()}
+				</ScrollView>
+			</BottomSheetModal>
 
-					<BottomSheetFlatList
-						data={workoutComments}
-						keyExtractor={(item: EngagementComment) => item.id}
-						renderItem={({ item }: { item: EngagementComment }) => (
-							<CommentItem
-								comment={item}
-								onViewReplies={handleViewReplies}
-								onReplyPress={handleReplyPress}
-							/>
-						)}
-						contentContainerStyle={{ paddingBottom: '30%' }}
-						ListEmptyComponent={
-							<View className="items-center justify-center py-8">
-								{!isLoadingComments && workoutComments.length === 0 ? (
-									<Text className="text-neutral-500 dark:text-neutral-400">
-										No comments yet. Be the first!
-									</Text>
-								) : (
-									<ActivityIndicator size="small" color={textColor} />
-								)}
-							</View>
-						}
-						ListFooterComponent={
-							isLoadingComments && workoutComments.length > 0 ? (
-								<View className="items-center justify-center py-4">
-									<ActivityIndicator size="small" color={textColor} />
-								</View>
-							) : null
-						}
-						onEndReached={() => {
-							if (!isLoadingComments) {
-								fetchComments(workoutId, false)
-							}
-						}}
-						onEndReachedThreshold={0.5}
-						keyboardShouldPersistTaps="handled"
-					/>
-				</View>
+			<CustomModal ref={optionsModalRef} title="Comment Options">
+				<TouchableOpacity
+					className="border-b py-3 dark:border-neutral-800"
+					style={{ borderColor: isDark ? '#262626' : '#e5e5e5' }}
+					onPress={() => {
+						optionsModalRef.current?.close()
+						Alert.alert('Notice', 'Edit functionality will be implemented soon.')
+					}}
+				>
+					<Text className="text-center text-lg font-medium text-blue-500">Edit</Text>
+				</TouchableOpacity>
+				<TouchableOpacity
+					className="py-3"
+					onPress={() => {
+						optionsModalRef.current?.close()
+						setTimeout(() => deleteModalRef.current?.present(), 300)
+					}}
+				>
+					<Text className="text-center text-lg font-medium text-red-500">Delete</Text>
+				</TouchableOpacity>
+			</CustomModal>
 
-				{/* View 2: Replies Thread */}
-				<View key="replies-thread" style={{ width: screenWidth, flex: 1 }}>
-					<View className="flex-row items-center border-b px-4 pb-3" style={{ borderColor }}>
-						<TouchableOpacity onPress={handleBackToMain} className="mr-3">
-							<Ionicons name="arrow-back" size={24} color={textColor} />
-						</TouchableOpacity>
-						<Text className="text-lg font-bold" style={{ color: textColor }}>
-							Replies
-						</Text>
-					</View>
-
-					<BottomSheetFlatList
-						data={threadRepliesList}
-						keyExtractor={(item: EngagementComment) => item.id}
-						renderItem={({ item }: { item: EngagementComment }) => (
-							<CommentItem comment={item} depth={1} onReplyPress={handleReplyPress} />
-						)}
-						contentContainerStyle={{ paddingBottom: '30%' }}
-						ListEmptyComponent={
-							<View className="items-center justify-center py-8">
-								{isLoadingReplies ? <ActivityIndicator size="small" color={textColor} /> : null}
-							</View>
+			<DeleteConfirmModal
+				ref={deleteModalRef}
+				title="Delete Comment"
+				description="Are you sure you want to delete this comment? This action cannot be undone."
+				onConfirm={async () => {
+					if (selectedCommentForOptions) {
+						try {
+							await deleteComment(selectedCommentForOptions.id)
+						} catch (error) {
+							Alert.alert('Error', 'Failed to delete comment.')
 						}
-						ListFooterComponent={
-							isLoadingReplies && threadRepliesList.length > 0 ? (
-								<View className="items-center justify-center py-4">
-									<ActivityIndicator size="small" color={textColor} />
-								</View>
-							) : null
-						}
-						onEndReached={() => {
-							if (viewingThreadId && !isLoadingReplies) {
-								fetchReplies(viewingThreadId, false)
-							}
-						}}
-						onEndReachedThreshold={0.5}
-						keyboardShouldPersistTaps="handled"
-					/>
-				</View>
-			</ScrollView>
-		</BottomSheetModal>
+					}
+				}}
+			/>
+		</>
 	)
 })
 

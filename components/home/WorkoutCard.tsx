@@ -169,7 +169,7 @@ export default function WorkoutCard({
 						color={isDark ? 'white' : 'black'}
 					/>
 					<View>
-						{workout.likesCount > 0 && (
+						{(workout.likesCount || 0) > 0 && (
 							<Text className="text-base text-black dark:text-white">{workout.likesCount}</Text>
 						)}
 					</View>
@@ -182,7 +182,7 @@ export default function WorkoutCard({
 						color={isDark ? 'white' : 'black'}
 					/>
 					<View>
-						{workout.commentsCount > 0 && (
+						{(workout.commentsCount || 0) > 0 && (
 							<Text className="text-base text-black dark:text-white">{workout.commentsCount}</Text>
 						)}
 					</View>
