@@ -1,4 +1,9 @@
-import { createCommentService, deleteCommentService, getCommentsService } from '@/services/engagementService'
+import {
+	createCommentService,
+	deleteCommentService,
+	editCommentService,
+	getCommentsService,
+} from '@/services/engagementService'
 import { create } from 'zustand'
 
 export interface UserSnippet {
@@ -39,6 +44,7 @@ interface EngagementState {
 	fetchReplies: (commentId: string, refresh?: boolean) => Promise<void>
 	addComment: (workoutId: string, content: string) => Promise<void>
 	addReply: (workoutId: string, parentId: string, content: string) => Promise<void>
+	editComment: (commentId: string, content: string) => Promise<void>
 	deleteComment: (commentId: string) => Promise<void>
 }
 
@@ -299,6 +305,40 @@ export const useEngagementStore = create<EngagementState>((set, get) => ({
 			}
 		} catch (error) {
 			console.error('Failed to delete comment', error)
+			throw error
+		} finally {
+			set(prev => ({ loadingComments: { ...prev.loadingComments, [commentId]: false } }))
+		}
+	},
+
+	editComment: async (commentId: string, content: string) => {
+		set(prev => ({ loadingComments: { ...prev.loadingComments, [commentId]: true } }))
+
+		try {
+			const response = await editCommentService(commentId, content)
+
+			if (response.success) {
+				set(prev => {
+					// Helper to edit comment in any list
+					const editCommentInList = (list: Comment[]) =>
+						list.map(item => (item.id === commentId ? { ...item, content: response.data.content } : item))
+
+					const newComments = Object.fromEntries(
+						Object.entries(prev.comments).map(([key, list]) => [key, editCommentInList(list)])
+					)
+
+					const newReplies = Object.fromEntries(
+						Object.entries(prev.replies).map(([key, list]) => [key, editCommentInList(list)])
+					)
+
+					return {
+						comments: newComments,
+						replies: newReplies,
+					}
+				})
+			}
+		} catch (error) {
+			console.error('Failed to edit comment', error)
 			throw error
 		} finally {
 			set(prev => ({ loadingComments: { ...prev.loadingComments, [commentId]: false } }))

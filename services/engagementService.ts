@@ -45,3 +45,14 @@ export async function deleteCommentService(commentId: string) {
 		throw new Error(errData?.message || error.message || 'Network error')
 	}
 }
+
+export async function editCommentService(commentId: string, content: string) {
+	try {
+		const res = await client.put(WORKOUT_COMMENTS_ENDPOINT(commentId), { content })
+
+		return handleApiResponse(res)
+	} catch (error: any) {
+		const errData = error.response?.data
+		throw new Error(errData?.message || error.message || 'Network error')
+	}
+}
