@@ -116,6 +116,7 @@ export type WorkoutHistorySet = {
 export type WorkoutHistoryItem = {
 	clientId: string
 	id: string
+	shareId?: string | null
 	syncStatus: SyncStatus
 	title: string | null
 	startTime: string

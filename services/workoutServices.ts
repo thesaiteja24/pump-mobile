@@ -1,11 +1,24 @@
 import {
 	DISCOVER_WORKOUTS_ENDPOINT as discover_workouts_endpoint,
 	WORKOUT_ITEM_ENDPOINT as workout_item_endpoint,
+	WORKOUT_SHARE_ENDPOINT as workout_share_endpoint,
 	WORKOUTS_ENDPOINT as workouts_endpoint,
 } from '@/constants/urls'
 import { WorkoutPayload } from '@/lib/sync/types'
 import { handleApiResponse } from '@/utils/handleApiResponse'
 import client from './api'
+
+import { WorkoutHistoryItem } from '@/stores/workoutStore'
+
+export async function getWorkoutByShareIdService(shareId: string): Promise<WorkoutHistoryItem> {
+	try {
+		const res = await client.get(workout_share_endpoint(shareId))
+		return handleApiResponse(res) as unknown as WorkoutHistoryItem
+	} catch (error: any) {
+		const errData = error.response?.data
+		throw new Error(errData?.message || error.message || 'Network error')
+	}
+}
 
 export async function getAllWorkoutsService() {
 	try {

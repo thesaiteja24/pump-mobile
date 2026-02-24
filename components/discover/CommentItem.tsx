@@ -1,14 +1,9 @@
 import { useAuth } from '@/stores/authStore'
 import { Comment as EngagementComment, useEngagementStore } from '@/stores/engagementStore'
 import { formatTimeAgo } from '@/utils/time'
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
-import React, { useState } from 'react'
+import { MaterialCommunityIcons } from '@expo/vector-icons'
+import React, { useEffect, useState } from 'react'
 import { Image, Text, TouchableOpacity, View, useColorScheme } from 'react-native'
-
-// Placeholder for like function
-const placeholderToggleLike = () => {
-	// To be implemented later
-}
 
 const CommentItem = ({
 	comment,
@@ -33,7 +28,27 @@ const CommentItem = ({
 	const replies = useEngagementStore(state => state.replies[comment.id])
 	const fetchReplies = useEngagementStore(state => state.fetchReplies)
 
-	const userId = useAuth(state => state.user?.userId)
+	const { commentLikes, fetchCommentLikes, toggleCommentLike } = useEngagementStore()
+
+	const user = useAuth(state => state.user)
+	const userId = user?.userId
+
+	useEffect(() => {
+		fetchCommentLikes(comment.id)
+	}, [comment.id])
+
+	const currentLikes = commentLikes[comment.id] || []
+	const isLikedByMe = user && currentLikes.some(like => like.userId === userId)
+
+	const handleToggleLike = () => {
+		if (!user || !userId) return
+		toggleCommentLike(comment.id, {
+			id: userId,
+			firstName: user.firstName || '',
+			lastName: user.lastName || '',
+			profilePicUrl: user.profilePicUrl || null,
+		})
+	}
 
 	// Automatically expand if thread parent or a first-level nested reply with pre-fetched replies
 	const shouldBeExpandedByDefault = isThreadParent || (depth === 1 && !!replies && replies.length > 0)
@@ -68,7 +83,13 @@ const CommentItem = ({
 						? { uri: comment.user?.profilePicUrl }
 						: require('../../assets/images/icon.png')
 				}
-				style={{ width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 }}
+				style={{
+					width: avatarSize,
+					height: avatarSize,
+					borderRadius: avatarSize / 2,
+					borderColor: isDark ? 'white' : '#black',
+					borderWidth: 0.25,
+				}}
 			/>
 		</View>
 	)
@@ -95,8 +116,12 @@ const CommentItem = ({
 
 	const renderCommentActions = () => (
 		<View className="mt-2 flex-row items-center pb-1">
-			<TouchableOpacity onPress={placeholderToggleLike} className="flex-row items-center">
-				<Ionicons name="heart-outline" size={20} color={textColor} />
+			<TouchableOpacity onPress={handleToggleLike} className="flex-row items-center">
+				<MaterialCommunityIcons
+					name={isLikedByMe ? 'cards-heart' : 'heart-outline'}
+					size={20}
+					color={isLikedByMe ? '#F43F5E' : textColor}
+				/>
 				<Text className="ml-1 text-xs font-medium" style={{ color: subTextColor }}>
 					{comment.likesCount > 0 ? comment.likesCount : ''}
 				</Text>

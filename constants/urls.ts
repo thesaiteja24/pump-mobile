@@ -43,6 +43,7 @@ export const EXERCISE_ITEM_ENDPOINT = (id: string) => `/exercises/${id}`
 export const WORKOUTS_ENDPOINT = `/workouts`
 export const DISCOVER_WORKOUTS_ENDPOINT = `/workouts/discover`
 export const WORKOUT_ITEM_ENDPOINT = (id: string) => `/workouts/${id}`
+export const WORKOUT_SHARE_ENDPOINT = (id: string) => `/workouts/share/${id}`
 
 export const TEMPLATES_ENDPOINT = `/templates`
 export const TEMPLATE_ITEM_ENDPOINT = (id: string) => `/templates/${id}`

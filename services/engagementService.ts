@@ -56,3 +56,63 @@ export async function editCommentService(commentId: string, content: string) {
 		throw new Error(errData?.message || error.message || 'Network error')
 	}
 }
+
+export async function getWorkoutLikesService(workoutId: string) {
+	try {
+		const res = await client.get(`/engagement/${workoutId}/like/workout`)
+		return handleApiResponse(res)
+	} catch (error: any) {
+		const errData = error.response?.data
+		throw new Error(errData?.message || error.message || 'Network error')
+	}
+}
+
+export async function createWorkoutLikeService(workoutId: string) {
+	try {
+		const res = await client.post(`/engagement/${workoutId}/like/workout`)
+		return handleApiResponse(res)
+	} catch (error: any) {
+		const errData = error.response?.data
+		throw new Error(errData?.message || error.message || 'Network error')
+	}
+}
+
+export async function deleteWorkoutLikeService(workoutId: string) {
+	try {
+		const res = await client.delete(`/engagement/${workoutId}/like/workout`)
+		return handleApiResponse(res)
+	} catch (error: any) {
+		const errData = error.response?.data
+		throw new Error(errData?.message || error.message || 'Network error')
+	}
+}
+
+export async function getCommentLikesService(commentId: string) {
+	try {
+		const res = await client.get(`/engagement/${commentId}/like/comment`)
+		return handleApiResponse(res)
+	} catch (error: any) {
+		const errData = error.response?.data
+		throw new Error(errData?.message || error.message || 'Network error')
+	}
+}
+
+export async function createCommentLikeService(commentId: string) {
+	try {
+		const res = await client.post(`/engagement/${commentId}/like/comment`)
+		return handleApiResponse(res)
+	} catch (error: any) {
+		const errData = error.response?.data
+		throw new Error(errData?.message || error.message || 'Network error')
+	}
+}
+
+export async function deleteCommentLikeService(commentId: string) {
+	try {
+		const res = await client.delete(`/engagement/${commentId}/like/comment`)
+		return handleApiResponse(res)
+	} catch (error: any) {
+		const errData = error.response?.data
+		throw new Error(errData?.message || error.message || 'Network error')
+	}
+}

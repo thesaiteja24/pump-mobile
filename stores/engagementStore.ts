@@ -1,8 +1,14 @@
 import {
+	createCommentLikeService,
 	createCommentService,
+	createWorkoutLikeService,
+	deleteCommentLikeService,
 	deleteCommentService,
+	deleteWorkoutLikeService,
 	editCommentService,
+	getCommentLikesService,
 	getCommentsService,
+	getWorkoutLikesService,
 } from '@/services/engagementService'
 import { create } from 'zustand'
 
@@ -11,6 +17,12 @@ export interface UserSnippet {
 	firstName: string
 	lastName: string
 	profilePicUrl: string | null
+}
+
+export interface EngagementLike {
+	userId: string
+	createdAt: string
+	user: UserSnippet | null
 }
 
 export interface Comment {
@@ -33,11 +45,15 @@ export interface Comment {
 interface EngagementState {
 	comments: Record<string, Comment[]>
 	replies: Record<string, Comment[]>
+	workoutLikes: Record<string, EngagementLike[]>
+	commentLikes: Record<string, EngagementLike[]>
 	loading: boolean
 	commenting: boolean
 	replying: boolean
 	loadingComments: Record<string, boolean>
 	loadingReplies: Record<string, boolean>
+	loadingWorkoutLikes: Record<string, boolean>
+	loadingCommentLikes: Record<string, boolean>
 	cursors: Record<string, string | null>
 
 	fetchComments: (workoutId: string, refresh?: boolean) => Promise<void>
@@ -46,16 +62,25 @@ interface EngagementState {
 	addReply: (workoutId: string, parentId: string, content: string) => Promise<void>
 	editComment: (commentId: string, content: string) => Promise<void>
 	deleteComment: (commentId: string) => Promise<void>
+
+	fetchWorkoutLikes: (workoutId: string) => Promise<void>
+	toggleWorkoutLike: (workoutId: string, currentUser: UserSnippet) => Promise<void>
+	fetchCommentLikes: (commentId: string) => Promise<void>
+	toggleCommentLike: (commentId: string, currentUser: UserSnippet) => Promise<void>
 }
 
 export const useEngagementStore = create<EngagementState>((set, get) => ({
 	comments: {},
 	replies: {},
+	workoutLikes: {},
+	commentLikes: {},
 	loading: false,
 	commenting: false,
 	replying: false,
 	loadingComments: {},
 	loadingReplies: {},
+	loadingWorkoutLikes: {},
+	loadingCommentLikes: {},
 	cursors: {},
 
 	fetchComments: async (workoutId: string, refresh = false) => {
@@ -342,6 +367,152 @@ export const useEngagementStore = create<EngagementState>((set, get) => ({
 			throw error
 		} finally {
 			set(prev => ({ loadingComments: { ...prev.loadingComments, [commentId]: false } }))
+		}
+	},
+
+	fetchWorkoutLikes: async (workoutId: string) => {
+		const state = get()
+		if (state.loadingWorkoutLikes[workoutId]) return
+
+		set(prev => ({ loadingWorkoutLikes: { ...prev.loadingWorkoutLikes, [workoutId]: true } }))
+
+		try {
+			const res = await getWorkoutLikesService(workoutId)
+			set(prev => ({
+				workoutLikes: {
+					...prev.workoutLikes,
+					[workoutId]: res.data,
+				},
+			}))
+		} catch (error) {
+			console.error('Failed to fetch workout likes', error)
+		} finally {
+			set(prev => ({ loadingWorkoutLikes: { ...prev.loadingWorkoutLikes, [workoutId]: false } }))
+		}
+	},
+
+	toggleWorkoutLike: async (workoutId: string, currentUser: UserSnippet) => {
+		const state = get()
+		const currentLikes = state.workoutLikes[workoutId] || []
+		const isLiked = currentLikes.some(like => like.userId === currentUser.id)
+
+		// Optimistic update
+		set(prev => {
+			let newLikes = [...(prev.workoutLikes[workoutId] || [])]
+			if (isLiked) {
+				newLikes = newLikes.filter(like => like.userId !== currentUser.id)
+			} else {
+				newLikes.push({
+					userId: currentUser.id,
+					createdAt: new Date().toISOString(),
+					user: currentUser,
+				})
+			}
+			return {
+				workoutLikes: {
+					...prev.workoutLikes,
+					[workoutId]: newLikes,
+				},
+			}
+		})
+
+		try {
+			if (isLiked) {
+				await deleteWorkoutLikeService(workoutId)
+			} else {
+				await createWorkoutLikeService(workoutId)
+			}
+		} catch (error) {
+			console.error('Failed to toggle workout like', error)
+			// Revert optimistic update
+			set(prev => ({
+				workoutLikes: {
+					...prev.workoutLikes,
+					[workoutId]: currentLikes,
+				},
+			}))
+			throw error
+		}
+	},
+
+	fetchCommentLikes: async (commentId: string) => {
+		const state = get()
+		if (state.loadingCommentLikes[commentId]) return
+
+		set(prev => ({ loadingCommentLikes: { ...prev.loadingCommentLikes, [commentId]: true } }))
+
+		try {
+			const res = await getCommentLikesService(commentId)
+			set(prev => ({
+				commentLikes: {
+					...prev.commentLikes,
+					[commentId]: res.data,
+				},
+			}))
+		} catch (error) {
+			console.error('Failed to fetch comment likes', error)
+		} finally {
+			set(prev => ({ loadingCommentLikes: { ...prev.loadingCommentLikes, [commentId]: false } }))
+		}
+	},
+
+	toggleCommentLike: async (commentId: string, currentUser: UserSnippet) => {
+		const state = get()
+		const currentLikes = state.commentLikes[commentId] || []
+		const isLiked = currentLikes.some(like => like.userId === currentUser.id)
+
+		// Optimistic update for likes tracking
+		set(prev => {
+			let newLikes = [...(prev.commentLikes[commentId] || [])]
+			if (isLiked) {
+				newLikes = newLikes.filter(like => like.userId !== currentUser.id)
+			} else {
+				newLikes.push({
+					userId: currentUser.id,
+					createdAt: new Date().toISOString(),
+					user: currentUser,
+				})
+			}
+
+			// Helper to update like count on a comment object
+			const updateLikeCountInfo = (list: Comment[]) =>
+				list.map(item =>
+					item.id === commentId
+						? {
+								...item,
+								likesCount: isLiked ? Math.max(0, item.likesCount - 1) : item.likesCount + 1,
+							}
+						: item
+				)
+
+			const newComments = Object.fromEntries(
+				Object.entries(prev.comments).map(([key, list]) => [key, updateLikeCountInfo(list)])
+			)
+
+			const newReplies = Object.fromEntries(
+				Object.entries(prev.replies).map(([key, list]) => [key, updateLikeCountInfo(list)])
+			)
+
+			return {
+				commentLikes: {
+					...prev.commentLikes,
+					[commentId]: newLikes,
+				},
+				comments: newComments,
+				replies: newReplies,
+			}
+		})
+
+		try {
+			if (isLiked) {
+				await deleteCommentLikeService(commentId)
+			} else {
+				await createCommentLikeService(commentId)
+			}
+		} catch (error) {
+			console.error('Failed to toggle comment like', error)
+			// Revert on error could be implemented here
+			throw error
 		}
 	},
 }))
