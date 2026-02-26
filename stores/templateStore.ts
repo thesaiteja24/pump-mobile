@@ -1,7 +1,7 @@
 import { zustandStorage } from '@/lib/storage'
 import { enqueueTemplateCreate, enqueueTemplateDelete, enqueueTemplateUpdate } from '@/lib/sync/queue'
 import { SyncStatus } from '@/lib/sync/types'
-import { getAllTemplatesService, getTemplateByShareIdService } from '@/services/templateService'
+import { getAllTemplatesService, getTemplateByIdService, getTemplateByShareIdService } from '@/services/templateService'
 import { serializeTemplateForApi } from '@/utils/serializeForApi'
 import * as Crypto from 'expo-crypto'
 import { create } from 'zustand'
@@ -71,6 +71,42 @@ export const useTemplate = create<TemplateState>()(
 
 			setSharedTemplate: template => {
 				set({ sharedTemplate: template })
+			},
+
+			/**
+			 * Fetches a single template by its ID
+			 */
+			getTemplateById: async (id: string) => {
+				// Check local state first
+				const localTemplate = get().templates.find(t => t.id === id || t.clientId === id)
+				if (localTemplate) return localTemplate
+
+				set({ templateLoading: true })
+				try {
+					const res = await getTemplateByIdService(id)
+					if (res.success && res.data) {
+						const fetchedTemplate: WorkoutTemplate = {
+							...res.data,
+							clientId: res.data.clientId,
+							syncStatus: 'synced' as SyncStatus,
+						}
+						// Merge into local list without duplicating
+						set(state => {
+							const exists = state.templates.some(t => t.id === fetchedTemplate.id)
+							return {
+								templates: exists ? state.templates : [...state.templates, fetchedTemplate],
+								templateLoading: false,
+							}
+						})
+						return fetchedTemplate
+					}
+					set({ templateLoading: false })
+					return null
+				} catch (e) {
+					console.error('Failed to fetch template by ID', e)
+					set({ templateLoading: false })
+					return null
+				}
 			},
 
 			/**
@@ -373,7 +409,13 @@ export const useTemplate = create<TemplateState>()(
 						...draft,
 						exercises: finalExercises,
 						exerciseGroups: finalGroups,
-					},
+						syncStatus: 'pending' as SyncStatus,
+						id: draft.clientId,
+						userId: useAuth.getState().user?.userId || '',
+						createdAt: new Date().toISOString(),
+						updatedAt: new Date().toISOString(),
+						authorName: useAuth.getState().user?.firstName || 'Unknown',
+					} as WorkoutTemplate,
 					pruneReport: {
 						droppedExercises,
 						droppedGroups,

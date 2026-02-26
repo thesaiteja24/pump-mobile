@@ -1,4 +1,5 @@
 import {
+	deleteConversationService,
 	downloadSpeechService,
 	getActiveConversationService,
 	sendMessageService,
@@ -50,6 +51,7 @@ interface CoachVoice {
 
 	initializeConversation: () => Promise<void>
 	startConversation: () => Promise<void>
+	deleteConversation: () => Promise<void>
 	sendVoiceMessage: () => Promise<void>
 	clearMessages: () => void
 }
@@ -294,6 +296,21 @@ export function useCoach(): CoachVoice {
 	const clearMessages = () => {
 		setMessages([])
 	}
+
+	const deleteConversation = async () => {
+		if (!conversationId) return
+		try {
+			const response = await deleteConversationService(conversationId)
+			if (response.success) {
+				setConversationId(null)
+				setMessages([])
+				setRecordedAudioUri(null)
+			}
+		} catch (error) {
+			console.log('Error deleting conversation', error)
+		}
+	}
+
 	useEffect(() => {
 		;(async () => {
 			const status = await AudioModule.requestRecordingPermissionsAsync()
@@ -337,6 +354,7 @@ export function useCoach(): CoachVoice {
 
 		initializeConversation,
 		startConversation,
+		deleteConversation,
 		sendVoiceMessage,
 		clearMessages,
 	}

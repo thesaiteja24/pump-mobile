@@ -1,6 +1,7 @@
 import { enqueueUserUpdate } from '@/lib/sync/queue/userQueue'
 import { UserPayload } from '@/lib/sync/types'
 import {
+	deleteProfilePicService,
 	followUserService,
 	getSuggestedUsersService,
 	getUserDataService,
@@ -40,6 +41,7 @@ type UserState = {
 
 	getUserData: (userId: string) => Promise<void>
 	updateProfilePic: (userId: string, data: FormData) => Promise<any>
+	deleteProfilePic: (userId: string) => Promise<any>
 	updateUserData: (userId: string, data: Record<string, any>) => Promise<any>
 	updatePreferences: (userId: string, data: Record<string, string>) => Promise<any>
 	searchUsers: (query: string) => Promise<any>
@@ -111,6 +113,32 @@ export const useUser = create<UserState>(set => ({
 					...currentUser,
 					profilePicUrl: res.data.profilePicUrl,
 					updatedAt: res.data.updatedAt,
+				})
+			}
+
+			set({ isLoading: false })
+			return res
+		} catch (error) {
+			set({ isLoading: false })
+
+			return {
+				success: false,
+				error: error,
+			}
+		}
+	},
+
+	deleteProfilePic: async (userId: string) => {
+		set({ isLoading: true })
+		try {
+			const res = await deleteProfilePicService(userId)
+			const currentUser = useAuth.getState().user
+
+			if (res.success) {
+				useAuth.getState().setUser({
+					...currentUser,
+					profilePicUrl: null,
+					updatedAt: res.data?.updatedAt || currentUser?.updatedAt,
 				})
 			}
 

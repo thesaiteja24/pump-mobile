@@ -22,6 +22,17 @@ export async function getUserDataService(userId: string) {
 	}
 }
 
+export async function deleteProfilePicService(userId: string) {
+	try {
+		const res = await client.delete(update_profile_pic_endpoint(userId))
+
+		return handleApiResponse(res)
+	} catch (error: any) {
+		const errData = error.response?.data
+		throw new Error(errData?.message || error.message || 'Network error')
+	}
+}
+
 export async function updateProfilePicService(userId: string, data: FormData) {
 	try {
 		const res = await client.patch(update_profile_pic_endpoint(userId), data, {

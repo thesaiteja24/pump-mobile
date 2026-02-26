@@ -6,7 +6,7 @@ import { useUser } from '@/stores/userStore'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import { useNavigation } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Keyboard, Platform, Text, TextInput, View } from 'react-native'
+import { Keyboard, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
@@ -18,6 +18,7 @@ export default function EditProfileScreen() {
 	const user = useAuth(s => s.user)
 	const getUserData = useUser(s => s.getUserData)
 	const updateProfilePic = useUser(s => s.updateProfilePic)
+	const deleteProfilePic = useUser(s => s.deleteProfilePic)
 	const updateUserData = useUser(s => s.updateUserData)
 	const isLoading = useUser(s => s.isLoading)
 	const [uploading, setUploading] = useState(false)
@@ -188,6 +189,31 @@ export default function EditProfileScreen() {
 					uploading={uploading}
 					onChange={newUri => newUri && onPick(newUri)}
 				/>
+				{user?.profilePicUrl && (
+					<TouchableOpacity
+						onPress={async () => {
+							if (!user?.userId) return
+							setUploading(true)
+							const res = await deleteProfilePic(user.userId)
+							if (!res?.success) {
+								Toast.show({
+									type: 'error',
+									text1: res?.error || 'Failed to remove avatar',
+								})
+							} else {
+								Toast.show({
+									type: 'success',
+									text1: 'Avatar removed successfully',
+								})
+							}
+							setUploading(false)
+						}}
+						className="mt-4"
+						disabled={uploading}
+					>
+						<Text className="text-base font-medium text-red-500">Remove Avatar</Text>
+					</TouchableOpacity>
+				)}
 			</View>
 
 			<View className="flex flex-col gap-2">

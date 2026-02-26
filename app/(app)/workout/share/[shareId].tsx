@@ -2,11 +2,10 @@ import { Button } from '@/components/ui/Button'
 import { ReadOnlyExerciseRow } from '@/components/workout/ReadOnlyExerciseRow'
 import { createWorkoutService, getWorkoutByShareIdService } from '@/services/workoutServices'
 import { useWorkout, WorkoutHistoryItem } from '@/stores/workoutStore'
-import { usePreventRemove } from '@react-navigation/native'
 import * as Crypto from 'expo-crypto'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useMemo, useState } from 'react'
-import { Alert, ScrollView, Text, TouchableOpacity, useColorScheme, View } from 'react-native'
+import { Alert, ScrollView, Text, useColorScheme, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function SharedWorkoutDetails() {
@@ -20,10 +19,6 @@ export default function SharedWorkoutDetails() {
 	const [saving, setSaving] = useState(false)
 
 	const getAllWorkouts = useWorkout(s => s.getAllWorkouts)
-
-	usePreventRemove(true, e => {
-		router.replace('/(app)/(tabs)/workout')
-	})
 
 	useEffect(() => {
 		if (shareId) {
@@ -43,16 +38,10 @@ export default function SharedWorkoutDetails() {
 	useEffect(() => {
 		navigation.setOptions({
 			title: sharedWorkout?.title ?? 'Shared Workout',
-			headerLeft: () => (
-				<TouchableOpacity
-					onPress={() => {
-						router.replace('/(app)/(tabs)/workout')
-					}}
-					style={{ marginRight: 15 }}
-				>
-					<Text style={{ color: isDark ? '#fff' : '#000', fontSize: 17 }}>Back</Text>
-				</TouchableOpacity>
-			),
+			leftIcon: 'chevron-back-outline',
+			onLeftPress: () => {
+				router.replace('/(app)/(tabs)/discover')
+			},
 		})
 	}, [navigation, sharedWorkout, isDark])
 

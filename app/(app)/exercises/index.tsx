@@ -11,10 +11,9 @@ import { Exercise, useExercise } from '@/stores/exerciseStore'
 import { useMuscleGroup } from '@/stores/muscleGroupStore'
 import { useTemplate } from '@/stores/templateStore'
 import { useWorkout } from '@/stores/workoutStore'
-
 import { Ionicons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
-import { router, useLocalSearchParams } from 'expo-router'
+import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import Fuse from 'fuse.js'
 
 import React, { useEffect, useMemo, useState } from 'react'
@@ -46,6 +45,7 @@ function Chip({ label, onRemove }: ChipProps) {
 /* ───────────────── Screen ───────────────── */
 
 export default function ExercisesScreen() {
+	const navigation = useNavigation()
 	const lineHeight = Platform.OS === 'ios' ? 0 : 20
 	const role = useAuth(s => s.user?.role)
 	const safeAreaInsets = useSafeAreaInsets()
@@ -129,6 +129,19 @@ export default function ExercisesScreen() {
 		getAllExercises,
 		getAllMuscleGroups,
 	])
+
+	useEffect(() => {
+		if (role === roles.systemAdmin) {
+			;(navigation as any).setOptions({
+				rightIcons: [
+					{
+						name: 'add',
+						onPress: () => router.push('/(app)/(system-admin)/exercises/create' as any),
+					},
+				],
+			})
+		}
+	}, [role, navigation])
 
 	/* ───────────────── Fuzzy search ───────────────── */
 
@@ -279,8 +292,8 @@ export default function ExercisesScreen() {
 				onPress={handleExercisePress}
 				onLongPress={exercise => {
 					if (role !== roles.systemAdmin) return
-					setDeleteExerciseId({ id: exercise.id, title: exercise.title })
-					deleteConfirmModalRef.current?.present()
+					Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
+					router.push(`/(app)/(system-admin)/exercises/${exercise.id}` as any)
 				}}
 			/>
 

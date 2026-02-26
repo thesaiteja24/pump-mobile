@@ -17,11 +17,22 @@ export default function TemplateDetails() {
 	const safeAreaInsets = useSafeAreaInsets()
 
 	const template = useTemplate(s => s.templates.find(t => t.id === id || t.clientId === id))
+	const getTemplateById = useTemplate(s => s.getTemplateById)
 	const deleteTemplate = useTemplate(s => s.deleteTemplate)
 	const startWorkoutFromTemplate = useTemplate(s => s.startWorkoutFromTemplate)
 	const handleEdit = useCallback(() => {
 		router.push(`/(app)/template/editor?id=${id}`)
 	}, [id])
+
+	useEffect(() => {
+		if (id && !template) {
+			getTemplateById(id).then(fetched => {
+				if (!fetched) {
+					console.error('Template not found or failed to fetch')
+				}
+			})
+		}
+	}, [id, template, getTemplateById])
 
 	const handleShare = useCallback(() => {
 		if (!template?.shareId) {

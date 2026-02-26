@@ -80,6 +80,7 @@ export interface TemplateState {
 	draftTemplate: DraftTemplate | null
 
 	getAllTemplates: () => Promise<void>
+	getTemplateById: (id: string) => Promise<WorkoutTemplate | null>
 	getTemplateByShareId: (shareId: string) => Promise<void>
 	createTemplate: (data: DraftTemplate) => Promise<any>
 	updateTemplate: (id: string, data: Partial<WorkoutTemplate>) => Promise<any>
@@ -92,7 +93,7 @@ export interface TemplateState {
 
 	// Validation
 	prepareTemplateForSave: () => {
-		template: DraftTemplate
+		template: WorkoutTemplate
 		pruneReport: {
 			droppedExercises: number
 			droppedGroups: number

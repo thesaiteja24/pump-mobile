@@ -1,6 +1,7 @@
 import {
 	COACH_ACTIVE_CONVERSATION_ENDPOINT,
 	COACH_CONVERSATIONS_ENDPOINT,
+	COACH_CONVERSATION_ENDPOINT,
 	COACH_CONVERSATION_MESSAGES_ENDPOINT,
 	COACH_SPEECH_ENDPOINT,
 	COACH_TRANSCRIPTION_ENDPOINT,
@@ -12,6 +13,16 @@ import client, { getAccessToken } from './api'
 export async function startConversationService() {
 	try {
 		const res = await client.post(COACH_CONVERSATIONS_ENDPOINT)
+		return handleApiResponse(res)
+	} catch (error: any) {
+		const errData = error.response?.data
+		throw new Error(errData?.message || error.message || 'Network error')
+	}
+}
+
+export async function deleteConversationService(id: string) {
+	try {
+		const res = await client.delete(COACH_CONVERSATION_ENDPOINT(id))
 		return handleApiResponse(res)
 	} catch (error: any) {
 		const errData = error.response?.data

@@ -14,6 +14,16 @@ export async function getAllTemplatesService() {
 	}
 }
 
+export async function getTemplateByIdService(id: string) {
+	try {
+		const res = await client.get(TEMPLATE_ITEM_ENDPOINT(id))
+		return handleApiResponse(res)
+	} catch (error: any) {
+		const errData = error.response?.data
+		throw new Error(errData?.message || error.message || 'Network error')
+	}
+}
+
 /**
  * Create a new template.
  * Accepts TemplatePayload for queue or Partial<WorkoutTemplate> for direct calls.
