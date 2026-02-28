@@ -1,5 +1,5 @@
 import CustomHeader from '@/components/navigation/CustomHeader'
-import { router, Stack } from 'expo-router'
+import { Stack } from 'expo-router'
 import React from 'react'
 import { useColorScheme } from 'react-native'
 
@@ -33,16 +33,6 @@ export default function ProfileLayout() {
 				options={
 					{
 						title: 'Profile',
-						rightIcons: [
-							{
-								name: 'create-outline',
-								onPress: () => router.push('/(app)/profile/edit'),
-							},
-							{
-								name: 'settings-outline',
-								onPress: () => router.push('/(app)/profile/settings'),
-							},
-						],
 					} as any
 				}
 			/>

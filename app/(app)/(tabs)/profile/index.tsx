@@ -1,26 +1,62 @@
 // app/(app)/(tabs)/profile.tsx
 import EditableAvatar from '@/components/EditableAvatar'
+import EditProfileSheet from '@/components/profile/EditProfileSheet'
+import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/stores/authStore'
 import { useUser } from '@/stores/userStore'
+import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons'
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import { router } from 'expo-router'
-import React, { memo, useEffect } from 'react'
-import { Pressable, Text, View } from 'react-native'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { Pressable, Text, TouchableOpacity, useColorScheme, View } from 'react-native'
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-const InfoRow = memo(function InfoRow({ label, value }: { label: string; value?: string | number | null }) {
-	return (
-		<View className="flex-row items-center justify-between border-b border-neutral-200/60 py-3 last:border-b-0 dark:border-neutral-800">
-			<Text className="text-sm text-neutral-500 dark:text-neutral-400">{label}</Text>
-			<Text className="text-base font-medium text-neutral-900 dark:text-neutral-100">{value ?? '—'}</Text>
-		</View>
-	)
-})
+type WeightUnit = 'kg' | 'lbs'
+type LengthUnit = 'cm' | 'inches'
 
 export default function ProfileScreen() {
-	const user = useAuth(state => state.user)
-	const getUserData = useUser(state => state.getUserData)
+	const { user, logout } = useAuth()
+	const { getUserData, updatePreferences } = useUser()
 	const dob = new Date(user?.dateOfBirth ?? '')
+	const isDarkMode = useColorScheme() === 'dark'
+	const insets = useSafeAreaInsets()
+
+	const unitSheetRef = useRef<BottomSheetModal>(null)
+	const editProfileSheetRef = useRef<BottomSheetModal>(null)
+
+	const storedWeightUnit: WeightUnit = user?.preferredWeightUnit ?? 'kg'
+	const storedLengthUnit: LengthUnit = user?.preferredLengthUnit ?? 'cm'
+
+	const [weightUnit, setWeightUnit] = useState<WeightUnit>(storedWeightUnit)
+	const [lengthUnit, setLengthUnit] = useState<LengthUnit>(storedLengthUnit)
+
+	useEffect(() => {
+		setWeightUnit(storedWeightUnit)
+		setLengthUnit(storedLengthUnit)
+	}, [storedWeightUnit, storedLengthUnit])
+
+	const hasChanges = useMemo(() => {
+		return weightUnit !== storedWeightUnit || lengthUnit !== storedLengthUnit
+	}, [weightUnit, lengthUnit, storedWeightUnit, storedLengthUnit])
+
+	const onDismiss = async () => {
+		if (!hasChanges || !user?.userId) return
+
+		await updatePreferences(user.userId, {
+			preferredWeightUnit: weightUnit,
+			preferredLengthUnit: lengthUnit,
+		})
+	}
+
+	const optionClass = (active: boolean, rounded?: string) =>
+		[
+			'w-1/2 py-2 border',
+			rounded,
+			active
+				? 'bg-blue-500 border-blue-500 text-white'
+				: 'bg-white border-neutral-200/60 text-black dark:bg-neutral-900 dark:border-neutral-800 dark:text-white',
+		].join(' ')
 
 	// Animation Values
 	const avatarOpacity = useSharedValue(0)
@@ -114,16 +150,193 @@ export default function ProfileScreen() {
 				</Animated.View>
 			</View>
 
-			{/* Info Card */}
-			<Animated.View
-				style={infoStyle}
-				className="rounded-2xl border border-neutral-200/60 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
-			>
-				<InfoRow label="Date of Birth" value={dob.toDateString() ?? ''} />
-				<InfoRow label="Height" value={user?.height ? `${user.height}` : ''} />
-				<InfoRow label="Weight" value={user?.weight ? `${user.weight}` : ''} />
-				<InfoRow label="Gender" value={user?.gender ? `${user.gender}` : ''} />
+			{/* Info Card / Action List */}
+			<Animated.View style={infoStyle} className="mt-4 gap-2">
+				<Button
+					title="Account Details"
+					variant="ghost"
+					className="justify-start py-4"
+					textClassName="text-base font-medium text-neutral-700 dark:text-neutral-300"
+					leftIcon={
+						<MaterialCommunityIcons
+							name="account-edit"
+							size={24}
+							color={isDarkMode ? '#D4D4D4' : '#525252'}
+							className="mr-2"
+						/>
+					}
+					rightIcon={
+						<MaterialCommunityIcons
+							name="chevron-right"
+							size={24}
+							color={isDarkMode ? '#525252' : '#A3A3A3'}
+							className="ml-auto"
+						/>
+					}
+					onPress={() => editProfileSheetRef.current?.present()}
+				/>
+
+				<View className="ml-14 h-[1px] bg-neutral-100 dark:bg-neutral-800" />
+
+				<Button
+					title="Unit Preferences"
+					variant="ghost"
+					className="justify-start py-4"
+					textClassName="text-base font-medium text-neutral-700 dark:text-neutral-300"
+					leftIcon={
+						<MaterialCommunityIcons
+							name="tune-variant"
+							size={24}
+							color={isDarkMode ? '#D4D4D4' : '#525252'}
+							className="mr-2"
+						/>
+					}
+					rightIcon={
+						<MaterialCommunityIcons
+							name="chevron-right"
+							size={24}
+							color={isDarkMode ? '#525252' : '#A3A3A3'}
+							className="ml-auto"
+						/>
+					}
+					onPress={() => unitSheetRef.current?.present()}
+				/>
+
+				<View className="ml-14 h-[1px] bg-neutral-100 dark:bg-neutral-800" />
+
+				<Button
+					title="Logout"
+					variant="ghost"
+					className="justify-start py-4"
+					textClassName="text-base font-medium text-red-600 dark:text-red-500"
+					leftIcon={
+						<AntDesign
+							name="logout"
+							size={22}
+							color={isDarkMode ? '#EF4444' : '#DC2626'}
+							className="ml-[2px] mr-2"
+						/>
+					}
+					rightIcon={
+						<MaterialCommunityIcons
+							name="chevron-right"
+							size={24}
+							color={isDarkMode ? '#525252' : '#A3A3A3'}
+							className="ml-auto"
+						/>
+					}
+					onPress={logout}
+				/>
 			</Animated.View>
+
+			<BottomSheetModal
+				ref={unitSheetRef}
+				index={0}
+				enableDynamicSizing={true}
+				backdropComponent={props => (
+					<BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
+				)}
+				backgroundStyle={{
+					backgroundColor: isDarkMode ? '#171717' : 'white',
+				}}
+				handleIndicatorStyle={{
+					backgroundColor: isDarkMode ? '#525252' : '#d1d5db',
+				}}
+				onDismiss={onDismiss}
+				animationConfigs={{
+					duration: 350,
+				}}
+			>
+				<BottomSheetView
+					style={{
+						paddingBottom: insets.bottom + 16,
+						paddingHorizontal: 24,
+						paddingTop: 8,
+					}}
+				>
+					<Text className="mb-6 text-center text-xl font-bold text-black dark:text-white">
+						Unit Preferences
+					</Text>
+
+					<View className="flex flex-col gap-6">
+						<View className="flex flex-row items-center justify-between">
+							<Text className="w-1/2 text-lg font-semibold text-black dark:text-white">Weight</Text>
+							<View className="flex w-1/2 flex-row">
+								<TouchableOpacity
+									onPress={() => setWeightUnit('kg')}
+									className={optionClass(weightUnit === 'kg', 'rounded-l-full')}
+								>
+									<Text
+										className={
+											weightUnit === 'kg'
+												? 'text-center text-white'
+												: 'text-center text-black dark:text-white'
+										}
+									>
+										Kg
+									</Text>
+								</TouchableOpacity>
+								<TouchableOpacity
+									onPress={() => setWeightUnit('lbs')}
+									className={optionClass(weightUnit === 'lbs', 'rounded-r-full')}
+								>
+									<Text
+										className={
+											weightUnit === 'lbs'
+												? 'text-center text-white'
+												: 'text-center text-black dark:text-white'
+										}
+									>
+										Lbs
+									</Text>
+								</TouchableOpacity>
+							</View>
+						</View>
+
+						<View className="flex flex-row items-center justify-between">
+							<Text className="w-1/2 text-lg font-semibold text-black dark:text-white">Measurements</Text>
+							<View className="flex w-1/2 flex-row">
+								<TouchableOpacity
+									onPress={() => setLengthUnit('cm')}
+									className={optionClass(lengthUnit === 'cm', 'rounded-l-full')}
+								>
+									<Text
+										className={
+											lengthUnit === 'cm'
+												? 'text-center text-white'
+												: 'text-center text-black dark:text-white'
+										}
+									>
+										Cm
+									</Text>
+								</TouchableOpacity>
+								<TouchableOpacity
+									onPress={() => setLengthUnit('inches')}
+									className={optionClass(lengthUnit === 'inches', 'rounded-r-full')}
+								>
+									<Text
+										className={
+											lengthUnit === 'inches'
+												? 'text-center text-white'
+												: 'text-center text-black dark:text-white'
+										}
+									>
+										Inches
+									</Text>
+								</TouchableOpacity>
+							</View>
+						</View>
+					</View>
+
+					{hasChanges && (
+						<Text className="mt-6 text-center text-sm text-blue-500">
+							Changes will be saved when you close this sheet
+						</Text>
+					)}
+				</BottomSheetView>
+			</BottomSheetModal>
+
+			<EditProfileSheet ref={editProfileSheetRef} />
 		</View>
 	)
 }

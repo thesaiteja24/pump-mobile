@@ -1,19 +1,21 @@
 import EditableAvatar from '@/components/EditableAvatar'
+import { Button } from '@/components/ui/Button'
 import DateTimePicker from '@/components/ui/DateTimePicker'
 import { SelectableCard } from '@/components/ui/SelectableCard'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
 import { useUser } from '@/stores/userStore'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
-import { router, useNavigation } from 'expo-router'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Alert, BackHandler, Keyboard, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
+import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Keyboard, Platform, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-export default function EditProfileScreen() {
-	const navigation = useNavigation()
+export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	const colors = useThemeColor()
+	const isDarkMode = useColorScheme() === 'dark'
+	const insets = useSafeAreaInsets()
 
 	// global state (stores)
 	const user = useAuth(s => s.user)
@@ -87,7 +89,12 @@ export default function EditProfileScreen() {
 
 	// save handler
 	const handleSave = useCallback(async () => {
-		if (!user?.userId || !hasChanges) return
+		if (!user?.userId || !hasChanges) {
+			// @ts-ignore
+			ref?.current?.dismiss()
+			return
+		}
+
 		Keyboard.dismiss()
 
 		const payload = {
@@ -104,7 +111,6 @@ export default function EditProfileScreen() {
 		if (response?.success) {
 			Toast.show({ type: 'success', text1: 'Profile updated successfully' })
 
-			// update original snapshot
 			originalRef.current = {
 				firstName,
 				lastName,
@@ -113,56 +119,15 @@ export default function EditProfileScreen() {
 				dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
 				gender,
 			}
+			// @ts-ignore
+			ref?.current?.dismiss()
 		} else {
 			Toast.show({
 				type: 'error',
 				text1: 'Profile update failed, try again',
 			})
 		}
-	}, [firstName, lastName, height, weight, dateOfBirth, gender, hasChanges, user?.userId, updateUserData])
-
-	// load user data on mount
-	useEffect(() => {
-		if (user?.userId) {
-			getUserData(user.userId)
-		}
-	}, [user?.userId, getUserData])
-
-	// nav bar checkmark
-	useEffect(() => {
-		;(navigation as any).setOptions({
-			rightIcons: [
-				{
-					name: 'checkmark-done',
-					onPress: handleSave,
-					disabled: !hasChanges || isLoading,
-					color: colors.primary,
-				},
-			],
-		})
-	}, [navigation, hasChanges, handleSave, user, isLoading, colors.primary])
-
-	useEffect(() => {
-		const onBackPress = () => {
-			if (hasChanges) {
-				Alert.alert('Unsaved Changes', 'You have unsaved changes. Are you sure you want to go back?', [
-					{ text: 'Cancel', style: 'cancel' },
-					{
-						text: 'Discard',
-						style: 'destructive',
-						onPress: () => router.back(),
-					},
-				])
-				return true
-			}
-			router.back()
-			return true
-		}
-
-		const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
-
-		return () => subscription.remove()
-	}, [])
+	}, [firstName, lastName, height, weight, dateOfBirth, gender, hasChanges, user?.userId, updateUserData, ref])
 
 	// profile pic picker
 	const onPick = async (uri: string | null) => {
@@ -170,22 +135,17 @@ export default function EditProfileScreen() {
 
 		try {
 			setUploading(true)
-
-			// 1️⃣ Prepare image (retina-safe avatar)
 			const prepared = await prepareImageForUpload(
 				{
 					uri,
-					fileName: 'profile.jpg', // safe default
+					fileName: 'profile.jpg',
 					type: 'image/jpeg',
 				},
 				'avatar'
 			)
 
-			// 2️⃣ Build FormData
 			const formData = new FormData()
 			formData.append('profilePic', prepared as any)
-
-			// 3️⃣ Upload
 			const res = await updateProfilePic(user.userId, formData)
 
 			if (!res?.success) {
@@ -210,76 +170,101 @@ export default function EditProfileScreen() {
 	}
 
 	return (
-		<View className="flex-1 bg-white p-4 dark:bg-black" style={{ paddingBottom: useSafeAreaInsets().bottom }}>
-			<View className="mb-6 items-center">
-				<EditableAvatar
-					uri={user?.profilePicUrl ? user.profilePicUrl : null}
-					size={132}
-					editable={!isLoading}
-					uploading={uploading}
-					onChange={newUri => newUri && onPick(newUri)}
-				/>
-				{user?.profilePicUrl && (
-					<TouchableOpacity
-						onPress={async () => {
-							if (!user?.userId) return
-							setUploading(true)
-							const res = await deleteProfilePic(user.userId)
-							if (!res?.success) {
-								Toast.show({
-									type: 'error',
-									text1: res?.error || 'Failed to remove avatar',
-								})
-							} else {
-								Toast.show({
-									type: 'success',
-									text1: 'Avatar removed successfully',
-								})
-							}
-							setUploading(false)
-						}}
-						className="mt-4"
-						disabled={uploading}
-					>
-						<Text className="text-base font-medium text-red-500">Remove Avatar</Text>
-					</TouchableOpacity>
-				)}
-			</View>
+		<BottomSheetModal
+			ref={ref}
+			index={0}
+			enableDynamicSizing={true}
+			backdropComponent={props => (
+				<BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
+			)}
+			backgroundStyle={{
+				backgroundColor: isDarkMode ? '#171717' : 'white',
+			}}
+			handleIndicatorStyle={{
+				backgroundColor: isDarkMode ? '#525252' : '#d1d5db',
+			}}
+			animationConfigs={{
+				duration: 350,
+			}}
+			keyboardBehavior="interactive"
+			keyboardBlurBehavior="restore"
+		>
+			<BottomSheetScrollView
+				contentContainerStyle={{
+					paddingBottom: insets.bottom + 16,
+					paddingHorizontal: 24,
+					paddingTop: 8,
+				}}
+			>
+				<Text className="mb-6 text-center text-xl font-bold text-black dark:text-white">Edit Profile</Text>
 
-			<View className="flex flex-col gap-2">
-				{/* first name */}
-				<View className="flex flex-row items-center gap-8">
-					<Text className="text-lg font-semibold text-black dark:text-white">First Name</Text>
-					<TextInput
-						value={firstName}
-						onChangeText={setFirstName}
+				<View className="mb-6 items-center">
+					<EditableAvatar
+						uri={user?.profilePicUrl ? user.profilePicUrl : null}
+						size={110}
 						editable={!isLoading}
-						placeholder="Enter Name..."
-						className="text-lg text-primary"
-						placeholderTextColor={colors.neutral[500]}
-						style={{ lineHeight }}
+						uploading={uploading}
+						onChange={newUri => newUri && onPick(newUri)}
 					/>
+					{user?.profilePicUrl && (
+						<TouchableOpacity
+							onPress={async () => {
+								if (!user?.userId) return
+								setUploading(true)
+								const res = await deleteProfilePic(user.userId)
+								if (!res?.success) {
+									Toast.show({
+										type: 'error',
+										text1: res?.error || 'Failed to remove avatar',
+									})
+								} else {
+									Toast.show({
+										type: 'success',
+										text1: 'Avatar removed successfully',
+									})
+								}
+								setUploading(false)
+							}}
+							className="mt-4"
+							disabled={uploading}
+						>
+							<Text className="text-sm font-medium text-red-500">Remove Avatar</Text>
+						</TouchableOpacity>
+					)}
 				</View>
 
-				{/* last name */}
-				<View className="flex flex-row items-center gap-8">
-					<Text className="text-lg font-semibold text-black dark:text-white">Last Name</Text>
-					<TextInput
-						value={lastName}
-						onChangeText={setLastName}
-						editable={!isLoading}
-						placeholder="Enter Surname..."
-						className="text-lg text-primary"
-						placeholderTextColor={colors.neutral[500]}
-						style={{ lineHeight }}
-					/>
-				</View>
+				<View className="flex flex-col gap-6">
+					{/* first name */}
+					<View className="flex flex-row items-center justify-between border-b border-neutral-100 pb-2 dark:border-neutral-800">
+						<Text className="text-lg font-semibold text-black dark:text-white">First Name</Text>
+						<TextInput
+							value={firstName}
+							onChangeText={setFirstName}
+							editable={!isLoading}
+							placeholder="Enter Name..."
+							className="text-right text-lg text-primary"
+							placeholderTextColor={colors.neutral[500]}
+							style={{ lineHeight }}
+						/>
+					</View>
 
-				{/* details card */}
-				<View className="mt-4 rounded-2xl border border-neutral-200/60 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+					{/* last name */}
+					<View className="flex flex-row items-center justify-between border-b border-neutral-100 pb-2 dark:border-neutral-800">
+						<Text className="text-lg font-semibold text-black dark:text-white">Last Name</Text>
+						<TextInput
+							value={lastName}
+							onChangeText={setLastName}
+							editable={!isLoading}
+							placeholder="Enter Surname..."
+							className="text-right text-lg text-primary"
+							placeholderTextColor={colors.neutral[500]}
+							style={{ lineHeight }}
+						/>
+					</View>
+
 					{/* gender section */}
-					<View className="border-b border-neutral-200/60 py-3 pb-5 dark:border-neutral-800">
-						<Text className="mb-3 text-sm text-neutral-500 dark:text-neutral-400">Gender</Text>
+					<View className="border-b border-neutral-100 pb-4 dark:border-neutral-800">
+						<Text className="mb-3 text-lg font-semibold text-black dark:text-white">Gender</Text>
 						<View className="flex-row items-center gap-2">
 							<SelectableCard
 								selected={gender === 'male'}
@@ -303,14 +288,14 @@ export default function EditProfileScreen() {
 					</View>
 
 					{/* date of birth */}
-					<View className="flex-row items-center justify-between border-b border-neutral-200/60 py-3 dark:border-neutral-800">
-						<Text className="text-sm text-neutral-500 dark:text-neutral-400">Date of Birth</Text>
+					<View className="flex-row items-center justify-between border-b border-neutral-100 pb-2 dark:border-neutral-800">
+						<Text className="text-lg font-semibold text-black dark:text-white">Date of Birth</Text>
 						<DateTimePicker value={dateOfBirth ?? undefined} dateOnly onUpdate={setDateOfBirth} />
 					</View>
 
 					{/* height */}
-					<View className="flex-row items-center justify-between border-b border-neutral-200/60 py-3 dark:border-neutral-800">
-						<Text className="text-sm text-neutral-500 dark:text-neutral-400">Height (cm)</Text>
+					<View className="flex-row items-center justify-between border-b border-neutral-100 pb-2 dark:border-neutral-800">
+						<Text className="text-lg font-semibold text-black dark:text-white">Height (cm)</Text>
 						<TextInput
 							value={height?.toString() ?? ''}
 							placeholder="--"
@@ -321,14 +306,14 @@ export default function EditProfileScreen() {
 								setHeight(text)
 							}
 							editable={!isLoading}
-							className="text-lg text-primary"
+							className="text-right text-lg text-primary"
 							style={{ lineHeight }}
 						/>
 					</View>
 
 					{/* weight */}
-					<View className="flex-row items-center justify-between border-neutral-200/60 py-3 dark:border-neutral-800">
-						<Text className="text-sm text-neutral-500 dark:text-neutral-400">Weight (kg)</Text>
+					<View className="h-14 flex-row items-center justify-between pb-2">
+						<Text className="text-lg font-semibold text-black dark:text-white">Weight (kg)</Text>
 						<TextInput
 							value={weight?.toString() ?? ''}
 							placeholder="--"
@@ -339,12 +324,22 @@ export default function EditProfileScreen() {
 								setWeight(text)
 							}
 							editable={!isLoading}
-							className="text-lg text-primary"
+							className="text-right text-lg text-primary"
 							style={{ lineHeight }}
 						/>
 					</View>
 				</View>
-			</View>
-		</View>
+
+				<Button
+					title={hasChanges ? 'Save Changes' : 'Close'}
+					variant={hasChanges ? 'primary' : 'secondary'}
+					loading={isLoading}
+					className="mt-6"
+					onPress={handleSave}
+				/>
+			</BottomSheetScrollView>
+		</BottomSheetModal>
 	)
-}
+})
+
+export default EditProfileSheet
