@@ -1,12 +1,13 @@
 import EditableAvatar from '@/components/EditableAvatar'
 import DateTimePicker from '@/components/ui/DateTimePicker'
+import { SelectableCard } from '@/components/ui/SelectableCard'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
 import { useUser } from '@/stores/userStore'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
-import { useNavigation } from 'expo-router'
+import { router, useNavigation } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Keyboard, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Alert, BackHandler, Keyboard, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
@@ -31,6 +32,7 @@ export default function EditProfileScreen() {
 	const [height, setHeight] = useState<number | null>(null)
 	const [weight, setWeight] = useState<number | null>(null)
 	const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null)
+	const [gender, setGender] = useState<'male' | 'female' | 'other' | null>(null)
 
 	// Snapshot of original values
 	const originalRef = useRef({
@@ -39,6 +41,7 @@ export default function EditProfileScreen() {
 		height: null as number | null,
 		weight: null as number | null,
 		dateOfBirth: null as Date | null,
+		gender: null as 'male' | 'female' | 'other' | null,
 	})
 
 	// sync local state with global user data
@@ -50,6 +53,7 @@ export default function EditProfileScreen() {
 		setHeight(user.height ?? null)
 		setWeight(user.weight ?? null)
 		setDateOfBirth(user.dateOfBirth ? new Date(user.dateOfBirth) : null)
+		setGender((user.gender as any) ?? null)
 
 		originalRef.current = {
 			firstName: user.firstName ?? '',
@@ -57,6 +61,7 @@ export default function EditProfileScreen() {
 			height: user.height ?? null,
 			weight: user.weight ?? null,
 			dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : null,
+			gender: (user.gender as any) ?? null,
 		}
 	}, [user])
 
@@ -75,9 +80,10 @@ export default function EditProfileScreen() {
 			lastName === original.lastName &&
 			height === original.height &&
 			weight === original.weight &&
+			gender === original.gender &&
 			sameDOB
 		)
-	}, [firstName, lastName, height, weight, dateOfBirth])
+	}, [firstName, lastName, height, weight, dateOfBirth, gender])
 
 	// save handler
 	const handleSave = useCallback(async () => {
@@ -90,6 +96,7 @@ export default function EditProfileScreen() {
 			height,
 			weight,
 			dateOfBirth: dateOfBirth ? dateOfBirth.toISOString() : null,
+			gender,
 		}
 
 		const response = await updateUserData(user.userId, payload)
@@ -104,6 +111,7 @@ export default function EditProfileScreen() {
 				height,
 				weight,
 				dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+				gender,
 			}
 		} else {
 			Toast.show({
@@ -111,7 +119,7 @@ export default function EditProfileScreen() {
 				text1: 'Profile update failed, try again',
 			})
 		}
-	}, [firstName, lastName, height, weight, dateOfBirth, hasChanges, user?.userId, updateUserData])
+	}, [firstName, lastName, height, weight, dateOfBirth, gender, hasChanges, user?.userId, updateUserData])
 
 	// load user data on mount
 	useEffect(() => {
@@ -133,6 +141,28 @@ export default function EditProfileScreen() {
 			],
 		})
 	}, [navigation, hasChanges, handleSave, user, isLoading, colors.primary])
+
+	useEffect(() => {
+		const onBackPress = () => {
+			if (hasChanges) {
+				Alert.alert('Unsaved Changes', 'You have unsaved changes. Are you sure you want to go back?', [
+					{ text: 'Cancel', style: 'cancel' },
+					{
+						text: 'Discard',
+						style: 'destructive',
+						onPress: () => router.back(),
+					},
+				])
+				return true
+			}
+			router.back()
+			return true
+		}
+
+		const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
+
+		return () => subscription.remove()
+	}, [])
 
 	// profile pic picker
 	const onPick = async (uri: string | null) => {
@@ -247,6 +277,31 @@ export default function EditProfileScreen() {
 
 				{/* details card */}
 				<View className="mt-4 rounded-2xl border border-neutral-200/60 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+					{/* gender section */}
+					<View className="border-b border-neutral-200/60 py-3 pb-5 dark:border-neutral-800">
+						<Text className="mb-3 text-sm text-neutral-500 dark:text-neutral-400">Gender</Text>
+						<View className="flex-row items-center gap-2">
+							<SelectableCard
+								selected={gender === 'male'}
+								onSelect={() => setGender('male')}
+								title="Male"
+								className="flex-1 px-3 py-3"
+							/>
+							<SelectableCard
+								selected={gender === 'female'}
+								onSelect={() => setGender('female')}
+								title="Female"
+								className="flex-1 px-3 py-3"
+							/>
+							<SelectableCard
+								selected={gender === 'other'}
+								onSelect={() => setGender('other')}
+								title="Other"
+								className="flex-1 px-3 py-3"
+							/>
+						</View>
+					</View>
+
 					{/* date of birth */}
 					<View className="flex-row items-center justify-between border-b border-neutral-200/60 py-3 dark:border-neutral-800">
 						<Text className="text-sm text-neutral-500 dark:text-neutral-400">Date of Birth</Text>

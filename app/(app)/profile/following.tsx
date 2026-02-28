@@ -4,10 +4,10 @@ import { useAuth } from '@/stores/authStore'
 import { SearchedUser, useUser } from '@/stores/userStore'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
-import { useLocalSearchParams } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import Fuse from 'fuse.js'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { ActivityIndicator, FlatList, Platform, RefreshControl, Text, View } from 'react-native'
+import { ActivityIndicator, BackHandler, FlatList, Platform, RefreshControl, Text, View } from 'react-native'
 import { TextInput } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -108,6 +108,17 @@ export default function Following() {
 		if (!query.trim()) return users
 		return fuse.search(query).map(result => result.item)
 	}, [query, users, fuse])
+
+	useEffect(() => {
+		const onBackPress = () => {
+			router.back()
+			return true
+		}
+
+		const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
+
+		return () => subscription.remove()
+	}, [])
 
 	return (
 		<View style={{ paddingBottom: safeAreaInsets.bottom }} className="flex-1 bg-white px-4 pt-4 dark:bg-black">

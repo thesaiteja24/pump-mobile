@@ -162,6 +162,7 @@ export interface UserPayload {
 	dateOfBirth?: string | null
 	height?: number | null
 	weight?: number | null
+	gender?: 'male' | 'female' | 'other' | null
 
 	// For UPDATE_PREFERENCES
 	preferredWeightUnit?: WeightUnits

@@ -148,6 +148,10 @@ export function serializeUserUpdateForApi(user: UserPayload): UserPayload {
 		payload.dateOfBirth = user.dateOfBirth ? new Date(user.dateOfBirth).toISOString() : null
 	}
 
+	if (user.gender !== undefined) {
+		payload.gender = user.gender
+	}
+
 	if (user.preferredWeightUnit !== undefined) {
 		payload.preferredWeightUnit = user.preferredWeightUnit
 	}

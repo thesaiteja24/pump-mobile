@@ -122,6 +122,7 @@ export default function ProfileScreen() {
 				<InfoRow label="Date of Birth" value={dob.toDateString() ?? ''} />
 				<InfoRow label="Height" value={user?.height ? `${user.height}` : ''} />
 				<InfoRow label="Weight" value={user?.weight ? `${user.weight}` : ''} />
+				<InfoRow label="Gender" value={user?.gender ? `${user.gender}` : ''} />
 			</Animated.View>
 		</View>
 	)

@@ -3,8 +3,9 @@ import { useAuth } from '@/stores/authStore'
 import { useUser } from '@/stores/userStore'
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
+import { router } from 'expo-router'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Text, TouchableOpacity, useColorScheme, View } from 'react-native'
+import { BackHandler, Text, TouchableOpacity, useColorScheme, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type WeightUnit = 'kg' | 'lbs'
@@ -45,6 +46,17 @@ export default function SettingsScreen() {
 		setWeightUnit(storedWeightUnit)
 		setLengthUnit(storedLengthUnit)
 	}, [storedWeightUnit, storedLengthUnit])
+
+	useEffect(() => {
+		const onBackPress = () => {
+			router.back()
+			return true
+		}
+
+		const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
+
+		return () => subscription.remove()
+	}, [])
 
 	/* ---------------------------------------------
      Detect changes

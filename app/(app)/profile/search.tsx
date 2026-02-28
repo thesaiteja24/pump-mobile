@@ -4,8 +4,9 @@ import { useAuth } from '@/stores/authStore'
 import { SearchedUser, useUser } from '@/stores/userStore'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
+import { router } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { ActivityIndicator, FlatList, Platform, RefreshControl, Text, View } from 'react-native'
+import { ActivityIndicator, BackHandler, FlatList, Platform, RefreshControl, Text, View } from 'react-native'
 import { TextInput } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -96,6 +97,17 @@ export default function Search() {
 	useEffect(() => {
 		getSuggestedUsers()
 	}, [getSuggestedUsers])
+
+	useEffect(() => {
+		const onBackPress = () => {
+			router.back()
+			return true
+		}
+
+		const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
+
+		return () => subscription.remove()
+	}, [])
 
 	// 🔄 Pull to refresh
 	const onRefresh = useCallback(async () => {
