@@ -57,6 +57,7 @@ type UserState = {
 	getUserFollowing: (userId: string) => Promise<any>
 
 	updateUserFitnessProfile: (userId: string, data: Record<string, any>) => Promise<any>
+	getUserFitnessProfile: (userId: string) => Promise<any>
 	addDailyMeasurement: (userId: string, data: Record<string, any> | FormData) => Promise<any>
 	getMeasurementHistory: (userId: string, limit?: number) => Promise<any>
 }
@@ -103,6 +104,7 @@ export const useUser = create<UserState>(set => ({
 					createdAt: res.data?.createdAt,
 					updatedAt: res.data?.updatedAt,
 					fitnessProfile: res.data?.fitnessProfile || null,
+					measurements: res.data?.measurements || [],
 				})
 			}
 			set({ isLoading: false })

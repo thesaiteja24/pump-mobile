@@ -1,4 +1,3 @@
-import { router, useNavigation } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, FlatList, RefreshControl, Text, View } from 'react-native'
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
@@ -12,23 +11,23 @@ import { useAnalytics } from '@/hooks/useAnalytics'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
 import { ExerciseType, useExercise } from '@/stores/exerciseStore'
+import { useUser } from '@/stores/userStore'
 import { useWorkout, WorkoutHistoryItem } from '@/stores/workoutStore'
 import { getMotivationLine } from '@/utils/motivation'
 import { getGreeting, toDateKey } from '@/utils/time'
 
 export default function HomeScreen() {
-	const navigation = useNavigation()
 	const colors = useThemeColor()
 
 	// ───────────────── Stores ─────────────────
 	const user = useAuth(s => s.user)
+	const getUserData = useUser(s => s.getUserData)
 
 	const workoutHistory = useWorkout(s => s.workoutHistory)
 	const workoutLoading = useWorkout(s => s.workoutLoading)
 	const getAllWorkouts = useWorkout(s => s.getAllWorkouts)
 
 	const exerciseList = useExercise(s => s.exerciseList)
-	const exerciseLoading = useExercise(s => s.exerciseLoading)
 	const getAllExercises = useExercise(s => s.getAllExercises)
 
 	const workoutPage = useWorkout(s => s.workoutPage)
@@ -107,18 +106,6 @@ export default function HomeScreen() {
 		}
 	}, [streakDays, workoutsThisWeek, daysSinceLastWorkout, weeklyVolume, lastWeekVolume, workoutDates])
 
-	// ───────────────── Navigation ─────────────────
-	useEffect(() => {
-		navigation.setOptions({
-			rightIcons: [
-				{
-					name: 'settings-outline',
-					onPress: () => router.navigate('/profile/settings'),
-				},
-			],
-		})
-	}, [navigation])
-
 	// ───────────────── Refresh ─────────────────
 	const onRefresh = useCallback(async () => {
 		try {
@@ -159,8 +146,8 @@ export default function HomeScreen() {
 	}))
 
 	useEffect(() => {
-		Promise.all([getAllWorkouts(1), getAllExercises()])
-	}, [getAllWorkouts, getAllExercises])
+		Promise.all([getAllWorkouts(1), getAllExercises(), getUserData(user?.userId ?? '')])
+	}, [getAllWorkouts, getAllExercises, getUserData, user?.userId])
 
 	// ───────────────── Render ─────────────────
 	return (

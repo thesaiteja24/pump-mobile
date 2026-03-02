@@ -121,8 +121,8 @@ export function serializeWorkoutForApi(workout: WorkoutLog) {
 }
 
 export function serializeUserUpdateForApi(user: UserPayload): UserPayload {
-	// @ts-ignore
-	const payload: UserPayload = {}
+	// Build as Partial internally; we always include userId so the cast at the end is safe
+	const payload: Partial<UserPayload> = {}
 
 	if (user.userId !== undefined) {
 		payload.userId = user.userId
@@ -160,5 +160,5 @@ export function serializeUserUpdateForApi(user: UserPayload): UserPayload {
 		payload.preferredLengthUnit = user.preferredLengthUnit
 	}
 
-	return payload
+	return payload as UserPayload
 }

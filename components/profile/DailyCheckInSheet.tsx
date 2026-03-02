@@ -2,6 +2,8 @@ import { Button } from '@/components/ui/Button'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth, User } from '@/stores/authStore'
 import { useUser } from '@/stores/userStore'
+import { calculateBodyFat, calculateComposition } from '@/utils/analytics'
+import { convertLength, convertWeight } from '@/utils/converter'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import {
@@ -32,17 +34,22 @@ export const DailyCheckInSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	const isDarkMode = useColorScheme() === 'dark'
 	const insets = useSafeAreaInsets()
 	const [isOpen, setIsOpen] = useState(false)
+	const gender = useAuth(s => s.user?.gender)
+	// height from store is always in cm (backend canonical)
+	const heightCm = useAuth(s => s.user?.height)
 
 	const user = useAuth(s => s.user) as User | null
 	const addDailyMeasurement = useUser(s => s.addDailyMeasurement)
 	const isLoading = useUser(s => s.isLoading)
 
+	// Preferred units — read from store
+	const weightUnit = user?.preferredWeightUnit ?? 'kg'
+	const lengthUnit = user?.preferredLengthUnit ?? 'cm'
+
 	const lineHeight = Platform.OS === 'ios' ? 0 : 30
 
-	// State for all backend fields
+	// All measurement inputs are in the user's preferred display unit
 	const [weight, setWeight] = useState('')
-	const [bodyFat, setBodyFat] = useState('')
-	const [leanBodyMass, setLeanBodyMass] = useState('')
 	const [neck, setNeck] = useState('')
 	const [shoulders, setShoulders] = useState('')
 	const [chest, setChest] = useState('')
@@ -59,6 +66,48 @@ export const DailyCheckInSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	const [rightCalf, setRightCalf] = useState('')
 	const [notes, setNotes] = useState('')
 	const [progressPics, setProgressPics] = useState<{ uri: string; name: string; type: string }[]>([])
+
+	// Height is always from store in cm, no conversion needed for the body-fat formula (which requires cm)
+	const parsedHeightCm = Number(heightCm)
+
+	// --- Core profile checks ---
+	const missingCoreProfile = !gender || !Number.isFinite(parsedHeightCm) || parsedHeightCm <= 0
+
+	// Convert user's input values to cm for the body-fat formula (USN formula requires cm)
+	const neckCm = lengthUnit === 'inches' ? convertLength(Number(neck), { from: 'inches', to: 'cm' }) : Number(neck)
+	const waistCm = lengthUnit === 'inches' ? convertLength(Number(waist), { from: 'inches', to: 'cm' }) : Number(waist)
+	const hipsCm = lengthUnit === 'inches' ? convertLength(Number(hips), { from: 'inches', to: 'cm' }) : Number(hips)
+
+	const missingMeasurements =
+		!Number.isFinite(neckCm) ||
+		neckCm <= 0 ||
+		!Number.isFinite(waistCm) ||
+		waistCm <= 0 ||
+		(gender === 'female' && (!Number.isFinite(hipsCm) || hipsCm <= 0))
+
+	const isCompositionLocked = missingCoreProfile || missingMeasurements
+
+	// Body fat calculated with cm values (as the formula requires)
+	const bodyFat = !isCompositionLocked
+		? calculateBodyFat({
+				gender: gender!,
+				height: parsedHeightCm, // always cm from store
+				neck: neckCm, // converted to cm
+				waist: waistCm, // converted to cm
+				hips: gender === 'female' ? hipsCm : undefined,
+			})
+		: null
+
+	// Weight in kg for composition (convert from user unit if needed)
+	const weightKg = weightUnit === 'lbs' ? convertWeight(Number(weight), { from: 'lbs', to: 'kg' }) : Number(weight)
+
+	const composition = bodyFat != null && weightKg > 0 ? calculateComposition({ weight: weightKg, bodyFat }) : null
+
+	const bodyFatDisplay = bodyFat != null ? bodyFat.toFixed(1) : ''
+	const leanMassDisplay = composition?.leanMass != null ? composition.leanMass.toFixed(2) : ''
+
+	// leanBodyMass in kg — for backend storage
+	const leanBodyMassKg = composition?.leanMass?.toFixed(2) ?? ''
 
 	useEffect(() => {
 		const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -81,7 +130,6 @@ export const DailyCheckInSheet = forwardRef<BottomSheetModal>((props, ref) => {
 
 		if (!result.canceled) {
 			try {
-				// Prepare images for upload sequentially
 				const processedPics = await Promise.all(
 					result.assets.map(async asset => {
 						const prepared = await prepareImageForUpload(
@@ -98,6 +146,7 @@ export const DailyCheckInSheet = forwardRef<BottomSheetModal>((props, ref) => {
 				setProgressPics(prev => [...prev, ...processedPics])
 			} catch (error) {
 				Toast.show({ type: 'error', text1: 'Failed to process some images' })
+				console.error('Error processing images:', error)
 			}
 		}
 	}
@@ -108,32 +157,83 @@ export const DailyCheckInSheet = forwardRef<BottomSheetModal>((props, ref) => {
 
 	const handleSave = useCallback(async () => {
 		if (!user?.userId) return
+
+		// Validate that at least weight or one measurement is provided
+		const hasAnyInput = [
+			weight,
+			neck,
+			waist,
+			hips,
+			shoulders,
+			chest,
+			abdomen,
+			leftBicep,
+			rightBicep,
+			leftForearm,
+			rightForearm,
+			leftThigh,
+			rightThigh,
+			leftCalf,
+			rightCalf,
+		].some(v => v.trim().length > 0)
+
+		if (!hasAnyInput && !notes && progressPics.length === 0) {
+			Toast.show({ type: 'error', text1: 'Please enter at least one measurement before saving.' })
+			return
+		}
+
 		Keyboard.dismiss()
 
 		const formData = new FormData()
 		formData.append('date', new Date().toISOString())
 
-		const appendNum = (key: string, val: string) => {
-			if (val) formData.append(key, parseFloat(val).toString())
+		/**
+		 * Append a measurement to formData after converting to the canonical backend unit.
+		 * Length values (cm) — convert from user's lengthUnit → cm.
+		 * Weight values (kg) — convert from user's weightUnit → kg.
+		 */
+		const appendLength = (key: string, val: string) => {
+			const parsed = parseFloat(val)
+			if (!val || isNaN(parsed) || parsed <= 0) return
+			const inCm = convertLength(parsed, { from: lengthUnit, to: 'cm' })
+			formData.append(key, inCm.toString())
 		}
 
-		appendNum('weight', weight)
-		appendNum('bodyFat', bodyFat)
-		appendNum('leanBodyMass', leanBodyMass)
-		appendNum('neck', neck)
-		appendNum('shoulders', shoulders)
-		appendNum('chest', chest)
-		appendNum('waist', waist)
-		appendNum('abdomen', abdomen)
-		appendNum('hips', hips)
-		appendNum('leftBicep', leftBicep)
-		appendNum('rightBicep', rightBicep)
-		appendNum('leftForearm', leftForearm)
-		appendNum('rightForearm', rightForearm)
-		appendNum('leftThigh', leftThigh)
-		appendNum('rightThigh', rightThigh)
-		appendNum('leftCalf', leftCalf)
-		appendNum('rightCalf', rightCalf)
+		const appendKg = (key: string, val: string) => {
+			const parsed = parseFloat(val)
+			if (!val || isNaN(parsed) || parsed <= 0) return
+			const inKg = convertWeight(parsed, { from: weightUnit, to: 'kg' })
+			formData.append(key, inKg.toString())
+		}
+
+		const appendRaw = (key: string, val: string | number) => {
+			const parsed = typeof val === 'string' ? parseFloat(val) : val
+			if (!val || isNaN(parsed)) return
+			formData.append(key, parsed.toString())
+		}
+
+		// Weight → kg
+		appendKg('weight', weight)
+
+		// Body composition — these are derived numbers already in the canonical unit
+		appendRaw('bodyFat', bodyFatDisplay)
+		appendRaw('leanBodyMass', leanBodyMassKg)
+
+		// Length measurements → cm
+		appendLength('neck', neck)
+		appendLength('shoulders', shoulders)
+		appendLength('chest', chest)
+		appendLength('waist', waist)
+		appendLength('abdomen', abdomen)
+		appendLength('hips', hips)
+		appendLength('leftBicep', leftBicep)
+		appendLength('rightBicep', rightBicep)
+		appendLength('leftForearm', leftForearm)
+		appendLength('rightForearm', rightForearm)
+		appendLength('leftThigh', leftThigh)
+		appendLength('rightThigh', rightThigh)
+		appendLength('leftCalf', leftCalf)
+		appendLength('rightCalf', rightCalf)
 
 		if (notes) formData.append('notes', notes)
 
@@ -148,7 +248,22 @@ export const DailyCheckInSheet = forwardRef<BottomSheetModal>((props, ref) => {
 			// @ts-ignore
 			ref?.current?.dismiss()
 
-			// Optional: reset fields after successful save
+			// Reset fields after successful save
+			setWeight('')
+			setNeck('')
+			setShoulders('')
+			setChest('')
+			setWaist('')
+			setAbdomen('')
+			setHips('')
+			setLeftBicep('')
+			setRightBicep('')
+			setLeftForearm('')
+			setRightForearm('')
+			setLeftThigh('')
+			setRightThigh('')
+			setLeftCalf('')
+			setRightCalf('')
 			setNotes('')
 			setProgressPics([])
 		} else {
@@ -156,8 +271,8 @@ export const DailyCheckInSheet = forwardRef<BottomSheetModal>((props, ref) => {
 		}
 	}, [
 		weight,
-		bodyFat,
-		leanBodyMass,
+		bodyFatDisplay,
+		leanBodyMassKg,
 		neck,
 		shoulders,
 		chest,
@@ -177,9 +292,10 @@ export const DailyCheckInSheet = forwardRef<BottomSheetModal>((props, ref) => {
 		user?.userId,
 		addDailyMeasurement,
 		ref,
+		weightUnit,
+		lengthUnit,
 	])
 
-	const lengthUnit = user?.preferredLengthUnit || 'cm'
 	const SectionHeader = ({ title }: { title: string }) => (
 		<Text className="mb-2 mt-4 text-sm font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
 			{title}
@@ -195,15 +311,9 @@ export const DailyCheckInSheet = forwardRef<BottomSheetModal>((props, ref) => {
 			backdropComponent={props => (
 				<BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
 			)}
-			backgroundStyle={{
-				backgroundColor: isDarkMode ? '#171717' : 'white',
-			}}
-			handleIndicatorStyle={{
-				backgroundColor: isDarkMode ? '#525252' : '#d1d5db',
-			}}
-			animationConfigs={{
-				duration: 350,
-			}}
+			backgroundStyle={{ backgroundColor: isDarkMode ? '#171717' : 'white' }}
+			handleIndicatorStyle={{ backgroundColor: isDarkMode ? '#525252' : '#d1d5db' }}
+			animationConfigs={{ duration: 350 }}
 			keyboardBehavior="interactive"
 			keyboardBlurBehavior="restore"
 			style={{ marginTop: insets.top }}
@@ -282,29 +392,72 @@ export const DailyCheckInSheet = forwardRef<BottomSheetModal>((props, ref) => {
 						{/* --- General --- */}
 						<SectionHeader title="General" />
 						<MeasurementInput
-							label={`Weight (${user?.preferredWeightUnit || 'kg'})`}
+							label={`Weight (${weightUnit})`}
 							value={weight}
 							onChangeText={setWeight}
 							editable={!isLoading}
 							colors={colors}
 							lineHeight={lineHeight}
 						/>
+
+						{/* Neck, Waist, Hips — used for body fat calculation, must be in user's length unit */}
 						<MeasurementInput
-							label="Body Fat %"
-							value={bodyFat}
-							onChangeText={setBodyFat}
+							label={`Neck (${lengthUnit})`}
+							value={neck}
+							onChangeText={setNeck}
 							editable={!isLoading}
 							colors={colors}
 							lineHeight={lineHeight}
 						/>
 						<MeasurementInput
-							label={`Lean Body Mass (${user?.preferredWeightUnit || 'kg'})`}
-							value={leanBodyMass}
-							onChangeText={setLeanBodyMass}
+							label={`Waist (${lengthUnit})`}
+							value={waist}
+							onChangeText={setWaist}
 							editable={!isLoading}
 							colors={colors}
 							lineHeight={lineHeight}
 						/>
+						<MeasurementInput
+							label={`Hips (${lengthUnit})`}
+							value={hips}
+							onChangeText={setHips}
+							editable={!isLoading}
+							colors={colors}
+							lineHeight={lineHeight}
+						/>
+
+						{/* Auto-calculated body composition */}
+						<View className="relative">
+							<View style={{ opacity: isCompositionLocked ? 0.3 : 1 }}>
+								<MeasurementInput
+									label="Body Fat %"
+									badge="Auto-calculated"
+									value={bodyFatDisplay}
+									editable={false}
+									colors={colors}
+									lineHeight={lineHeight}
+								/>
+								<MeasurementInput
+									label={`Lean Body Mass (${weightUnit})`}
+									badge="Auto-calculated"
+									value={leanMassDisplay}
+									editable={false}
+									colors={colors}
+									lineHeight={lineHeight}
+								/>
+							</View>
+
+							{isCompositionLocked && (
+								<View className="absolute inset-0 items-center justify-center rounded-xl bg-white/80 dark:bg-neutral-900/80">
+									<View className="items-center px-6">
+										<MaterialCommunityIcons name="lock-outline" size={24} color={colors.text} />
+										<Text className="mt-2 text-center text-sm font-medium text-black dark:text-white">
+											Height, gender, neck & waist required
+										</Text>
+									</View>
+								</View>
+							)}
+						</View>
 
 						{/* --- Torso --- */}
 						<SectionHeader title={`Torso (${lengthUnit})`} />
@@ -325,33 +478,9 @@ export const DailyCheckInSheet = forwardRef<BottomSheetModal>((props, ref) => {
 							lineHeight={lineHeight}
 						/>
 						<MeasurementInput
-							label="Waist"
-							value={waist}
-							onChangeText={setWaist}
-							editable={!isLoading}
-							colors={colors}
-							lineHeight={lineHeight}
-						/>
-						<MeasurementInput
 							label="Abdomen"
 							value={abdomen}
 							onChangeText={setAbdomen}
-							editable={!isLoading}
-							colors={colors}
-							lineHeight={lineHeight}
-						/>
-						<MeasurementInput
-							label="Hips"
-							value={hips}
-							onChangeText={setHips}
-							editable={!isLoading}
-							colors={colors}
-							lineHeight={lineHeight}
-						/>
-						<MeasurementInput
-							label="Neck"
-							value={neck}
-							onChangeText={setNeck}
 							editable={!isLoading}
 							colors={colors}
 							lineHeight={lineHeight}
@@ -427,6 +556,7 @@ export const DailyCheckInSheet = forwardRef<BottomSheetModal>((props, ref) => {
 							lineHeight={lineHeight}
 						/>
 					</View>
+
 					<Button
 						title="Save Check-In"
 						variant="primary"
@@ -440,10 +570,27 @@ export const DailyCheckInSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	)
 })
 
-function MeasurementInput({ label, value, onChangeText, editable, colors, lineHeight }: any) {
+interface MeasurementInputProps {
+	label: string
+	badge?: string
+	value: string
+	onChangeText?: (text: string) => void
+	editable?: boolean
+	colors: ReturnType<typeof useThemeColor>
+	lineHeight: number
+}
+
+function MeasurementInput({ label, badge, value, onChangeText, editable, colors, lineHeight }: MeasurementInputProps) {
 	return (
 		<View className="flex flex-row items-center justify-between border-b border-neutral-100 py-3 dark:border-neutral-800">
-			<Text className="text-base font-medium text-black dark:text-white">{label}</Text>
+			<View className="flex flex-row items-center gap-2">
+				<Text className="text-base font-medium text-black dark:text-white">{label}</Text>
+				{badge && (
+					<View className="flex-row items-center gap-2 rounded-full border border-blue-500 bg-blue-500/15 px-2 py-1">
+						<Text className="text-xs text-blue-600">{badge}</Text>
+					</View>
+				)}
+			</View>
 			<BottomSheetTextInput
 				value={value}
 				placeholder="--"
@@ -457,5 +604,7 @@ function MeasurementInput({ label, value, onChangeText, editable, colors, lineHe
 		</View>
 	)
 }
+
+DailyCheckInSheet.displayName = 'DailyCheckInSheet'
 
 export default DailyCheckInSheet

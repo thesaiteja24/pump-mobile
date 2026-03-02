@@ -7,6 +7,27 @@ import { create } from 'zustand'
 import { Gender } from './onboardingStore'
 import { LengthUnits, WeightUnits } from './userStore'
 
+type UserMeasurements = {
+	weight: number
+	bodyFat: number
+	leanBodyMass: number
+	neck: number
+	shoulders: number
+	chest: number
+	waist: number
+	abdomen: number
+	hips: number
+	leftBicep: number
+	rightBicep: number
+	leftForearm: number
+	rightForearm: number
+	leftThigh: number
+	rightThigh: number
+	leftCalf: number
+	rightCalf: number
+	notes: string
+	progressPics: string[]
+}
 export interface User {
 	userId?: string
 	countryCode?: string
@@ -37,27 +58,7 @@ export interface User {
 		injuries: string | null
 		availableEquipment: string[]
 	} | null
-	measurements?: {
-		weight: number
-		bodyFat: number
-		leanBodyMass: number
-		neck: number
-		shoulders: number
-		chest: number
-		waist: number
-		abdomen: number
-		hips: number
-		leftBicep: number
-		rightBicep: number
-		leftForearm: number
-		rightForearm: number
-		leftThigh: number
-		rightThigh: number
-		leftCalf: number
-		rightCalf: number
-		notes: string
-		progressPics: string[]
-	}
+	measurements?: UserMeasurements[]
 }
 
 type AuthState = {

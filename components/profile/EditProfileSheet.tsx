@@ -5,6 +5,7 @@ import { SelectableCard } from '@/components/ui/SelectableCard'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
 import { useUser } from '@/stores/userStore'
+import { convertLength, convertWeight, displayLength, displayWeight } from '@/utils/converter'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -30,50 +31,63 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 
 	// global state (stores)
 	const user = useAuth(s => s.user)
-	const getUserData = useUser(s => s.getUserData)
 	const updateProfilePic = useUser(s => s.updateProfilePic)
 	const deleteProfilePic = useUser(s => s.deleteProfilePic)
 	const updateUserData = useUser(s => s.updateUserData)
 	const isLoading = useUser(s => s.isLoading)
 	const [uploading, setUploading] = useState(false)
 
+	// Derived preferred units — read from store, not local state (set only via Unit Preferences sheet)
+	const weightUnit = user?.preferredWeightUnit ?? 'kg'
+	const lengthUnit = user?.preferredLengthUnit ?? 'cm'
+
 	const lineHeight = Platform.OS === 'ios' ? 0 : 30
 
-	// local state
+	// local state — height & weight stored as display-unit strings (TextInput always emits strings)
 	const [firstName, setFirstName] = useState('')
 	const [lastName, setLastName] = useState('')
-	const [height, setHeight] = useState<number | null>(null)
-	const [weight, setWeight] = useState<number | null>(null)
-	const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null)
+	const [heightDisplay, setHeightDisplay] = useState('')
+	const [weightDisplay, setWeightDisplay] = useState('')
+	const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>(undefined)
 	const [gender, setGender] = useState<'male' | 'female' | 'other' | null>(null)
 
-	// Snapshot of original values
+	// Snapshot of original display-unit values for dirty checking
 	const originalRef = useRef({
 		firstName: '',
 		lastName: '',
-		height: null as number | null,
-		weight: null as number | null,
-		dateOfBirth: null as Date | null,
+		heightDisplay: '',
+		weightDisplay: '',
+		dateOfBirth: undefined as Date | undefined,
 		gender: null as 'male' | 'female' | 'other' | null,
 	})
 
-	// sync local state with global user data
+	// Sync local state with global user — convert backend units (kg, cm) → user's preferred display unit
 	useEffect(() => {
 		if (!user) return
 
+		const hDisplay =
+			user.height != null && Number.isFinite(Number(user.height))
+				? displayLength(Number(user.height), { precision: 2 }).toString()
+				: ''
+
+		const wDisplay =
+			user.weight != null && Number.isFinite(Number(user.weight))
+				? displayWeight(Number(user.weight), { precision: 2 }).toString()
+				: ''
+
 		setFirstName(user.firstName ?? '')
 		setLastName(user.lastName ?? '')
-		setHeight(user.height ?? null)
-		setWeight(user.weight ?? null)
-		setDateOfBirth(user.dateOfBirth ? new Date(user.dateOfBirth) : null)
+		setHeightDisplay(hDisplay)
+		setWeightDisplay(wDisplay)
+		setDateOfBirth(user.dateOfBirth ? new Date(user.dateOfBirth) : undefined)
 		setGender((user.gender as any) ?? null)
 
 		originalRef.current = {
 			firstName: user.firstName ?? '',
 			lastName: user.lastName ?? '',
-			height: user.height ?? null,
-			weight: user.weight ?? null,
-			dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : null,
+			heightDisplay: hDisplay,
+			weightDisplay: wDisplay,
+			dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : undefined,
 			gender: (user.gender as any) ?? null,
 		}
 	}, [user])
@@ -91,14 +105,14 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 		return !(
 			firstName === original.firstName &&
 			lastName === original.lastName &&
-			height === original.height &&
-			weight === original.weight &&
+			heightDisplay === original.heightDisplay &&
+			weightDisplay === original.weightDisplay &&
 			gender === original.gender &&
 			sameDOB
 		)
-	}, [firstName, lastName, height, weight, dateOfBirth, gender])
+	}, [firstName, lastName, heightDisplay, weightDisplay, dateOfBirth, gender])
 
-	// save handler
+	// Save handler — convert display-unit values back to backend canonical units (kg, cm)
 	const handleSave = useCallback(async () => {
 		if (!user?.userId || !hasChanges) {
 			// @ts-ignore
@@ -108,12 +122,26 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 
 		Keyboard.dismiss()
 
+		const parsedHeight = parseFloat(heightDisplay)
+		const parsedWeight = parseFloat(weightDisplay)
+
+		// Convert display-unit values to backend canonical units
+		const heightInCm =
+			!isNaN(parsedHeight) && parsedHeight > 0
+				? convertLength(parsedHeight, { from: lengthUnit, to: 'cm' })
+				: null
+
+		const weightInKg =
+			!isNaN(parsedWeight) && parsedWeight > 0
+				? convertWeight(parsedWeight, { from: weightUnit, to: 'kg' })
+				: null
+
 		const payload = {
 			firstName,
 			lastName,
-			height,
-			weight,
-			dateOfBirth: dateOfBirth ? dateOfBirth.toISOString() : null,
+			height: heightInCm,
+			weight: weightInKg,
+			dateOfBirth: dateOfBirth ? dateOfBirth.toISOString() : undefined,
 			gender,
 		}
 
@@ -125,9 +153,9 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 			originalRef.current = {
 				firstName,
 				lastName,
-				height,
-				weight,
-				dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+				heightDisplay,
+				weightDisplay,
+				dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
 				gender,
 			}
 			// @ts-ignore
@@ -138,43 +166,40 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 				text1: 'Profile update failed, try again',
 			})
 		}
-	}, [firstName, lastName, height, weight, dateOfBirth, gender, hasChanges, user?.userId, updateUserData, ref])
+	}, [
+		firstName,
+		lastName,
+		heightDisplay,
+		weightDisplay,
+		dateOfBirth,
+		gender,
+		hasChanges,
+		user?.userId,
+		updateUserData,
+		ref,
+		lengthUnit,
+		weightUnit,
+	])
 
-	// profile pic picker
+	// Profile pic picker
 	const onPick = async (uri: string | null) => {
 		if (!uri || !user?.userId || uploading) return
 
 		try {
 			setUploading(true)
-			const prepared = await prepareImageForUpload(
-				{
-					uri,
-					fileName: 'profile.jpg',
-					type: 'image/jpeg',
-				},
-				'avatar'
-			)
+			const prepared = await prepareImageForUpload({ uri, fileName: 'profile.jpg', type: 'image/jpeg' }, 'avatar')
 
 			const formData = new FormData()
 			formData.append('profilePic', prepared as any)
 			const res = await updateProfilePic(user.userId, formData)
 
 			if (!res?.success) {
-				Toast.show({
-					type: 'error',
-					text1: res?.error || 'Profile picture upload failed',
-				})
+				Toast.show({ type: 'error', text1: res?.error || 'Profile picture upload failed' })
 			} else {
-				Toast.show({
-					type: 'success',
-					text1: 'Profile picture updated',
-				})
+				Toast.show({ type: 'success', text1: 'Profile picture updated' })
 			}
 		} catch (error: any) {
-			Toast.show({
-				type: 'error',
-				text1: error?.message || 'Image processing failed',
-			})
+			Toast.show({ type: 'error', text1: error?.message || 'Image processing failed' })
 		} finally {
 			setUploading(false)
 		}
@@ -185,11 +210,10 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 			if (isOpen) {
 				// @ts-ignore
 				ref?.current?.dismiss()
-				return true // prevent navigation
+				return true
 			}
-			return false // allow normal back navigation
+			return false
 		})
-
 		return () => backHandler.remove()
 	}, [isOpen, ref])
 
@@ -202,27 +226,17 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 			backdropComponent={props => (
 				<BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
 			)}
-			backgroundStyle={{
-				backgroundColor: isDarkMode ? '#171717' : 'white',
-			}}
-			handleIndicatorStyle={{
-				backgroundColor: isDarkMode ? '#525252' : '#d1d5db',
-			}}
-			animationConfigs={{
-				duration: 350,
-			}}
-			style={{
-				marginTop: insets.top,
-			}}
+			backgroundStyle={{ backgroundColor: isDarkMode ? '#171717' : 'white' }}
+			handleIndicatorStyle={{ backgroundColor: isDarkMode ? '#525252' : '#d1d5db' }}
+			animationConfigs={{ duration: 350 }}
+			style={{ marginTop: insets.top }}
 			stackBehavior="push"
-			onChange={index => {
-				setIsOpen(index >= 0)
-			}}
+			onChange={index => setIsOpen(index >= 0)}
 		>
 			<KeyboardAvoidingView
 				behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
 				style={{ flex: 1 }}
-				keyboardVerticalOffset={100}
+				keyboardVerticalOffset={150}
 			>
 				<BottomSheetScrollView
 					style={{ flex: 1 }}
@@ -237,7 +251,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 
 					<View className="mb-6 items-center">
 						<EditableAvatar
-							uri={user?.profilePicUrl ? user.profilePicUrl : null}
+							uri={user?.profilePicUrl ?? null}
 							size={110}
 							editable={!isLoading}
 							uploading={uploading}
@@ -250,15 +264,9 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 									setUploading(true)
 									const res = await deleteProfilePic(user.userId)
 									if (!res?.success) {
-										Toast.show({
-											type: 'error',
-											text1: res?.error || 'Failed to remove avatar',
-										})
+										Toast.show({ type: 'error', text1: res?.error || 'Failed to remove avatar' })
 									} else {
-										Toast.show({
-											type: 'success',
-											text1: 'Avatar removed successfully',
-										})
+										Toast.show({ type: 'success', text1: 'Avatar removed successfully' })
 									}
 									setUploading(false)
 								}}
@@ -327,39 +335,41 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 						{/* date of birth */}
 						<View className="flex-row items-center justify-between border-b border-neutral-100 pb-2 dark:border-neutral-800">
 							<Text className="text-lg font-semibold text-black dark:text-white">Date of Birth</Text>
-							<DateTimePicker value={dateOfBirth ?? undefined} dateOnly onUpdate={setDateOfBirth} />
+							{dateOfBirth ? (
+								<DateTimePicker value={dateOfBirth} dateOnly onUpdate={setDateOfBirth} />
+							) : (
+								<Text className="text-lg text-neutral-500">--</Text>
+							)}
 						</View>
 
-						{/* height */}
+						{/* height — dynamic unit label, input in display unit */}
 						<View className="flex-row items-center justify-between border-b border-neutral-100 pb-2 dark:border-neutral-800">
-							<Text className="text-lg font-semibold text-black dark:text-white">Height (cm)</Text>
+							<Text className="text-lg font-semibold text-black dark:text-white">
+								Height ({lengthUnit})
+							</Text>
 							<TextInput
-								value={height?.toString() ?? ''}
+								value={heightDisplay}
 								placeholder="--"
 								placeholderTextColor={colors.neutral[500]}
 								keyboardType="numeric"
-								onChangeText={text =>
-									// @ts-ignore
-									setHeight(text)
-								}
+								onChangeText={setHeightDisplay}
 								editable={!isLoading}
 								className="text-right text-lg text-primary"
 								style={{ lineHeight }}
 							/>
 						</View>
 
-						{/* weight */}
+						{/* weight — dynamic unit label, input in display unit */}
 						<View className="h-14 flex-row items-center justify-between pb-2">
-							<Text className="text-lg font-semibold text-black dark:text-white">Weight (kg)</Text>
+							<Text className="text-lg font-semibold text-black dark:text-white">
+								Weight ({weightUnit})
+							</Text>
 							<TextInput
-								value={weight?.toString() ?? ''}
+								value={weightDisplay}
 								placeholder="--"
 								placeholderTextColor={colors.neutral[500]}
 								keyboardType="decimal-pad"
-								onChangeText={text =>
-									// @ts-ignore
-									setWeight(text)
-								}
+								onChangeText={setWeightDisplay}
 								editable={!isLoading}
 								className="text-right text-lg text-primary"
 								style={{ lineHeight }}
@@ -379,5 +389,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 		</BottomSheetModal>
 	)
 })
+
+EditProfileSheet.displayName = 'EditProfileSheet'
 
 export default EditProfileSheet

@@ -1,8 +1,8 @@
 // app/(app)/(tabs)/profile.tsx
 import EditableAvatar from '@/components/EditableAvatar'
-import DailyCheckInSheet from '@/components/profile/DailyCheckInSheet'
-import EditProfileSheet from '@/components/profile/EditProfileSheet'
-import FitnessGoalsSheet from '@/components/profile/FitnessGoalsSheet'
+import { DailyCheckInSheet } from '@/components/profile/DailyCheckInSheet'
+import { EditProfileSheet } from '@/components/profile/EditProfileSheet'
+import { FitnessGoalsSheet } from '@/components/profile/FitnessGoalsSheet'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/stores/authStore'
 import { useUser } from '@/stores/userStore'
@@ -10,7 +10,7 @@ import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import { router } from 'expo-router'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Pressable, Text, TouchableOpacity, useColorScheme, View } from 'react-native'
+import { BackHandler, Pressable, Text, TouchableOpacity, useColorScheme, View } from 'react-native'
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -20,7 +20,6 @@ type LengthUnit = 'cm' | 'inches'
 export default function ProfileScreen() {
 	const { user, logout } = useAuth()
 	const { getUserData, updatePreferences } = useUser()
-	const dob = new Date(user?.dateOfBirth ?? '')
 	const isDarkMode = useColorScheme() === 'dark'
 	const insets = useSafeAreaInsets()
 
@@ -105,6 +104,21 @@ export default function ProfileScreen() {
 		transform: [{ translateY: infoTranslateY.value }],
 	}))
 
+	useEffect(() => {
+		const onBackPress = () => {
+			if (router.canGoBack()) {
+				router.back()
+			} else {
+				router.push('/(app)/(tabs)/home')
+			}
+			return true
+		}
+
+		const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
+
+		return () => subscription.remove()
+	}, [])
+
 	return (
 		<View className="flex-1 bg-white p-4 dark:bg-black" style={{ paddingBottom: useSafeAreaInsets().bottom }}>
 			{/* Avatar */}
@@ -114,16 +128,14 @@ export default function ProfileScreen() {
 				</Animated.View>
 
 				{/* Name as prominent line */}
-				<Animated.View style={nameStyle} className="mb-3 flex-grow gap-2">
-					<Text className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+				<Animated.View style={nameStyle} className="mb-3 min-w-0 flex-1 gap-2">
+					<Text
+						className="text-xl font-semibold text-neutral-900 dark:text-neutral-100"
+						numberOfLines={1}
+						ellipsizeMode="tail"
+					>
 						{(user?.firstName ?? '') + (user?.lastName ? ` ${user.lastName}` : '')}
 					</Text>
-
-					{/* {user?.phoneE164 ? (
-            <Text className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-              {user.phoneE164}
-            </Text>
-          ) : null} */}
 
 					<View className="flex-row gap-4">
 						<Pressable

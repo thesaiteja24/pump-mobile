@@ -1,59 +1,109 @@
 import { Button } from '@/components/ui/Button'
 import DateTimePicker from '@/components/ui/DateTimePicker'
 import { SelectableCard } from '@/components/ui/SelectableCard'
-import { useThemeColor } from '@/hooks/useThemeColor'
-import { useAuth, User } from '@/stores/authStore'
-import { useUser } from '@/stores/userStore'
+import { useAuth } from '@/stores/authStore'
+import { calculateBodyFat } from '@/utils/analytics'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
-import React, { forwardRef, useCallback, useEffect, useState } from 'react'
-import { BackHandler, Keyboard, Platform, Text, TextInput, useColorScheme, View } from 'react-native'
+import React, { forwardRef, useEffect, useMemo, useState } from 'react'
+import { BackHandler, Keyboard, Text, TextInput, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
+type TargetType = 'weight' | 'bodyFat'
+type PlanningMode = 'rateDriven' | 'dateDriven'
+
 export const FitnessGoalsSheet = forwardRef<BottomSheetModal>((props, ref) => {
-	const colors = useThemeColor()
+	const [isOpen, setIsOpen] = useState(false)
 	const isDarkMode = useColorScheme() === 'dark'
 	const insets = useSafeAreaInsets()
 
-	const user = useAuth(s => s.user) as User | null
-	const updateUserFitnessProfile = useUser(s => s.updateUserFitnessProfile)
-	const isLoading = useUser(s => s.isLoading)
-	const [isOpen, setIsOpen] = useState(false)
+	const user = useAuth(s => s.user)
+	const currentWeight = user?.weight
+	const height = user?.height
+	const gender = user?.gender
+	const neck = user?.measurements?.[0]?.neck
+	const waist = user?.measurements?.[0]?.waist
+	const hips = user?.measurements?.[0]?.hips
 
-	const lineHeight = Platform.OS === 'ios' ? 0 : 30
+	const currentBodyFat = calculateBodyFat({
+		gender: gender!,
+		height: Number(height),
+		neck: Number(neck),
+		waist: Number(waist),
+		hips: hips ? Number(hips) : undefined,
+	})
 
-	const [fitnessGoal, setFitnessGoal] = useState<string | null>(null)
-	const [targetWeight, setTargetWeight] = useState('')
+	const [goalType, setGoalType] = useState<string | null>(null)
+
+	const [targetType, setTargetType] = useState<TargetType>('weight')
+	const [targetValue, setTargetValue] = useState('')
+	const [weeklyRate, setWeeklyRate] = useState('0.5') // kg or %
 	const [targetDate, setTargetDate] = useState<Date | null>(null)
+	const [mode, setMode] = useState<PlanningMode>('rateDriven')
 
-	useEffect(() => {
-		if (user?.fitnessProfile) {
-			setFitnessGoal(user.fitnessProfile.fitnessGoal)
-			setTargetWeight(user.fitnessProfile.targetWeight ? String(user.fitnessProfile.targetWeight) : '')
-			setTargetDate(user.fitnessProfile.targetDate ? new Date(user.fitnessProfile.targetDate) : null)
-		}
-	}, [user?.fitnessProfile])
+	// Preferred weight unit for display
+	const weightUnit = user?.preferredWeightUnit ?? 'kg'
 
-	const handleSave = useCallback(async () => {
-		if (!user?.userId) return
+	// --- Auto calculate target date ---
+	const calculatedDate = useMemo(() => {
+		if (!targetValue || !weeklyRate) return null
+
+		const current = targetType === 'weight' ? currentWeight : currentBodyFat
+		// Guard: if current value is unavailable we cannot calculate
+		if (current == null || !Number.isFinite(current)) return null
+
+		const delta = Math.abs(Number(targetValue) - current)
+		const weeks = delta / Number(weeklyRate)
+
+		if (!weeks || !isFinite(weeks)) return null
+
+		const d = new Date()
+		d.setDate(d.getDate() + Math.ceil(weeks * 7))
+		return d
+	}, [targetValue, weeklyRate, targetType, currentWeight, currentBodyFat])
+
+	// --- Reverse calculate weekly rate if date is chosen ---
+	const calculatedRate = useMemo(() => {
+		if (!targetDate || !targetValue) return null
+
+		const current = targetType === 'weight' ? currentWeight : currentBodyFat
+		// Guard: if current value is unavailable we cannot calculate
+		if (current == null || !Number.isFinite(current)) return null
+
+		const delta = Math.abs(Number(targetValue) - current)
+
+		const days = (targetDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+		const weeks = days / 7
+
+		if (weeks <= 0) return null
+
+		return (delta / weeks).toFixed(2)
+	}, [targetDate, targetValue, targetType, currentWeight, currentBodyFat])
+
+	const finalTargetDate = mode === 'rateDriven' ? calculatedDate : targetDate
+	const finalRate = mode === 'dateDriven' && calculatedRate ? calculatedRate : weeklyRate
+
+	const handleSave = () => {
 		Keyboard.dismiss()
 
-		const payload: Record<string, any> = {}
-
-		if (fitnessGoal) payload.fitnessGoal = fitnessGoal
-		if (targetWeight) payload.targetWeight = parseFloat(targetWeight)
-		if (targetDate) payload.targetDate = targetDate.toISOString()
-
-		const res = await updateUserFitnessProfile(user.userId, payload)
-
-		if (res?.success) {
-			Toast.show({ type: 'success', text1: 'Goals updated successfully!' })
-			// @ts-ignore
-			ref?.current?.dismiss()
-		} else {
-			Toast.show({ type: 'error', text1: 'Failed to update goals' })
+		const payload = {
+			goalType,
+			targetType,
+			targetValue: Number(targetValue),
+			weeklyRate: Number(finalRate),
+			targetDate: finalTargetDate,
 		}
-	}, [fitnessGoal, targetWeight, targetDate, user?.userId, updateUserFitnessProfile, ref])
+
+		console.log('TEMP GOAL PAYLOAD:', payload)
+
+		Toast.show({
+			type: 'success',
+			text1: 'Goal configured (temporary)',
+		})
+
+		// @ts-ignore
+		ref?.current?.dismiss()
+	}
 
 	useEffect(() => {
 		const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -71,8 +121,7 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	return (
 		<BottomSheetModal
 			ref={ref}
-			index={0}
-			snapPoints={['80%']}
+			snapPoints={['90%']}
 			enableDynamicSizing={false}
 			backdropComponent={props => (
 				<BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
@@ -80,88 +129,124 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 			backgroundStyle={{
 				backgroundColor: isDarkMode ? '#171717' : 'white',
 			}}
-			handleIndicatorStyle={{
-				backgroundColor: isDarkMode ? '#525252' : '#d1d5db',
-			}}
-			animationConfigs={{
-				duration: 350,
-			}}
 			onChange={index => {
 				setIsOpen(index >= 0)
 			}}
-			keyboardBehavior="interactive"
-			keyboardBlurBehavior="restore"
 		>
 			<BottomSheetScrollView
 				contentContainerStyle={{
-					paddingBottom: insets.bottom + 16,
 					paddingHorizontal: 24,
-					paddingTop: 8,
+					paddingBottom: insets.bottom + 40,
 				}}
 			>
-				<Text className="mb-2 text-center text-xl font-bold text-black dark:text-white">Fitness Goals</Text>
-				<Text className="mb-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
-					Set your target goals to stay motivated.
-				</Text>
+				<Text className="mb-6 text-center text-xl font-bold text-black dark:text-white">Goal Strategy</Text>
 
-				<View className="flex flex-col gap-6">
-					{/* Primary Goal Selection */}
-					<View className="border-b border-neutral-100 pb-4 dark:border-neutral-800">
-						<Text className="mb-3 text-lg font-semibold text-black dark:text-white">Primary Goal</Text>
-						<View className="flex-row flex-wrap gap-2">
-							<GoalCard
-								selected={fitnessGoal === 'loseWeight'}
-								onSelect={() => setFitnessGoal('loseWeight')}
-								title="Lose Weight"
-							/>
-							<GoalCard
-								selected={fitnessGoal === 'gainMuscle'}
-								onSelect={() => setFitnessGoal('gainMuscle')}
-								title="Gain Muscle"
-							/>
-							<GoalCard
-								selected={fitnessGoal === 'improveEndurance'}
-								onSelect={() => setFitnessGoal('improveEndurance')}
-								title="Endurance"
-							/>
-							<GoalCard
-								selected={fitnessGoal === 'improveStrength'}
-								onSelect={() => setFitnessGoal('improveStrength')}
-								title="Reach PR"
-							/>
-						</View>
-					</View>
+				{/* Goal Type */}
+				<Text className="mb-3 text-lg font-semibold text-black dark:text-white">Primary Goal</Text>
 
-					{/* Target Weight */}
-					<View className="flex flex-row items-center justify-between border-b border-neutral-100 dark:border-neutral-800">
-						<Text className="text-lg font-semibold text-black dark:text-white">
-							Target Weight ({user?.preferredWeightUnit || 'kg'})
-						</Text>
-						<TextInput
-							value={targetWeight}
-							placeholder="--"
-							placeholderTextColor={colors.neutral[500]}
-							keyboardType="decimal-pad"
-							onChangeText={setTargetWeight}
-							editable={!isLoading}
-							className="min-w-[60px] text-right text-lg text-primary"
-							style={{ lineHeight }}
-						/>
-					</View>
-
-					<View className="flex-row items-center justify-between border-b border-neutral-100 dark:border-neutral-800">
-						<Text className="text-lg font-semibold text-black dark:text-white">Target Date</Text>
-						<DateTimePicker value={targetDate ?? undefined} dateOnly onUpdate={setTargetDate} />
-					</View>
+				<View className="mb-6 flex-row flex-wrap gap-2">
+					<GoalCard
+						title="Lose Weight"
+						selected={goalType === 'loseWeight'}
+						onSelect={() => setGoalType('loseWeight')}
+					/>
+					<GoalCard
+						title="Gain Muscle"
+						selected={goalType === 'gainMuscle'}
+						onSelect={() => setGoalType('gainMuscle')}
+					/>
+					<GoalCard
+						title="Recomposition"
+						selected={goalType === 'recomp'}
+						onSelect={() => setGoalType('recomp')}
+					/>
 				</View>
 
-				<Button
-					title="Save Goals"
-					variant="primary"
-					loading={isLoading}
-					className="mt-6"
-					onPress={handleSave}
-				/>
+				{/* Target Metric */}
+				<Text className="mb-3 text-lg font-semibold text-black dark:text-white">Target Metric</Text>
+
+				<View className="mb-6 flex-row gap-2">
+					<GoalCard
+						title="Weight"
+						selected={targetType === 'weight'}
+						onSelect={() => setTargetType('weight')}
+					/>
+					<GoalCard
+						title="Body Fat %"
+						selected={targetType === 'bodyFat'}
+						onSelect={() => setTargetType('bodyFat')}
+					/>
+				</View>
+
+				{/* Target Value */}
+				<View className="mb-6">
+					<Text className="text-lg font-semibold text-black dark:text-white">
+						Target {targetType === 'weight' ? 'Weight' : 'Body Fat %'}
+					</Text>
+
+					<TextInput
+						value={targetValue}
+						onChangeText={setTargetValue}
+						keyboardType="decimal-pad"
+						placeholder="Enter target value"
+						className="mt-2 rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-lg dark:border-neutral-800 dark:bg-neutral-900"
+					/>
+				</View>
+
+				{/* Planning Mode */}
+				<Text className="mb-3 text-lg font-semibold text-black dark:text-white">Planning Mode</Text>
+
+				<View className="mb-6 flex-row gap-2">
+					<GoalCard
+						title="Auto Date"
+						selected={mode === 'rateDriven'}
+						onSelect={() => setMode('rateDriven')}
+					/>
+					<GoalCard
+						title="Manual Date"
+						selected={mode === 'dateDriven'}
+						onSelect={() => setMode('dateDriven')}
+					/>
+				</View>
+
+				{/* Weekly Rate */}
+				{mode === 'rateDriven' && (
+					<View className="mb-6">
+						<Text className="text-lg font-semibold text-black dark:text-white">
+							Weekly Change ({targetType === 'weight' ? weightUnit : '%'})
+						</Text>
+
+						<TextInput
+							value={weeklyRate}
+							onChangeText={setWeeklyRate}
+							keyboardType="decimal-pad"
+							className="mt-2 rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-lg dark:border-neutral-800 dark:bg-neutral-900"
+						/>
+
+						{calculatedDate && (
+							<Text className="mt-3 text-sm text-neutral-500 dark:text-neutral-400">
+								Estimated completion: {calculatedDate.toDateString()}
+							</Text>
+						)}
+					</View>
+				)}
+
+				{/* Manual Date */}
+				{mode === 'dateDriven' && (
+					<View className="mb-6">
+						<Text className="text-lg font-semibold text-black dark:text-white">Target Date</Text>
+
+						<DateTimePicker value={targetDate ?? undefined} dateOnly onUpdate={setTargetDate} />
+
+						{calculatedRate && (
+							<Text className="mt-3 text-sm text-neutral-500 dark:text-neutral-400">
+								Required weekly change: {calculatedRate} {targetType === 'weight' ? weightUnit : '%'}
+							</Text>
+						)}
+					</View>
+				)}
+
+				<Button title="Save Goal Plan" variant="primary" onPress={handleSave} />
 			</BottomSheetScrollView>
 		</BottomSheetModal>
 	)
@@ -170,5 +255,7 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 function GoalCard({ selected, onSelect, title }: any) {
 	return <SelectableCard selected={selected} onSelect={onSelect} title={title} className="basis-[48%] px-3 py-3" />
 }
+
+FitnessGoalsSheet.displayName = 'FitnessGoalsSheet'
 
 export default FitnessGoalsSheet
