@@ -216,17 +216,19 @@ export default function Login() {
 
 				const fitnessPayload = {
 					...fp,
-					nutritionPlan: {
-						caloriesTarget: computedTargets.caloriesTarget,
-						proteinTarget: computedTargets.proteinTarget,
-						calculatedTDEE: computedTargets.caloriesTarget - computedTargets.deficitOrSurplus,
-						deficitOrSurplus: computedTargets.deficitOrSurplus,
-						startDate: new Date().toISOString(),
-					},
 				}
 
-				const updateFitnessProfile = useAnalytics.getState().updateFitnessProfile
-				await updateFitnessProfile(fitnessPayload)
+				const nutritionPayload = {
+					caloriesTarget: computedTargets.caloriesTarget,
+					proteinTarget: computedTargets.proteinTarget,
+					calculatedTDEE: computedTargets.caloriesTarget - computedTargets.deficitOrSurplus,
+					deficitOrSurplus: computedTargets.deficitOrSurplus,
+					startDate: new Date().toISOString(),
+				}
+
+				const { updateFitnessProfile, updateNutritionPlan } = useAnalytics.getState()
+
+				await Promise.all([updateFitnessProfile(fitnessPayload), updateNutritionPlan(nutritionPayload)])
 			}
 
 			// Reset onboarding store

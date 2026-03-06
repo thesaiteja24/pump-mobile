@@ -67,6 +67,15 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	const [notes, setNotes] = useState('')
 	const [progressPics, setProgressPics] = useState<{ uri: string; name: string; type: string }[]>([])
 
+	const debouncedCalc = React.useMemo(() => {
+		return {
+			weight,
+			neck,
+			waist,
+			hips,
+		}
+	}, [weight, neck, waist, hips])
+
 	// Height is always from store in cm, no conversion needed for the body-fat formula (which requires cm)
 	const parsedHeightCm = Number(heightCm)
 
@@ -74,9 +83,18 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	const missingCoreProfile = !gender || !Number.isFinite(parsedHeightCm) || parsedHeightCm <= 0
 
 	// Convert user's input values to cm for the body-fat formula (USN formula requires cm)
-	const neckCm = lengthUnit === 'inches' ? convertLength(Number(neck), { from: 'inches', to: 'cm' }) : Number(neck)
-	const waistCm = lengthUnit === 'inches' ? convertLength(Number(waist), { from: 'inches', to: 'cm' }) : Number(waist)
-	const hipsCm = lengthUnit === 'inches' ? convertLength(Number(hips), { from: 'inches', to: 'cm' }) : Number(hips)
+	const neckCm =
+		lengthUnit === 'inches'
+			? convertLength(Number(debouncedCalc.neck), { from: 'inches', to: 'cm' })
+			: Number(debouncedCalc.neck)
+	const waistCm =
+		lengthUnit === 'inches'
+			? convertLength(Number(debouncedCalc.waist), { from: 'inches', to: 'cm' })
+			: Number(debouncedCalc.waist)
+	const hipsCm =
+		lengthUnit === 'inches'
+			? convertLength(Number(debouncedCalc.hips), { from: 'inches', to: 'cm' })
+			: Number(debouncedCalc.hips)
 
 	const missingMeasurements =
 		!Number.isFinite(neckCm) ||
@@ -99,7 +117,10 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 		: null
 
 	// Weight in kg for composition (convert from user unit if needed)
-	const weightKg = weightUnit === 'lbs' ? convertWeight(Number(weight), { from: 'lbs', to: 'kg' }) : Number(weight)
+	const weightKg =
+		weightUnit === 'lbs'
+			? convertWeight(Number(debouncedCalc.weight), { from: 'lbs', to: 'kg' })
+			: Number(debouncedCalc.weight)
 
 	const composition = bodyFat != null && weightKg > 0 ? calculateComposition({ weight: weightKg, bodyFat }) : null
 
@@ -295,12 +316,6 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 		weightUnit,
 		lengthUnit,
 	])
-
-	const SectionHeader = ({ title }: { title: string }) => (
-		<Text className="mb-2 mt-4 text-sm font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-			{title}
-		</Text>
-	)
 
 	return (
 		<BottomSheetModal
@@ -581,30 +596,58 @@ interface MeasurementInputProps {
 	lineHeight: number
 }
 
-function MeasurementInput({ label, badge, value, onChangeText, editable, colors, lineHeight }: MeasurementInputProps) {
-	return (
-		<View className="flex flex-row items-center justify-between border-b border-neutral-100 py-3 dark:border-neutral-800">
-			<View className="flex flex-row items-center gap-2">
-				<Text className="text-base font-medium text-black dark:text-white">{label}</Text>
-				{badge && (
-					<View className="flex-row items-center gap-2 rounded-full border border-blue-500 bg-blue-500/15 px-2 py-1">
-						<Text className="text-xs text-blue-600">{badge}</Text>
-					</View>
-				)}
+const MeasurementInput = React.memo(
+	function MeasurementInput({
+		label,
+		badge,
+		value,
+		onChangeText,
+		editable,
+		colors,
+		lineHeight,
+	}: MeasurementInputProps) {
+		return (
+			<View className="flex flex-row items-center justify-between border-b border-neutral-100 py-3 dark:border-neutral-800">
+				<View className="flex flex-row items-center gap-2">
+					<Text className="text-base font-medium text-black dark:text-white">{label}</Text>
+					{badge && (
+						<View className="flex-row items-center gap-2 rounded-full border border-blue-500 bg-blue-500/15 px-2 py-1">
+							<Text className="text-xs text-blue-600">{badge}</Text>
+						</View>
+					)}
+				</View>
+				<BottomSheetTextInput
+					value={value}
+					placeholder="--"
+					placeholderTextColor={colors.neutral[500]}
+					keyboardType="decimal-pad"
+					onChangeText={onChangeText}
+					editable={editable}
+					className="min-w-[60px] text-right text-lg text-primary"
+					style={{ color: colors.primary, lineHeight }}
+				/>
 			</View>
-			<BottomSheetTextInput
-				value={value}
-				placeholder="--"
-				placeholderTextColor={colors.neutral[500]}
-				keyboardType="decimal-pad"
-				onChangeText={onChangeText}
-				editable={editable}
-				className="min-w-[60px] text-right text-lg text-primary"
-				style={{ color: colors.primary, lineHeight }}
-			/>
-		</View>
-	)
-}
+		)
+	},
+	(prevProps, nextProps) => {
+		return (
+			prevProps.value === nextProps.value &&
+			prevProps.editable === nextProps.editable &&
+			prevProps.label === nextProps.label &&
+			prevProps.badge === nextProps.badge &&
+			prevProps.colors === nextProps.colors &&
+			prevProps.lineHeight === nextProps.lineHeight
+		)
+	}
+)
+
+const SectionHeader = React.memo(({ title }: { title: string }) => (
+	<Text className="mb-2 mt-4 text-sm font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+		{title}
+	</Text>
+))
+
+SectionHeader.displayName = 'SectionHeader'
 
 MeasurementsSheet.displayName = 'MeasurementsSheet'
 

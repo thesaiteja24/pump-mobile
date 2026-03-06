@@ -40,11 +40,17 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	})
 
 	const [goalType, setGoalType] = useState<FitnessGoal | null>(currentGoalType)
-	const [targetType, setTargetType] = useState<TargetType>('weight')
-	const [targetValue, setTargetValue] = useState('')
-	const [weeklyRate, setWeeklyRate] = useState('0.5') // kg or %
-	const [targetDate, setTargetDate] = useState<Date | null>(null)
-	const [mode, setMode] = useState<PlanningMode>('rateDriven')
+	const [targetType, setTargetType] = useState<TargetType>((fitnessProfile?.targetType as TargetType) || 'weight')
+	const [targetValue, setTargetValue] = useState(
+		fitnessProfile?.targetType === 'bodyFat'
+			? fitnessProfile?.targetBodyFat?.toString() || ''
+			: fitnessProfile?.targetWeight?.toString() || ''
+	)
+	const [weeklyRate, setWeeklyRate] = useState(fitnessProfile?.weeklyWeightChange?.toString() || '0.5') // kg or %
+	const [targetDate, setTargetDate] = useState<Date | null>(
+		fitnessProfile?.targetDate ? new Date(fitnessProfile.targetDate) : null
+	)
+	const [mode, setMode] = useState<PlanningMode>(fitnessProfile?.targetDate ? 'dateDriven' : 'rateDriven')
 	const [isLoading, setIsLoading] = useState(false)
 
 	const currentActivityLevel = fitnessProfile?.activityLevel || 'sedentary'
@@ -110,8 +116,6 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 		})
 	}, [currentWeight, height, gender, user?.dateOfBirth, goalType, finalRate, activityLevel])
 
-	const updateFitnessProfile = useAnalytics(s => s.updateFitnessProfile)
-
 	const handleSave = async () => {
 		Keyboard.dismiss()
 
@@ -126,20 +130,27 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 			weeklyWeightChange: Number(finalRate),
 			targetDate: finalTargetDate ? finalTargetDate.toISOString() : undefined,
 			activityLevel,
-			...(computedTargets && {
-				nutritionPlan: {
-					caloriesTarget: computedTargets.caloriesTarget,
-					proteinTarget: computedTargets.proteinTarget,
-					calculatedTDEE: computedTargets.caloriesTarget - computedTargets.deficitOrSurplus,
-					deficitOrSurplus: computedTargets.deficitOrSurplus,
-					startDate: new Date().toISOString(),
-				},
-			}),
 		}
 
 		console.log('SAVING GOAL PAYLOAD:', payload)
 
-		const res = await updateFitnessProfile(payload)
+		const { updateFitnessProfile, updateNutritionPlan } = useAnalytics.getState()
+
+		const promises = [updateFitnessProfile(payload)]
+
+		if (computedTargets) {
+			const nutritionPayload = {
+				caloriesTarget: computedTargets.caloriesTarget,
+				proteinTarget: computedTargets.proteinTarget,
+				calculatedTDEE: computedTargets.caloriesTarget - computedTargets.deficitOrSurplus,
+				deficitOrSurplus: computedTargets.deficitOrSurplus,
+				startDate: new Date().toISOString(),
+			}
+			promises.push(updateNutritionPlan(nutritionPayload))
+		}
+
+		const results = await Promise.all(promises)
+		const res = results[0] // Check fitness profile success
 
 		setIsLoading(false)
 

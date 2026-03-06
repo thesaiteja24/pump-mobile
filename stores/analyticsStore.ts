@@ -48,6 +48,8 @@ interface AnalyticsState {
 
 	// Action methods to integrate with offline sync queue
 	getMeasurements: () => Promise<any>
+	getFitnessProfile: () => Promise<any>
+	getNutritionPlan: () => Promise<any>
 	reconcileMeasurement: (queuePayloadDate: string, realBackendMeasurement: MeasurementType) => void
 	updateFitnessProfile: (data: Partial<AnalyticsPayload>) => Promise<any>
 	addMeasurement: (data: MeasurementType) => Promise<any>
@@ -97,6 +99,64 @@ export const useAnalytics = create<AnalyticsState>()(
 						measurements: res.data?.history ?? [],
 						latestMeasurements: res.data?.latestValues ?? {},
 						dailyWeightChange: res.data?.dailyWeightChange ?? null,
+						isLoading: false,
+					})
+					return { success: true }
+				} catch (err) {
+					set({ error: 'Unexpected error occurred', isLoading: false })
+					return { success: false, error: err }
+				}
+			},
+
+			getFitnessProfile: async () => {
+				set({ isLoading: true, error: null })
+				try {
+					const currentUser = useAuth.getState().user
+					const userId = currentUser?.userId
+					if (!userId) {
+						set({ error: 'User not logged in', isLoading: false })
+						return { success: false, error: 'User not logged in' }
+					}
+
+					const { getFitnessProfileService } = require('@/services/analyticsService')
+					const res = await getFitnessProfileService(userId)
+
+					if (!res.success) {
+						set({ error: res.message || 'Failed to fetch fitness profile', isLoading: false })
+						return { success: false, error: res.message }
+					}
+
+					set({
+						fitnessProfile: res.data ?? null,
+						isLoading: false,
+					})
+					return { success: true }
+				} catch (err) {
+					set({ error: 'Unexpected error occurred', isLoading: false })
+					return { success: false, error: err }
+				}
+			},
+
+			getNutritionPlan: async () => {
+				set({ isLoading: true, error: null })
+				try {
+					const currentUser = useAuth.getState().user
+					const userId = currentUser?.userId
+					if (!userId) {
+						set({ error: 'User not logged in', isLoading: false })
+						return { success: false, error: 'User not logged in' }
+					}
+
+					const { getNutritionPlanService } = require('@/services/analyticsService')
+					const res = await getNutritionPlanService(userId)
+
+					if (!res.success) {
+						set({ error: res.message || 'Failed to fetch nutrition plan', isLoading: false })
+						return { success: false, error: res.message }
+					}
+
+					set({
+						nutritionPlan: res.data ?? null,
 						isLoading: false,
 					})
 					return { success: true }

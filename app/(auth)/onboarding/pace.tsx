@@ -12,18 +12,7 @@ import Toast from 'react-native-toast-message'
 
 export default function OnboardingPace() {
 	const colors = useThemeColor()
-	const {
-		gender,
-		height,
-		weight,
-		fitnessGoal,
-		targetType,
-		targetWeight,
-		targetBodyFat,
-		weightUnit,
-		setWeeklyRate,
-		setTargetDate,
-	} = useOnboarding()
+	const { fitnessGoal, weightUnit, setWeeklyRate, setTargetDate } = useOnboarding()
 
 	const [mode, setMode] = useState<'auto' | 'manual'>('auto')
 	const [manualDate, setManualDate] = useState<Date | null>(null)

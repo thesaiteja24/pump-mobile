@@ -31,7 +31,9 @@ export default function OnboardingGoal() {
 	return (
 		<SafeAreaView className="flex-1 bg-white dark:bg-black">
 			<ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 100 }}>
-				<Text className="mb-2 text-3xl font-bold text-black dark:text-white">What's your primary goal?</Text>
+				<Text className="mb-2 text-3xl font-bold text-black dark:text-white">
+					What&apos;s your primary goal?
+				</Text>
 				<Text className="mb-8 text-neutral-500 dark:text-neutral-400">
 					This helps us calibrate your daily energy requirements.
 				</Text>

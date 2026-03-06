@@ -35,8 +35,8 @@ export default function OnboardingMetrics() {
 		setWeight(w, weightUnit)
 		setHeight(h, heightUnit)
 
-		// Proceed to login
-		router.push('/(auth)/login')
+		// Proceed to goal selection
+		router.push('/(auth)/onboarding/goal')
 	}
 
 	const handleBack = () => {
@@ -124,11 +124,11 @@ export default function OnboardingMetrics() {
 						leftIcon={<MaterialCommunityIcons name="chevron-left" size={24} color={colors.icon} />}
 					/>
 					<Button
-						title="Complete Setup"
+						title="Next Step"
 						variant="primary"
 						onPress={handleFinish}
 						fullWidth
-						rightIcon={<Text className="text-white">✓</Text>}
+						rightIcon={<MaterialCommunityIcons name="chevron-right" size={24} color={colors.icon} />}
 					/>
 				</View>
 			</View>

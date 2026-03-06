@@ -31,6 +31,7 @@ const AnalyticsScreen = () => {
 	const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
 	// Goal extracted at top level to satisfy Rules of Hooks
 	const fitnessGoal = fitnessProfile?.fitnessGoal
+	console.log('fitnessProfile', fitnessProfile)
 
 	const weightDiffKg = dailyWeightChange?.diff
 
@@ -164,6 +165,9 @@ const AnalyticsScreen = () => {
 						{/* Best Workout */}
 						<View className="h-full w-full flex-1 items-center gap-2 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
 							<Text className="font-base text-xl text-black dark:text-white">Best Workout</Text>
+							<Text className="font-base text-center text-sm text-black dark:text-white">
+								Your best workouts will be displayed here...
+							</Text>
 						</View>
 						{/* Weight Card */}
 						<View className="h-full w-full flex-1 items-center gap-2 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
@@ -177,7 +181,7 @@ const AnalyticsScreen = () => {
 
 							<View
 								className={`flex-row items-center gap-2 rounded-full border px-2 py-1 ${
-									isLoss === null
+									isLoss === null || weightDiffDisplay === null
 										? 'border-neutral-300 bg-neutral-200/40'
 										: showPositive
 											? 'border-green-500 bg-green-500/15'
@@ -186,7 +190,7 @@ const AnalyticsScreen = () => {
 							>
 								<Ionicons
 									name={
-										isLoss === null
+										isLoss === null || weightDiffDisplay === null
 											? 'remove-outline'
 											: isLoss
 												? 'trending-down-sharp'
@@ -194,13 +198,17 @@ const AnalyticsScreen = () => {
 									}
 									size={12}
 									color={
-										isLoss === null ? colors.text : showPositive ? colors.success : colors.danger
+										isLoss === null || weightDiffDisplay === null
+											? colors.text
+											: showPositive
+												? colors.success
+												: colors.danger
 									}
 								/>
 
 								<Text
 									className={`font-base text-xs ${
-										isLoss === null
+										isLoss === null || weightDiffDisplay === null
 											? 'text-neutral-600 dark:text-neutral-300'
 											: showPositive
 												? 'text-green-600'
@@ -227,23 +235,23 @@ const AnalyticsScreen = () => {
 						preferredWeightUnit={preferredWeightUnit}
 					/>
 
-					<Animated.View
+					{/* <Animated.View
 						entering={FadeInDown.delay(240).duration(500)}
 						className="flex-row items-center justify-between gap-4 p-4"
 					>
 						<View className="h-full w-full flex-1 items-center gap-2 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
 							<Text className="font-base text-xl text-black dark:text-white">Habit Progress</Text>
 						</View>
-					</Animated.View>
+					</Animated.View> */}
 
-					<Animated.View
+					{/* <Animated.View
 						entering={FadeInDown.delay(360).duration(500)}
 						className="flex-row items-center justify-between gap-4 p-4"
 					>
 						<View className="h-full w-full flex-1 items-center gap-2 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
 							<Text className="font-base text-xl text-black dark:text-white">Muscle Heatmap</Text>
 						</View>
-					</Animated.View>
+					</Animated.View> */}
 				</>
 			)}
 		</ScrollView>

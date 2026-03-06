@@ -141,7 +141,7 @@ export default function DateTimePicker(props: DateTimePickerProps) {
 			minute: '2-digit',
 			hour12: is24Hour !== undefined ? !is24Hour : undefined,
 		})
-	}, [value, dateOnly, is24Hour, initialDate])
+	}, [value, dateOnly, is24Hour, initialDate, props.returnUndefined])
 
 	/* ---------------------------------------------
      Inline mode

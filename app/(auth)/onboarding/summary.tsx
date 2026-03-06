@@ -84,7 +84,8 @@ export default function OnboardingSummary() {
 			<ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 100 }}>
 				<Text className="mb-2 text-3xl font-bold text-black dark:text-white">Your Plan</Text>
 				<Text className="mb-8 text-neutral-500 dark:text-neutral-400">
-					Based on your biology and ambition, here's the science-backed strategy we've built for you.
+					Based on your biology and ambition, here&apos;s the science-backed strategy we&apos;ve built for
+					you.
 				</Text>
 
 				{stats ? (
@@ -96,7 +97,9 @@ export default function OnboardingSummary() {
 									{fitnessGoal === 'loseWeight' ? 'Fat Loss Phase' : 'Muscle Gain Phase'}
 								</Text>
 								<View className={`rounded-full border px-3 py-1 ${stats.riskColor}`}>
-									<Text className="text-xs font-semibold">{stats.riskBadge}</Text>
+									<Text className="text-xs font-semibold text-black dark:text-white">
+										{stats.riskBadge}
+									</Text>
 								</View>
 							</View>
 
@@ -158,8 +161,8 @@ export default function OnboardingSummary() {
 					<View className="rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-900/20">
 						<Text className="text-sm font-semibold text-red-800 dark:text-red-200">Error</Text>
 						<Text className="text-xs text-red-600 dark:text-red-300">
-							Missing configuration data. Please go back and ensure you've filled out your age, height,
-							and gender.
+							Missing configuration data. Please go back and ensure you&apos;ve filled out your age,
+							height, and gender.
 						</Text>
 					</View>
 				)}
