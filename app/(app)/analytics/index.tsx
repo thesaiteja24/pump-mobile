@@ -1,5 +1,6 @@
 import { MuscleCompositionCard } from '@/components/analytics/MuscleCompositionCard'
 import { NutritionTargetsCard } from '@/components/analytics/NutritionTargetsCard'
+import ShimmerAnalyticsScreen from '@/components/analytics/ShimmerAnalyticsScreen'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAnalytics } from '@/stores/analyticsStore'
 import { useAuth } from '@/stores/authStore'
@@ -7,7 +8,7 @@ import { calculateBMI, calculateBMR, calculateBodyFat, calculateComposition } fr
 import { convertWeight, displayWeight } from '@/utils/converter'
 import { Ionicons } from '@expo/vector-icons'
 import React, { useEffect, useMemo } from 'react'
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
+import { ScrollView, Text, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 
 const AnalyticsScreen = () => {
@@ -138,9 +139,7 @@ const AnalyticsScreen = () => {
 	return (
 		<ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
 			{isLoading ? (
-				<View className="flex-1 items-center justify-center">
-					<ActivityIndicator size="large" color={colors.primary} />
-				</View>
+				<ShimmerAnalyticsScreen />
 			) : (
 				<>
 					<Animated.View

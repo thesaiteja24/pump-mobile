@@ -289,7 +289,7 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 						onChangeText={setTargetValue}
 						keyboardType="decimal-pad"
 						placeholder="Enter target value"
-						className="mt-2 rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-lg dark:border-neutral-800 dark:bg-neutral-900"
+						className="mt-2 rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-lg text-black dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
 					/>
 				</View>
 
@@ -320,7 +320,7 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 							value={weeklyRate}
 							onChangeText={setWeeklyRate}
 							keyboardType="decimal-pad"
-							className="mt-2 rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-lg dark:border-neutral-800 dark:bg-neutral-900"
+							className="mt-2 rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-lg text-black dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
 						/>
 
 						{calculatedDate && (
