@@ -9,6 +9,8 @@ export interface HeatMapEntry {
 	date: string
 	/** 1 = done, 0 = missed */
 	count: number
+	/** 0 to 1, used for color intensity (quantity habits) */
+	intensity?: number
 }
 
 /**
@@ -60,18 +62,19 @@ function toKey(d: Date): string {
 	return `${y}-${m}-${day}`
 }
 
-/** Render a single square */
 function Square({
 	active,
 	squareSize,
 	activeColor,
 	inactiveBg,
+	intensity = 1,
 	id,
 }: {
 	active: boolean
 	squareSize: number
 	activeColor: string
 	inactiveBg: string
+	intensity?: number
 	id: string
 }) {
 	return (
@@ -82,6 +85,7 @@ function Square({
 				height: squareSize,
 				borderRadius: squareSize * 0.25,
 				backgroundColor: active ? activeColor : inactiveBg,
+				opacity: active ? Math.min(1, Math.max(0.2, intensity)) : 1,
 			}}
 		/>
 	)
@@ -104,11 +108,14 @@ export default function HeatMap({
 
 	// Build active-date set (normalise ISO strings)
 	const activeDates = useMemo(() => {
-		const set = new Set<string>()
+		const map = new Map<string, number>()
 		for (const v of values) {
-			if (v.count > 0) set.add(v.date.split('T')[0])
+			if (v.count > 0) {
+				const id = v.date.split('T')[0]
+				map.set(id, v.intensity ?? 1)
+			}
 		}
-		return set
+		return map
 	}, [values])
 
 	// Build ordered list of days (oldest → newest)
@@ -203,6 +210,7 @@ export default function HeatMap({
 									key={key}
 									id={key}
 									active={activeDates.has(key)}
+									intensity={activeDates.get(key)}
 									squareSize={squareSize}
 									activeColor={activeColor}
 									inactiveBg={inactiveBg}

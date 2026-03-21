@@ -5,6 +5,7 @@ import { convertWeight } from '@/utils/converter'
 import React, { useMemo } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { LineChart } from 'react-native-chart-kit'
+import Animated, { FadeInDown } from 'react-native-reanimated'
 
 interface WeightMetricCardProps {
 	width: number
@@ -89,75 +90,77 @@ export function WeightMetricCard({ width }: WeightMetricCardProps) {
 	}
 
 	return (
-		<Pressable
-			onPress={() => {}}
-			style={[
-				styles.card,
-				{
-					width,
-					height: cardHeight,
-					backgroundColor: bgColor,
-					borderColor: colors.isDark ? '#262626' : '#e5e5e5',
-				},
-			]}
-		>
-			{/* Header (fixed) */}
-			<View style={styles.header}>
-				<View>
-					<Text className="text-base font-medium text-neutral-600 dark:text-neutral-400">Scale Weight</Text>
-					<Text className="text-sm text-neutral-500 dark:text-neutral-400">Last {last7.length} Entries</Text>
+		<Animated.View entering={FadeInDown.duration(500)}>
+			<Pressable
+				onPress={() => {}}
+				style={[
+					styles.card,
+					{
+						width,
+						height: cardHeight,
+						backgroundColor: bgColor,
+						borderColor: colors.isDark ? '#262626' : '#e5e5e5',
+					},
+				]}
+			>
+				{/* Header (fixed) */}
+				<View style={styles.header}>
+					<View>
+						<Text className="text-base font-medium text-neutral-600 dark:text-neutral-400">Scale Weight</Text>
+						<Text className="text-sm text-neutral-500 dark:text-neutral-400">Last {last7.length} Entries</Text>
+					</View>
 				</View>
-			</View>
 
-			{/* Chart (flexible center) */}
-			<View style={styles.chartContainer}>
-				<View style={{ overflow: 'hidden' }}>
-					<LineChart
-						data={{
-							labels: [],
-							datasets: [
-								{
-									data: chartData,
-									color: () => lineColor,
-									strokeWidth: 2,
+				{/* Chart (flexible center) */}
+				<View style={styles.chartContainer}>
+					<View style={{ overflow: 'hidden' }}>
+						<LineChart
+							data={{
+								labels: [],
+								datasets: [
+									{
+										data: chartData,
+										color: () => lineColor,
+										strokeWidth: 2,
+									},
+								],
+							}}
+							width={width - 32}
+							height={chartHeight}
+							withDots
+							withInnerLines={false}
+							withOuterLines={false}
+							withHorizontalLabels={false}
+							withVerticalLabels={false}
+							withShadow={false}
+							chartConfig={{
+								backgroundGradientFrom: bgColor,
+								backgroundGradientTo: bgColor,
+								backgroundGradientFromOpacity: 0,
+								backgroundGradientToOpacity: 0,
+								color: () => lineColor,
+								strokeWidth: 2,
+								propsForDots: {
+									r: '3',
+									strokeWidth: '1.5',
+									stroke: lineColor,
+									fill: bgColor,
 								},
-							],
-						}}
-						width={width - 32}
-						height={chartHeight}
-						withDots
-						withInnerLines={false}
-						withOuterLines={false}
-						withHorizontalLabels={false}
-						withVerticalLabels={false}
-						withShadow={false}
-						chartConfig={{
-							backgroundGradientFrom: bgColor,
-							backgroundGradientTo: bgColor,
-							backgroundGradientFromOpacity: 0,
-							backgroundGradientToOpacity: 0,
-							color: () => lineColor,
-							strokeWidth: 2,
-							propsForDots: {
-								r: '3',
-								strokeWidth: '1.5',
-								stroke: lineColor,
-								fill: bgColor,
-							},
-						}}
-						bezier
-						style={{ marginLeft: -16, marginRight: -16, paddingBottom: 4 }}
-					/>
+							}}
+							bezier
+							style={{ marginLeft: -16, marginRight: -16, paddingBottom: 4 }}
+						/>
+					</View>
 				</View>
-			</View>
 
-			{/* Footer (fixed) */}
-			<View className="mt-4 flex flex-row items-center justify-between">
-				<Text className="text-base font-semibold text-black dark:text-white">{latestDisplay}</Text>
+				{/* Footer (fixed) */}
+				<View className="mt-4 flex flex-row items-center justify-between">
+					<Text className="text-base font-semibold text-black dark:text-white">{latestDisplay}</Text>
 
-				{/* <MaterialCommunityIcons name="chevron-right" size={24} color={colors.text} /> */}
-			</View>
-		</Pressable>
+					{/* <MaterialCommunityIcons name="chevron-right" size={24} color={colors.text} /> */}
+				</View>
+			</Pressable>
+		</Animated.View>
 	)
 }
 

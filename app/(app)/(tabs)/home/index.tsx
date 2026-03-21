@@ -1,14 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Pressable, RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native'
+import { RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native'
 import Animated, { Easing, FadeInDown, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import HeatMap from '@/components/HeatMap'
 import ShimmerHomeScreen from '@/components/home/ShimmerHomeScreen'
 import StreakCard, { StreakDay } from '@/components/home/StreakCard'
 
+import { HabitCard } from '@/components/home/HabitCard'
 import { useAuth } from '@/stores/authStore'
+import { useHabitStore } from '@/stores/habitStore'
 import { useUser } from '@/stores/userStore'
+import { router } from 'expo-router'
 
 import { WeightMetricCard } from '@/components/home/WeightMetricCard'
 import { Button } from '@/components/ui/Button'
@@ -29,6 +31,9 @@ export default function HomeScreen() {
 	const userAnalytics = useAnalytics(s => s.userAnalytics)
 	const measurements = useAnalytics(s => s.measurements)
 	const latestMeasurements = useAnalytics(state => state.latestMeasurements)
+
+	const { habits, getHabits, getHabitLogs, preSeedDefaultHabits } = useHabitStore()
+
 	const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
 	const age = useMemo(() => {
 		if (!user?.dateOfBirth) return 25 // fallback
@@ -203,11 +208,17 @@ export default function HomeScreen() {
 	const onRefresh = useCallback(async () => {
 		try {
 			setRefreshing(true)
-			await Promise.all([getUserData(user?.userId ?? ''), getMeasurements(), getUserAnalytics()])
+			await Promise.all([
+				getUserData(user?.userId ?? ''),
+				getMeasurements(),
+				getUserAnalytics(),
+				getHabits(),
+				getHabitLogs(),
+			])
 		} finally {
 			setRefreshing(false)
 		}
-	}, [getUserData, getMeasurements, getUserAnalytics, user?.userId])
+	}, [getUserData, getMeasurements, getUserAnalytics, getHabits, getHabitLogs, user?.userId])
 
 	// ───────────────── Header animation ─────────────────
 	const headerOpacity = useSharedValue(0)
@@ -228,8 +239,18 @@ export default function HomeScreen() {
 
 	// ───────────────── Initial Fetch ─────────────────
 	useEffect(() => {
-		Promise.all([getUserData(user?.userId ?? ''), getMeasurements(), getUserAnalytics()])
-	}, [getUserData, getMeasurements, getUserAnalytics, user?.userId])
+		Promise.all([
+			getUserData(user?.userId ?? ''),
+			getMeasurements(),
+			getUserAnalytics(),
+			getHabits().then(res => {
+				if (res.success && (!res.data || res.data.length === 0)) {
+					preSeedDefaultHabits()
+				}
+			}),
+			getHabitLogs(),
+		])
+	}, [getUserData, getMeasurements, getUserAnalytics, getHabits, getHabitLogs, preSeedDefaultHabits, user?.userId])
 
 	// ───────────────── Render ─────────────────
 	return (
@@ -255,53 +276,33 @@ export default function HomeScreen() {
 				>
 					<StreakCard {...streakData} />
 
-					<Animated.View entering={FadeInDown.delay(600).duration(500)}>
-						<Text className="mb-4 text-xl font-semibold text-black dark:text-white">Habits</Text>
+					<Animated.View
+						entering={FadeInDown.delay(600).duration(500)}
+						className="mb-4 flex-row items-center justify-between"
+					>
+						<View>
+							<Text className="text-xl font-bold text-black dark:text-white">Habits</Text>
+						</View>
 					</Animated.View>
 
 					<Animated.View entering={FadeInDown.delay(700).duration(500)}>
 						<ScrollView
 							horizontal
 							showsHorizontalScrollIndicator={false}
-							contentContainerStyle={{ gap: 10 }}
+							contentContainerStyle={{ gap: 10, paddingRight: 20 }}
 						>
-							<View
-								style={{ width: width * 0.5, height: width * 0.4 }}
-								className="flex flex-col justify-between rounded-2xl border border-neutral-200 bg-white p-2 px-4 dark:border-neutral-800 dark:bg-neutral-900"
-							>
-								<Text className="text-base font-medium text-neutral-600 dark:text-neutral-400">
-									Weigh-In
-								</Text>
-								<Text className="text-sm font-normal text-neutral-400 dark:text-neutral-500">
-									Last 30 Days
-								</Text>
-								<HeatMap
-									values={weighIn}
-									numDays={30}
-									squareSize={10}
-									gutter={5}
-									layout="fill"
-									numRows={3}
-								/>
-								<Pressable className="mt-2 flex flex-row items-center justify-between">
-									<Text className="text-base font-semibold text-black dark:text-white">
-										{weighInThisWeek}/7 {' this week'}
-									</Text>
-									{/* <MaterialCommunityIcons name="chevron-right" size={24} color={colors.text} /> */}
-								</Pressable>
-							</View>
+							{habits.map(habit => (
+								<HabitCard key={habit.id} habit={habit} />
+							))}
 
 							<View
-								style={{ width: width * 0.5 }}
+								style={{ width: width * 0.5, height: width * 0.4 }}
 								className="flex items-center justify-center rounded-2xl border border-dashed border-neutral-300 bg-transparent px-4 py-4 dark:border-neutral-700"
 							>
 								<Button
 									title="Track New Habit"
 									onPress={() => {
-										Toast.show({
-											type: 'info',
-											text1: 'Coming Soon',
-										})
+										router.push('/habit')
 									}}
 									variant="outline"
 									textClassName="text-sm"

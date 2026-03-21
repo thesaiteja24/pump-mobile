@@ -5,6 +5,7 @@
  * These types are used across the sync infrastructure.
  */
 
+import { HabitFooterType, HabitSourceType, HabitTrackingType } from '@/stores/habitStore'
 import { LengthUnits, WeightUnits } from '@/stores/userStore'
 
 export type { MeasurementType } from '@/stores/analyticsStore'
@@ -250,6 +251,45 @@ export interface UserMutation {
 	queueId: string
 	type: UserMutationType
 	payload: UserPayload
+	userId: string
+	createdAt: number
+	retryCount: number
+}
+
+/* ───────────────── Habit Types ───────────────── */
+
+/**
+ * Mutation types for the habit domain
+ */
+export type HabitMutationType = 'CREATE_HABIT' | 'UPDATE_HABIT' | 'DELETE_HABIT' | 'LOG_HABIT'
+
+/**
+ * Serialized habit payload for API/queue
+ */
+export interface HabitPayload {
+	userId: string
+	id?: string // Habit ID for update/delete/log
+	title?: string
+	colorScheme?: string
+	trackingType?: HabitTrackingType
+	targetValue?: number | null
+	unit?: string | null
+	footerType?: HabitFooterType
+	source?: HabitSourceType
+	internalMetricId?: string | null
+
+	// For LOG_HABIT
+	date?: string
+	value?: number
+}
+
+/**
+ * Habit mutation stored in the queue
+ */
+export interface HabitMutation {
+	queueId: string
+	type: HabitMutationType
+	payload: HabitPayload
 	userId: string
 	createdAt: number
 	retryCount: number

@@ -18,10 +18,20 @@ import {
 	moveAnalyticsToFailedQueue,
 	moveTemplateToFailedQueue,
 	moveWorkoutToFailedQueue,
+	AnalyticsMutation,
+	HabitMutation,
 	TemplateMutation,
 	UserMutation,
 	WorkoutMutation,
 } from '@/lib/sync/queue'
+import {
+	dequeueHabit,
+	getHabitFailedQueue,
+	getHabitQueue,
+	getHabitQueueForUser,
+	incrementHabitRetry,
+	moveHabitToFailedQueue,
+} from '@/lib/sync/queue/habitQueue'
 import { queueEvents } from '@/lib/sync/queueEvents'
 import {
 	markTemplateFailed,
@@ -33,12 +43,23 @@ import {
 	reconcileTemplateId,
 	reconcileWorkout,
 	reconcileWorkoutId,
+	reconcileHabitId,
+	markHabitSynced,
+	markHabitFailed,
+	markHabitLogSynced,
 } from '@/lib/sync/reconciler'
+import {
+	createHabitService,
+	deleteHabitService,
+	logHabitService,
+	updateHabitService,
+} from '@/services/habitService'
 import { createTemplateService, deleteTemplateService, updateTemplateService } from '@/services/templateService'
 import { updateUserDataService } from '@/services/userService'
 import { createWorkoutService, deleteWorkoutService, updateWorkoutService } from '@/services/workoutServices'
 import { useAnalytics } from '@/stores/analyticsStore'
 import { useAuth } from '@/stores/authStore'
+import { useHabitStore } from '@/stores/habitStore'
 import { useSyncStore } from '@/stores/syncStore'
 import { useCallback, useEffect, useRef } from 'react'
 import { useNetworkStatus } from './useNetworkStatus'
@@ -53,9 +74,9 @@ const RETRY_DELAY_MS = 2000
    Dev-only logger
 ───────────────────────────────────────────── */
 const log = {
-	info: (...a: any[]) => __DEV__ && console.log(...a),
-	warn: (...a: any[]) => __DEV__ && console.warn(...a),
-	error: (...a: any[]) => __DEV__ && console.error(...a),
+	info: (...a: any[]) => (process.env.NODE_ENV === 'development') && console.log(...a),
+	warn: (...a: any[]) => (process.env.NODE_ENV === 'development') && console.warn(...a),
+	error: (...a: any[]) => (process.env.NODE_ENV === 'development') && console.error(...a),
 }
 
 /* ─────────────────────────────────────────────
@@ -84,19 +105,25 @@ export function useSyncQueue() {
 
 		const workoutCounts = getWorkoutQueueCounts(user.userId)
 		const templateCounts = getTemplateQueueCounts(user.userId)
+		const habitCounts = {
+			pending: getHabitQueue().filter(m => m.userId === user.userId).length,
+			failed: getHabitFailedQueue().filter(m => m.userId === user.userId).length,
+		}
 		const analyticsCounts = {
-			pending: getAnalyticsQueue ? getAnalyticsQueue().filter(m => m.userId === user.userId).length : 0,
-			failed: getAnalyticsFailedQueue
-				? getAnalyticsFailedQueue().filter(m => m.userId === user.userId).length
-				: 0,
+			pending: getAnalyticsQueue().filter(m => m.userId === user.userId).length,
+			failed: getAnalyticsFailedQueue().filter(m => m.userId === user.userId).length,
 		}
 		const userQueue = getUserQueue()
 
 		useSyncStore
 			.getState()
 			.setQueueCounts(
-				workoutCounts.pending + templateCounts.pending + analyticsCounts.pending + userQueue.length,
-				workoutCounts.failed + templateCounts.failed + analyticsCounts.failed
+				workoutCounts.pending +
+					templateCounts.pending +
+					habitCounts.pending +
+					analyticsCounts.pending +
+					userQueue.length,
+				workoutCounts.failed + templateCounts.failed + habitCounts.failed + analyticsCounts.failed
 			)
 	}, [user?.userId])
 
@@ -250,8 +277,88 @@ export function useSyncQueue() {
 	}, [])
 
 	/* ─────────────────────────────────────────────
-     Main sync routine
+     Habit mutation processor
   ───────────────────────────────────────────── */
+	const processHabitMutation = useCallback(async (mutation: HabitMutation): Promise<boolean> => {
+		try {
+			switch (mutation.type) {
+				case 'CREATE_HABIT': {
+					const res = await createHabitService(mutation.userId, mutation.payload)
+					if (res.success && res.data?.id) {
+						// Reconcile habit ID if we used a temp ID
+						reconcileHabitId(mutation.payload.id!, res.data.id)
+					} else {
+						markHabitFailed(mutation.payload.id!)
+					}
+					return res.success
+				}
+				case 'UPDATE_HABIT': {
+					const res = await updateHabitService(mutation.userId, mutation.payload.id!, mutation.payload)
+					if (res.success) {
+						markHabitSynced(mutation.payload.id!)
+					} else {
+						markHabitFailed(mutation.payload.id!)
+					}
+					return res.success
+				}
+				case 'LOG_HABIT': {
+					const res = await logHabitService(mutation.userId, mutation.payload.id!, {
+						date: mutation.payload.date!,
+						value: mutation.payload.value!,
+					})
+					if (res.success) {
+						markHabitLogSynced(mutation.payload.id!, mutation.payload.date!)
+					}
+					return res.success
+				}
+				case 'DELETE_HABIT': {
+					const res = await deleteHabitService(mutation.userId, mutation.payload.id!)
+					return res.success
+				}
+
+				case 'UPDATE_HABIT': {
+					if (!mutation.payload.id) return false
+					const res = await updateHabitService(mutation.userId, mutation.payload.id, mutation.payload)
+					return res.success
+				}
+
+				case 'DELETE_HABIT': {
+					if (!mutation.payload.id) return false
+					const res = await deleteHabitService(mutation.userId, mutation.payload.id)
+					return res.success
+				}
+
+				case 'LOG_HABIT': {
+					if (!mutation.payload.id || !mutation.payload.date) return false
+					const res = await logHabitService(mutation.userId, mutation.payload.id, {
+						date: mutation.payload.date,
+						value: mutation.payload.value || 0,
+					})
+					return res.success
+				}
+
+				default:
+					log.warn('[SYNC] Unknown habit mutation', mutation)
+					return false
+			}
+		} catch (error: any) {
+			const status = error?.response?.status
+
+			log.error('[SYNC ERROR - Habit]', {
+				queueId: mutation.queueId,
+				type: mutation.type,
+				status,
+				error,
+			})
+
+			if (status && status >= 400 && status < 500) {
+				moveHabitToFailedQueue(mutation.queueId)
+				return true
+			}
+
+			return false
+		}
+	}, [])
 	const syncQueue = useCallback(async () => {
 		if (!isAuthenticated || !user?.userId || isSyncing.current) return
 
@@ -320,7 +427,7 @@ export function useSyncQueue() {
 			// Analytics
 			for (const m of getAnalyticsQueueForUser(user.userId)) {
 				if (m.retryCount >= MAX_RETRIES) {
-					if (moveAnalyticsToFailedQueue) moveAnalyticsToFailedQueue(m.queueId)
+					moveAnalyticsToFailedQueue(m.queueId)
 					continue
 				}
 
@@ -334,7 +441,23 @@ export function useSyncQueue() {
 						useAnalytics.getState().reconcileMeasurement(m.payload.date, ok.data as any)
 					}
 				} else {
-					if (incrementAnalyticsRetry) incrementAnalyticsRetry(m.queueId)
+					incrementAnalyticsRetry(m.queueId)
+					await new Promise(r => setTimeout(r, RETRY_DELAY_MS))
+				}
+			}
+
+			// Habits
+			for (const m of getHabitQueueForUser(user.userId)) {
+				if (m.retryCount >= MAX_RETRIES) {
+					moveHabitToFailedQueue(m.queueId)
+					continue
+				}
+
+				const ok = await processHabitMutation(m)
+				if (ok) {
+					dequeueHabit(m.queueId)
+				} else {
+					incrementHabitRetry(m.queueId)
 					await new Promise(r => setTimeout(r, RETRY_DELAY_MS))
 				}
 			}
@@ -349,6 +472,7 @@ export function useSyncQueue() {
 		processWorkoutMutation,
 		processTemplateMutation,
 		processUserMutation,
+		processHabitMutation,
 		updateCounts,
 	])
 
