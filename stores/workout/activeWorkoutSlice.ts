@@ -7,6 +7,7 @@ import * as Crypto from 'expo-crypto'
 import { StateCreator } from 'zustand'
 import { useAuth } from '../authStore'
 import { ExerciseType, useExercise } from '../exerciseStore'
+import { useHabitStore } from '../habitStore'
 import {
 	ExerciseGroupType,
 	WorkoutHistoryItem,
@@ -374,6 +375,8 @@ export const createActiveWorkoutSlice: StateCreator<WorkoutState, [], [], Active
 		} else {
 			enqueueWorkoutCreate(workoutPayload, userId)
 		}
+		// Refetch habit logs to reflect the new workout in the frequency habit
+		useHabitStore.getState().getHabitLogs()
 
 		set({ workoutSaving: false })
 		return { success: true }

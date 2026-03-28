@@ -2,6 +2,7 @@ import { zustandStorage } from '@/lib/storage'
 import { enqueueAnalyticsUpdate } from '@/lib/sync/queue/analyticsQueue'
 import { AnalyticsPayload } from '@/lib/sync/types'
 import { getMeasurementsService, getUserAnalyticsService } from '@/services/analyticsService'
+import { useHabitStore } from './habitStore'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useAuth } from './authStore'
@@ -376,6 +377,10 @@ export const useAnalytics = create<AnalyticsState>()(
 					// Optimistically update the auth store so the dashboard updates weight immediately
 					if (payload.weight != null) {
 						useAuth.getState().setUser({ weight: payload.weight })
+					}
+					// Refetch habit logs if any internal metric is updated
+					if (payload.weight != null || payload.bodyFat != null || payload.waist != null) {
+						useHabitStore.getState().getHabitLogs()
 					}
 
 					return { success: true }

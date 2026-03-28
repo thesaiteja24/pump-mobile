@@ -231,15 +231,17 @@ const WeightChart = () => {
 						<View className="flex-1 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
 							<Text className="text-xs font-semibold uppercase text-neutral-500">Min Weight</Text>
 							<Text className="mt-1 text-lg font-bold text-black dark:text-white">
-								{Math.min(
-									...filteredData.map(m =>
-										convertWeight(Number(m.weight), {
-											from: 'kg',
-											to: preferredUnit,
-											precision: 1,
-										})
-									),
-									0
+								{(filteredData.length > 0
+									? Math.min(
+											...filteredData.map(m =>
+												convertWeight(Number(m.weight), {
+													from: 'kg',
+													to: preferredUnit,
+													precision: 1,
+												})
+											)
+										)
+									: 0
 								).toFixed(2)}{' '}
 								{preferredUnit}
 							</Text>
@@ -247,15 +249,17 @@ const WeightChart = () => {
 						<View className="flex-1 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
 							<Text className="text-xs font-semibold uppercase text-neutral-500">Max Weight</Text>
 							<Text className="mt-1 text-lg font-bold text-black dark:text-white">
-								{Math.max(
-									...filteredData.map(m =>
-										convertWeight(Number(m.weight), {
-											from: 'kg',
-											to: preferredUnit,
-											precision: 1,
-										})
-									),
-									0
+								{(filteredData.length > 0
+									? Math.max(
+											...filteredData.map(m =>
+												convertWeight(Number(m.weight), {
+													from: 'kg',
+													to: preferredUnit,
+													precision: 1,
+												})
+											)
+										)
+									: 0
 								).toFixed(2)}{' '}
 								{preferredUnit}
 							</Text>

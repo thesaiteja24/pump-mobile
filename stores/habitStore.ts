@@ -177,6 +177,9 @@ export const useHabitStore = create<HabitState>()(
 
 				try {
 					enqueueHabitUpdate('CREATE_HABIT', payload, userId)
+					if (data.source === 'internal') {
+						get().getHabitLogs()
+					}
 					return { success: true }
 				} catch (error) {
 					return { success: false, error }
