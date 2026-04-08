@@ -263,7 +263,7 @@ export default function HomeScreen() {
 						<ScrollView
 							horizontal
 							showsHorizontalScrollIndicator={false}
-							contentContainerStyle={{ gap: 10 }}
+							contentContainerStyle={{ gap: 10, paddingRight: 20 }}
 						>
 							<WeightMetricCard width={width * 0.5} />
 							<View
@@ -280,7 +280,7 @@ export default function HomeScreen() {
 
 							<View
 								style={{ width: width * 0.5 }}
-								className="flex items-center justify-center rounded-2xl bg-transparent px-4 py-4"
+								className="flex items-center justify-center rounded-2xl border border-dashed border-neutral-300 bg-transparent px-4 py-4 dark:border-neutral-700"
 							>
 								<Button
 									title="View All"

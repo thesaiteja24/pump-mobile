@@ -109,6 +109,8 @@ export default function ExerciseList({ loading, exercises, isSelecting, isSelect
 			keyExtractor={item => item.id}
 			renderItem={renderItem}
 			showsVerticalScrollIndicator={false}
+			keyboardDismissMode="on-drag"
+			keyboardShouldPersistTaps="always"
 		/>
 	)
 }

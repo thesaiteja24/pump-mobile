@@ -236,7 +236,7 @@ export default function ExercisesScreen() {
 					onChangeText={setQuery}
 					placeholder="Search exercises, equipment, muscles…"
 					placeholderTextColor="#9CA3AF"
-					className="rounded-xl border border-neutral-200 bg-white pl-4 pr-10 py-3 text-lg text-black dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
+					className="rounded-xl border border-neutral-200 bg-white py-3 pl-4 pr-8 text-lg text-black dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
 					style={{ lineHeight: lineHeight }}
 				/>
 				{query.length > 0 && (
