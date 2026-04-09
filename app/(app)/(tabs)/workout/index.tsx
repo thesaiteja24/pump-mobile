@@ -7,6 +7,7 @@ import TemplateCard from '@/components/workout/TemplateCard'
 import { FREE_TIER_LIMITS } from '@/constants/limits'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useProgram } from '@/stores/programStore'
+import { usePrograms } from '@/hooks/queries/usePrograms'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 import { useTemplate } from '@/stores/templateStore'
 import { useWorkout } from '@/stores/workoutStore'
@@ -33,11 +34,11 @@ export default function WorkoutScreen() {
 	const templateLoading = useTemplate(s => s.templateLoading)
 	const getAllTemplates = useTemplate(s => s.getAllTemplates)
 
-	// Program Store
-	const programs = useProgram(s => s.programs || [])
-	const programLoading = useProgram(s => s.programLoading)
-	// const activeProgramId = useProgram(s => s.activeProgramId)
-	const getAllPrograms = useProgram(s => s.getAllPrograms)
+	// Program Store — draft UI state only
+	const draftProgram = useProgram(s => s.draftProgram)
+
+	// Programs from TanStack Query
+	const { data: programs = [], isLoading: programLoading, refetch: refetchPrograms } = usePrograms()
 
 	// Subscription Store
 	const isPro = useSubscriptionStore(s => s.isPro)
@@ -87,8 +88,14 @@ export default function WorkoutScreen() {
 
 	useEffect(() => {
 		getAllTemplates()
-		getAllPrograms()
-	}, [getAllTemplates, getAllPrograms])
+		// programs are managed by TanStack Query automatically
+	}, [getAllTemplates])
+
+	const onRefresh = React.useCallback(async () => {
+		setRefreshing(true)
+		await Promise.all([getAllTemplates(), refetchPrograms()])
+		setRefreshing(false)
+	}, [getAllTemplates, refetchPrograms])
 
 	const activeWorkoutStyle = useAnimatedStyle(() => ({
 		opacity: activeWorkoutOpacity.value,
@@ -109,12 +116,6 @@ export default function WorkoutScreen() {
 		opacity: programsOpacity.value,
 		transform: [{ translateY: programsOpacity.value === 1 ? 0 : programsTranslateY.value }],
 	}))
-
-	const onRefresh = React.useCallback(async () => {
-		setRefreshing(true)
-		await Promise.all([getAllTemplates(), getAllPrograms()])
-		setRefreshing(false)
-	}, [getAllTemplates, getAllPrograms])
 
 	return (
 		<ScrollView

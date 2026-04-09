@@ -1,7 +1,7 @@
 import { ExerciseType } from '@/hooks/queries/useExercises'
+import { useToggleWorkoutLike, useWorkoutComments, useWorkoutLikes } from '@/hooks/queries/useComments'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
-import { useEngagementStore } from '@/stores/engagementStore'
 import { WorkoutHistoryItem } from '@/stores/workoutStore'
 import { formatDurationFromDates, formatTimeAgo } from '@/utils/time'
 import { calculateWorkoutMetrics } from '@/utils/workout'
@@ -41,21 +41,29 @@ export default function WorkoutCard({
 	const commentsModalRef = useRef<CommentsModalHandle>(null)
 
 	const { user } = useAuth()
-	const { workoutLikes, fetchWorkoutLikes, toggleWorkoutLike, fetchComments, comments } = useEngagementStore()
 
-	const currentLikes = workoutLikes[workout.id] || []
+	// TanStack Query hooks for engagement
+	const { data: currentLikes = [] } = useWorkoutLikes(workout.id)
+	const { data: commentsPages } = useWorkoutComments(workout.id)
+	const toggleLikeMutation = useToggleWorkoutLike(workout.id)
+
 	const isLikedByMe = user && currentLikes.some(like => like.userId === user.userId)
 
-	const validComments = comments[workout.id]?.filter(c => c.user?.id) || []
+	// Flatten first page of comments for inline preview
+	const firstPageComments = commentsPages?.pages?.[0]?.comments ?? []
+	const validComments = firstPageComments.filter((c: any) => c.user?.id)
 	const recentComments = validComments.slice(0, 2)
 
 	const handleToggleLike = () => {
 		if (!user || !user.userId) return
-		toggleWorkoutLike(workout.id, {
-			id: user.userId,
-			firstName: user.firstName || '',
-			lastName: user.lastName || '',
-			profilePicUrl: user.profilePicUrl || null,
+		toggleLikeMutation.mutate({
+			currentUser: {
+				id: user.userId,
+				firstName: user.firstName || '',
+				lastName: user.lastName || '',
+				profilePicUrl: user.profilePicUrl || null,
+			},
+			isLiked: Boolean(isLikedByMe),
 		})
 	}
 
@@ -81,11 +89,6 @@ export default function WorkoutCard({
 			Alert.alert('Error', 'Failed to share the workout.')
 		}
 	}
-
-	useEffect(() => {
-		fetchWorkoutLikes(workout.id)
-		fetchComments(workout.id, true)
-	}, [workout.id, fetchWorkoutLikes, fetchComments])
 
 	// Animation values
 	const opacity = useSharedValue(0)

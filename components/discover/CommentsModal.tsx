@@ -1,5 +1,5 @@
 import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
-import { Comment as EngagementComment, useEngagementStore } from '@/stores/engagementStore'
+import { Comment as EngagementComment, useDeleteComment, useWorkoutComments } from '@/hooks/queries/useComments'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
@@ -34,12 +34,22 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 	const isDark = useColorScheme() === 'dark'
 	const screenWidth = Dimensions.get('window').width
 
-	const { fetchComments, fetchReplies, comments, replies, loadingComments, loadingReplies } = useEngagementStore()
-	const workoutComments = comments[workoutId] || []
+	// TanStack Query hooks
+	const {
+		data: commentsPages,
+		isLoading: isLoadingComments,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useWorkoutComments(workoutId)
+
+	const deleteCommentMutation = useDeleteComment(workoutId)
+
+	// Flatten pages into a single list
+	const workoutComments = useMemo(() => commentsPages?.pages.flatMap(p => p.comments) ?? [], [commentsPages])
 
 	// UI State
 	const [viewingThreadId, setViewingThreadId] = useState<string | null>(null)
-	// Which comment we are explicitly replying to (can be thread root or a nested reply)
 	const [replyingTo, setReplyingTo] = useState<EngagementComment | null>(null)
 	const [selectedCommentForOptions, setSelectedCommentForOptions] = useState<EngagementComment | null>(null)
 	const [editingComment, setEditingComment] = useState<EngagementComment | null>(null)
@@ -49,17 +59,8 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 	const optionsBottomSheetRef = useRef<BottomSheetModal>(null)
 	const deleteModalRef = useRef<DeleteConfirmModalHandle>(null)
 
-	const deleteComment = useEngagementStore(state => state.deleteComment)
-
-	// Initial load tracking
-	const initializedWorkout = useRef<string | null>(null)
-
 	useImperativeHandle(ref, () => ({
 		present: () => {
-			if (initializedWorkout.current !== workoutId) {
-				fetchComments(workoutId, true)
-				initializedWorkout.current = workoutId
-			}
 			bottomSheetModalRef.current?.present()
 		},
 		dismiss: () => {
@@ -67,12 +68,10 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 		},
 	}))
 
-	// Adjust snap points for typical comment sheets
 	const snapPoints = useMemo(() => ['75%'], [])
 
 	const handleClose = () => {
 		onClose?.()
-		// Wait for modal to close fully before resetting slider
 		setTimeout(() => {
 			sliderRef.current?.scrollTo({ x: 0, animated: false })
 			setViewingThreadId(null)
@@ -83,7 +82,6 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 
 	const handleViewReplies = (comment: EngagementComment) => {
 		setViewingThreadId(comment.id)
-		fetchReplies(comment.id, true)
 		sliderRef.current?.scrollTo({ x: screenWidth, animated: true })
 	}
 
@@ -106,14 +104,10 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 	}
 
 	const activeThreadComment = workoutComments.find(c => c.id === viewingThreadId)
-	const threadRepliesList = viewingThreadId ? replies[viewingThreadId] || [] : []
 
 	const textColor = isDark ? 'white' : 'black'
 	const bgColor = isDark ? '#171717' : 'white'
 	const borderColor = isDark ? '#262626' : '#e5e5e5'
-
-	const isLoadingComments = loadingComments[workoutId] || false
-	const isLoadingReplies = viewingThreadId ? loadingReplies[viewingThreadId] || false : false
 
 	const renderBackdrop = useCallback(
 		(props: any) => <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} opacity={0.4} />,
@@ -138,22 +132,15 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 
 	useEffect(() => {
 		const onBackPress = () => {
-			// If modal is not open → let default behavior happen
 			if (!bottomSheetModalRef.current) return false
-
-			// If inside replies → go back to main comments
 			if (viewingThreadId) {
 				handleBackToMain()
-				return true // prevent default back (app exit)
+				return true
 			}
-
-			// If on main comments → close modal
 			bottomSheetModalRef.current?.dismiss()
-			return true // prevent default back
+			return true
 		}
-
 		const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
-
 		return () => subscription.remove()
 	}, [viewingThreadId])
 
@@ -174,6 +161,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 				renderItem={({ item }: { item: EngagementComment }) => (
 					<CommentItem
 						comment={item}
+						workoutId={workoutId}
 						onViewReplies={handleViewReplies}
 						onReplyPress={handleReplyPress}
 						onOptionsPress={handleOptionsPress}
@@ -192,15 +180,15 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 					</View>
 				}
 				ListFooterComponent={
-					isLoadingComments && workoutComments.length > 0 ? (
+					isFetchingNextPage ? (
 						<View className="items-center justify-center py-4">
 							<ActivityIndicator size="small" color={textColor} />
 						</View>
 					) : null
 				}
 				onEndReached={() => {
-					if (!isLoadingComments && workoutComments.length > 0) {
-						fetchComments(workoutId, false)
+					if (hasNextPage && !isFetchingNextPage) {
+						fetchNextPage()
 					}
 				}}
 				onEndReachedThreshold={0.5}
@@ -226,6 +214,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 				renderItem={({ item }: { item: EngagementComment }) => (
 					<CommentItem
 						comment={item}
+						workoutId={workoutId}
 						depth={0}
 						isThreadParent={true}
 						onReplyPress={handleReplyPress}
@@ -233,24 +222,6 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 					/>
 				)}
 				contentContainerStyle={{ paddingBottom: '30%' }}
-				ListEmptyComponent={
-					<View className="items-center justify-center py-8">
-						{isLoadingReplies ? <ActivityIndicator size="small" color={textColor} /> : null}
-					</View>
-				}
-				ListFooterComponent={
-					isLoadingReplies && threadRepliesList.length > 0 ? (
-						<View className="items-center justify-center">
-							<ActivityIndicator size="small" color={textColor} />
-						</View>
-					) : null
-				}
-				onEndReached={() => {
-					if (viewingThreadId && !isLoadingReplies && threadRepliesList.length > 0) {
-						fetchReplies(viewingThreadId, false)
-					}
-				}}
-				onEndReachedThreshold={0.5}
 				keyboardShouldPersistTaps="handled"
 			/>
 		</View>
@@ -267,7 +238,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 				onDismiss={handleClose}
 				backgroundStyle={{ backgroundColor: bgColor }}
 				handleIndicatorStyle={{ backgroundColor: isDark ? '#525252' : '#d1d5db' }}
-				keyboardBehavior="extend" // Important for iOS keyboard padding
+				keyboardBehavior="extend"
 				enableDynamicSizing={false}
 			>
 				<ScrollView
@@ -324,16 +295,13 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 				onConfirm={async () => {
 					if (selectedCommentForOptions) {
 						try {
-							await deleteComment(selectedCommentForOptions.id)
+							await deleteCommentMutation.mutateAsync(selectedCommentForOptions.id)
 						} catch (error) {
-							Toast.show({
-								type: 'error',
-								text1: 'Error',
-								text2: error as string,
-							})
+							Toast.show({ type: 'error', text1: 'Error', text2: error as string })
 						}
 					}
 				}}
+				onCancel={() => {}}
 			/>
 		</>
 	)

@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/Button'
-import { Program } from '@/stores/program/types'
+import { Program } from '@/stores/programStore'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { Link, router } from 'expo-router'

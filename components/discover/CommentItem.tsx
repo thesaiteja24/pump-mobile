@@ -1,12 +1,18 @@
+import {
+	Comment as EngagementComment,
+	useCommentLikes,
+	useCommentReplies,
+	useToggleCommentLike,
+} from '@/hooks/queries/useComments'
 import { useAuth } from '@/stores/authStore'
-import { Comment as EngagementComment, useEngagementStore } from '@/stores/engagementStore'
 import { formatTimeAgo } from '@/utils/time'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import React, { useEffect, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Image, Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 
 const CommentItem = ({
 	comment,
+	workoutId,
 	onReplyPress,
 	onOptionsPress,
 	onViewReplies,
@@ -14,6 +20,7 @@ const CommentItem = ({
 	depth = 0,
 }: {
 	comment: EngagementComment
+	workoutId: string
 	onReplyPress: (comment: EngagementComment) => void
 	onOptionsPress: (comment: EngagementComment) => void
 	onViewReplies?: (comment: EngagementComment) => void
@@ -24,47 +31,47 @@ const CommentItem = ({
 	const textColor = isDark ? 'white' : 'black'
 	const subTextColor = isDark ? '#a3a3a3' : '#525252'
 
-	// For nested replies (depth > 0)
-	const replies = useEngagementStore(state => state.replies[comment.id])
-	const fetchReplies = useEngagementStore(state => state.fetchReplies)
-
-	const { commentLikes, fetchCommentLikes, toggleCommentLike } = useEngagementStore()
-
 	const user = useAuth(state => state.user)
 	const userId = user?.userId
 
-	useEffect(() => {
-		fetchCommentLikes(comment.id)
-	}, [comment.id, fetchCommentLikes])
+	// TanStack Query hooks for comment engagement
+	const { data: currentLikes = [] } = useCommentLikes(comment.id)
+	const toggleLikeMutation = useToggleCommentLike(workoutId)
 
-	const currentLikes = commentLikes[comment.id] || []
+	// Replies — only load when needed
+	const [expanded, setExpanded] = useState(isThreadParent || depth === 1)
+	const {
+		data: repliesPages,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useCommentReplies(expanded || isThreadParent ? comment.id : null)
+
+	const replies = useMemo(() => repliesPages?.pages.flatMap(p => p.replies) ?? [], [repliesPages])
+
 	const isLikedByMe = user && currentLikes.some(like => like.userId === userId)
 
 	const handleToggleLike = () => {
 		if (!user || !userId) return
-		toggleCommentLike(comment.id, {
-			id: userId,
-			firstName: user.firstName || '',
-			lastName: user.lastName || '',
-			profilePicUrl: user.profilePicUrl || null,
+		toggleLikeMutation.mutate({
+			commentId: comment.id,
+			currentUser: {
+				id: userId,
+				firstName: user.firstName || '',
+				lastName: user.lastName || '',
+				profilePicUrl: user.profilePicUrl || null,
+			},
+			isLiked: Boolean(isLikedByMe),
 		})
 	}
 
-	// Automatically expand if thread parent or a first-level nested reply with pre-fetched replies
-	const shouldBeExpandedByDefault = isThreadParent || (depth === 1 && !!replies && replies.length > 0)
-	const [expanded, setExpanded] = useState(shouldBeExpandedByDefault)
-
 	const toggleExpand = () => {
-		if (!expanded && !replies) {
-			fetchReplies(comment.id, true)
-		}
 		setExpanded(!expanded)
 	}
 
 	const hasReplies = (comment._count?.replies || 0) > 0
-	const remainingRepliesCount = hasReplies ? comment._count.replies - (replies?.length || 0) : 0
+	const remainingRepliesCount = hasReplies ? comment._count.replies - replies.length : 0
 
-	// YouTube style vertical line alignment
 	const avatarSize = 24
 
 	const paddingStyles = {
@@ -149,7 +156,7 @@ const CommentItem = ({
 	)
 
 	const renderNestedReplies = () => {
-		if (!expanded || !replies) return null
+		if (!expanded || replies.length === 0) return null
 
 		return (
 			<View className="mt-2">
@@ -157,20 +164,22 @@ const CommentItem = ({
 					<CommentItem
 						key={reply.id}
 						comment={reply}
+						workoutId={workoutId}
 						depth={depth + 1}
 						onReplyPress={onReplyPress}
 						onOptionsPress={onOptionsPress}
 					/>
 				))}
 
-				{/* Paginated "Show more" button */}
-				{remainingRepliesCount > 0 && (
+				{/* Load more replies */}
+				{(hasNextPage || isFetchingNextPage) && (
 					<TouchableOpacity
 						className="mt-2 flex-row items-center pt-1"
-						onPress={() => fetchReplies(comment.id, false)}
+						onPress={() => fetchNextPage()}
+						disabled={isFetchingNextPage}
 					>
 						<Text className="text-sm font-bold text-blue-500">
-							Show {remainingRepliesCount} more replies
+							{isFetchingNextPage ? 'Loading...' : `Show ${remainingRepliesCount} more replies`}
 						</Text>
 					</TouchableOpacity>
 				)}

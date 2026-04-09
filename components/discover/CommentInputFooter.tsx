@@ -1,4 +1,4 @@
-import { useEngagementStore } from '@/stores/engagementStore'
+import { useAddComment, useAddReply, useEditComment } from '@/hooks/queries/useComments'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetFooter, BottomSheetTextInput } from '@gorhom/bottom-sheet'
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
@@ -24,10 +24,13 @@ const CommentInputFooter = forwardRef(
 		const textColor = isDark ? 'white' : 'black'
 		const bgColor = isDark ? '#171717' : 'white'
 		const borderColor = isDark ? '#262626' : '#e5e5e5'
-		const { addComment, addReply, editComment, commenting, replying, loadingComments } = useEngagementStore()
 
-		const isEditingLoading = editingComment ? loadingComments[editingComment.id] : false
-		const enableSubmit = commenting || replying || isEditingLoading
+		// TanStack Query mutations
+		const addCommentMutation = useAddComment(workoutId)
+		const addReplyMutation = useAddReply(workoutId, replyingTo?.id || viewingThreadId || '')
+		const editCommentMutation = useEditComment(workoutId)
+
+		const isSubmitting = addCommentMutation.isPending || addReplyMutation.isPending || editCommentMutation.isPending
 
 		const inputRef = useRef<TextInput>(null)
 
@@ -41,15 +44,15 @@ const CommentInputFooter = forwardRef(
 			if (!inputValue.trim()) return
 			try {
 				if (editingComment) {
-					await editComment(editingComment.id, inputValue.trim())
+					await editCommentMutation.mutateAsync({ commentId: editingComment.id, content: inputValue.trim() })
 					setEditingComment(null)
 				} else if (replyingTo) {
-					await addReply(workoutId, replyingTo.id, inputValue.trim())
+					await addReplyMutation.mutateAsync(inputValue.trim())
 					setReplyingTo(null)
 				} else if (viewingThreadId) {
-					await addReply(workoutId, viewingThreadId, inputValue.trim())
+					await addReplyMutation.mutateAsync(inputValue.trim())
 				} else {
-					await addComment(workoutId, inputValue.trim())
+					await addCommentMutation.mutateAsync(inputValue.trim())
 				}
 				setInputValue('')
 				Keyboard.dismiss()
@@ -123,7 +126,7 @@ const CommentInputFooter = forwardRef(
 								borderColor: isDark ? '#404040' : '#e5e5e5',
 							}}
 							multiline
-							editable={!enableSubmit}
+							editable={!isSubmitting}
 						/>
 						<TouchableOpacity
 							className="ml-3 h-[44px] w-[44px] items-center justify-center rounded-full bg-blue-500"
@@ -131,7 +134,7 @@ const CommentInputFooter = forwardRef(
 							style={{ opacity: inputValue.trim() ? 1 : 0.5 }}
 							onPress={handleSubmit}
 						>
-							{!enableSubmit ? (
+							{!isSubmitting ? (
 								<Ionicons name="send" size={18} color="white" style={{ marginLeft: 2 }} />
 							) : (
 								<ActivityIndicator size="small" color="white" />

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button'
 import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
-import { useProgram } from '@/stores/programStore'
+import { useProgramById } from '@/hooks/queries/usePrograms'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useRef } from 'react'
@@ -14,18 +14,10 @@ import { WorkoutDetailsModal, WorkoutDetailsModalHandle } from '@/components/pro
 export default function ProgramDetails() {
 	const params = useLocalSearchParams()
 	const navigation = useNavigation()
-	const { programs, programByIdLoading, getProgramById } = useProgram()
+	const { data: program, isLoading: programByIdLoading } = useProgramById(params.id as string)
 	const [isModalOpen, setIsModalOpen] = React.useState(false)
 	const deleteModalRef = useRef<DeleteConfirmModalHandle>(null)
 	const workoutDetailsModalRef = useRef<WorkoutDetailsModalHandle>(null)
-
-	useEffect(() => {
-		if (params.id) {
-			getProgramById(params.id as string)
-		}
-	}, [params.id, getProgramById])
-
-	const program = programs.find(p => p.id === params.id)
 
 	useEffect(() => {
 		if (program) {

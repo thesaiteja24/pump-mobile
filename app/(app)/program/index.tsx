@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/Button'
 import TemplateSelectionModal, { TemplateSelectionModalHandle } from '@/components/workout/TemplateSelectionModal'
+import { useCreateProgram, usePrograms, useUpdateProgram } from '@/hooks/queries/usePrograms'
 import { ProgramDay, ProgramWeek, useProgram } from '@/stores/programStore'
 import { useTemplate } from '@/stores/templateStore'
 import { Ionicons } from '@expo/vector-icons'
@@ -26,14 +27,16 @@ export default function ProgramEditor() {
 	const params = useLocalSearchParams()
 	const isEditing = params.mode === 'edit'
 
-	// Use specific selectors for better performance
+	// Draft state (Zustand — pure UI)
 	const draftProgram = useProgram(s => s.draftProgram)
-	const programs = useProgram(s => s.programs)
 	const startDraftProgram = useProgram(s => s.startDraftProgram)
 	const updateDraftProgram = useProgram(s => s.updateDraftProgram)
 	const discardDraftProgram = useProgram(s => s.discardDraftProgram)
-	const createProgram = useProgram(s => s.createProgram)
-	const updateProgram = useProgram(s => s.updateProgram)
+
+	// Server data (TanStack Query)
+	const { data: programs = [] } = usePrograms()
+	const createProgramMutation = useCreateProgram()
+	const updateProgramMutation = useUpdateProgram()
 
 	// Template store selectors
 	const templates = useTemplate(s => s.templates)
@@ -108,27 +111,19 @@ export default function ProgramEditor() {
 		try {
 			let res
 			if (isEditing && draftProgram.id) {
-				res = await updateProgram(draftProgram.id, draftProgram as any)
+				res = await updateProgramMutation.mutateAsync({ id: draftProgram.id, data: draftProgram as any })
 			} else {
-				res = await createProgram(draftProgram as any)
+				res = await createProgramMutation.mutateAsync(draftProgram as any)
 			}
 
-			if (res.success) {
-				Toast.show({
-					type: 'success',
-					text1: isEditing ? 'Program updated' : 'Program created',
-				})
-				discardDraftProgram()
-				requestAnimationFrame(() => {
-					router.back()
-				})
-			} else {
-				Toast.show({
-					type: 'error',
-					text1: isEditing ? 'Failed to update program' : 'Failed to create program',
-					text2: res.error,
-				})
-			}
+			Toast.show({
+				type: 'success',
+				text1: isEditing ? 'Program updated' : 'Program created',
+			})
+			discardDraftProgram()
+			requestAnimationFrame(() => {
+				router.back()
+			})
 		} catch (error: any) {
 			console.error('Error in program handleSave', error)
 			Toast.show({
@@ -139,7 +134,7 @@ export default function ProgramEditor() {
 		} finally {
 			setSaving(false)
 		}
-	}, [draftProgram, isEditing, createProgram, updateProgram, discardDraftProgram])
+	}, [draftProgram, isEditing, createProgramMutation, updateProgramMutation, discardDraftProgram])
 
 	useEffect(() => {
 		navigation.setOptions({

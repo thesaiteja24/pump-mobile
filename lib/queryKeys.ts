@@ -27,6 +27,8 @@ export const queryKeys = {
 	programs: {
 		all: ['programs'] as const,
 		byId: (id: string) => ['programs', id] as const,
+		// alias used by usePrograms hook
+		detail: (id: string) => ['programs', id] as const,
 	},
 	templates: {
 		all: ['templates'] as const,
@@ -42,6 +44,13 @@ export const queryKeys = {
 		replies: (commentId: string) => ['replies', commentId] as const,
 		workoutLikes: (workoutId: string) => ['workoutLikes', workoutId] as const,
 		commentLikes: (commentId: string) => ['commentLikes', commentId] as const,
+	},
+	// Engagement keys used by useComments hooks
+	engagement: {
+		comments: (workoutId: string) => ['engagement', 'comments', workoutId] as const,
+		replies: (commentId: string) => ['engagement', 'replies', commentId] as const,
+		workoutLikes: (workoutId: string) => ['engagement', 'workoutLikes', workoutId] as const,
+		commentLikes: (commentId: string) => ['engagement', 'commentLikes', commentId] as const,
 	},
 	analytics: {
 		measurements: (userId: string) => ['measurements', userId] as const,
