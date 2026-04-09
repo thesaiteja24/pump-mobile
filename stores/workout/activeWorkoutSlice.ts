@@ -10,7 +10,7 @@ import { StateCreator } from 'zustand'
 import { useAuth } from '../authStore'
 
 import { Exercise, ExerciseType } from '@/hooks/queries/useExercises'
-import { useHabitStore } from '../habitStore'
+import { invalidateHabitLogsCache } from '@/hooks/queries/useHabits'
 import {
 	ExerciseGroupType,
 	WorkoutHistoryItem,
@@ -381,7 +381,7 @@ export const createActiveWorkoutSlice: StateCreator<WorkoutState, [], [], Active
 			enqueueWorkoutCreate(workoutPayload, userId)
 		}
 		// Refetch habit logs to reflect the new workout in the frequency habit
-		useHabitStore.getState().getHabitLogs()
+		invalidateHabitLogsCache(userId)
 
 		set({ workoutSaving: false })
 		return { success: true }

@@ -1,12 +1,12 @@
 import ShimmerDiscoverScreen from '@/components/discover/ShimmerDiscoverScreen'
 import WorkoutCard from '@/components/home/WorkoutCard'
-import { useThemeColor } from '@/hooks/useThemeColor'
 import { useExercises } from '@/hooks/queries/useExercises'
-import { useWorkout } from '@/stores/workoutStore'
+import { useDiscoverWorkoutsQuery } from '@/hooks/queries/useWorkoutHistory'
+import { useThemeColor } from '@/hooks/useThemeColor'
 
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { router } from 'expo-router'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native'
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -14,18 +14,18 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 export default function DiscoverScreen() {
 	const colors = useThemeColor()
 
-	// ───────────────── Stores ─────────────────
-	const discoverWorkouts = useWorkout(s => s.discoverWorkouts)
-	const discoverLoading = useWorkout(s => s.discoverLoading)
-	const getDiscoverWorkouts = useWorkout(s => s.getDiscoverWorkouts)
-	const discoverPage = useWorkout(s => s.discoverPage)
-	const discoverHasMore = useWorkout(s => s.discoverHasMore)
+	// TanStack Query — infinite pagination with pending merge
+	const {
+		discoverWorkouts,
+		hasMore: discoverHasMore,
+		isFetching: discoverLoading,
+		fetchNextPage,
+		refetch: refetchDiscover,
+	} = useDiscoverWorkoutsQuery()
 
 	const { data: exerciseList = [] } = useExercises()
 
-	const [refreshing, setRefreshing] = useState(false)
-
-	const showShimmer = refreshing || !exerciseList.length || (discoverLoading && discoverWorkouts.length === 0)
+	const showShimmer = discoverLoading && discoverWorkouts.length === 0
 
 	// ───────────────── Derived data ─────────────────
 	const exerciseTypeMap = useMemo(() => {
@@ -35,25 +35,14 @@ export default function DiscoverScreen() {
 	}, [exerciseList])
 
 	const onRefresh = useCallback(async () => {
-		try {
-			setRefreshing(true)
-			await getDiscoverWorkouts(1)
-			// exercises managed by TanStack Query automatically
-		} finally {
-			setRefreshing(false)
-		}
-	}, [getDiscoverWorkouts])
+		await refetchDiscover()
+	}, [refetchDiscover])
 
-	const fetchNextPage = useCallback(() => {
-		if (!discoverLoading && discoverHasMore && discoverPage) {
-			getDiscoverWorkouts(discoverPage + 1)
+	const onEndReached = useCallback(() => {
+		if (!discoverLoading && discoverHasMore) {
+			fetchNextPage()
 		}
-	}, [discoverLoading, discoverHasMore, discoverPage, getDiscoverWorkouts])
-
-	useEffect(() => {
-		getDiscoverWorkouts(1)
-		// exercises handled by TanStack Query automatically on mount
-	}, [getDiscoverWorkouts])
+	}, [discoverLoading, discoverHasMore, fetchNextPage])
 
 	// ───────────────── Header animation ─────────────────
 	const headerOpacity = useSharedValue(0)
@@ -106,8 +95,8 @@ export default function DiscoverScreen() {
 						/>
 					)}
 					showsVerticalScrollIndicator={false}
-					refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-					onEndReached={fetchNextPage}
+					refreshControl={<RefreshControl refreshing={discoverLoading} onRefresh={onRefresh} />}
+					onEndReached={onEndReached}
 					onEndReachedThreshold={0.5}
 					ListEmptyComponent={
 						<View className="mt-10 items-center">
@@ -116,7 +105,7 @@ export default function DiscoverScreen() {
 					}
 					ListFooterComponent={
 						<View className="mb-[20%] items-center justify-center p-4 pb-12 pt-6">
-							{discoverLoading && discoverPage && discoverPage > 1 && (
+							{discoverLoading && discoverWorkouts.length > 0 && (
 								<ActivityIndicator size="small" color={colors.primary} />
 							)}
 						</View>

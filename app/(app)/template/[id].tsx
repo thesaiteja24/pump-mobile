@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/Button'
 import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
+import { useTemplateByIdQuery } from '@/hooks/queries/useTemplates'
 import { useTemplate } from '@/stores/templateStore'
 import * as Clipboard from 'expo-clipboard'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
@@ -16,23 +17,17 @@ export default function TemplateDetails() {
 	const isDark = useColorScheme() === 'dark'
 	const safeAreaInsets = useSafeAreaInsets()
 
-	const template = useTemplate(s => s.templates.find(t => t.id === id || t.clientId === id))
-	const getTemplateById = useTemplate(s => s.getTemplateById)
+	// Local list (offline-first — includes pending items)
+	const templateFromStore = useTemplate(s => s.templates.find(t => t.id === id || t.clientId === id))
+	// Fallback to server query if not in local store yet
+	const { data: templateFromQuery } = useTemplateByIdQuery(templateFromStore ? null : id)
+	const template = templateFromStore ?? templateFromQuery
+
 	const deleteTemplate = useTemplate(s => s.deleteTemplate)
 	const startWorkoutFromTemplate = useTemplate(s => s.startWorkoutFromTemplate)
 	const handleEdit = useCallback(() => {
 		router.push(`/(app)/template/editor?id=${id}`)
 	}, [id])
-
-	useEffect(() => {
-		if (id && !template) {
-			getTemplateById(id).then(fetched => {
-				if (!fetched) {
-					console.error('Template not found or failed to fetch')
-				}
-			})
-		}
-	}, [id, template, getTemplateById])
 
 	const handleShare = useCallback(() => {
 		if (!template?.shareId) {

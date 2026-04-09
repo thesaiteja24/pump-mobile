@@ -1,10 +1,10 @@
 import { Exercise } from '@/hooks/queries/useExercises'
+import { invalidateTemplateCache, invalidateTemplatesCache } from '@/hooks/queries/useTemplates'
 import { queryClient } from '@/lib/queryClient'
 import { queryKeys } from '@/lib/queryKeys'
 import { zustandStorage } from '@/lib/storage'
 import { enqueueTemplateCreate, enqueueTemplateDelete, enqueueTemplateUpdate } from '@/lib/sync/queue'
 import { SyncStatus } from '@/lib/sync/types'
-import { getAllTemplatesService, getTemplateByIdService, getTemplateByShareIdService } from '@/services/templateService'
 import { serializeTemplateForApi } from '@/utils/serializeForApi'
 import * as Crypto from 'expo-crypto'
 import { create } from 'zustand'
@@ -18,7 +18,6 @@ export { DraftTemplate, WorkoutTemplate }
 const initialState = {
 	templates: [],
 	sharedTemplate: null,
-	templateLoading: false,
 	draftTemplate: null,
 }
 
@@ -28,111 +27,13 @@ export const useTemplate = create<TemplateState>()(
 			...initialState,
 
 			/**
-			 * Fetch all templates from backend.
-			 * Merges with pending local items to preserve optimistic updates.
+			 * Server READ operations (getAllTemplates, getTemplateById, getTemplateByShareId)
+			 * have been moved to TanStack Query hooks in hooks/queries/useTemplates.ts.
+			 * The sharedTemplate field is still used by the share screen.
 			 */
-			getAllTemplates: async () => {
-				set({ templateLoading: true })
-
-				try {
-					const res = await getAllTemplatesService()
-
-					if (res.success && res.data) {
-						set(state => {
-							// Keep pending local templates
-							const pendingTemplates = state.templates.filter(t => t.syncStatus === 'pending')
-
-							// Backend templates (synced)
-							const backendTemplates = res.data.map((item: WorkoutTemplate) => ({
-								...item,
-								clientId: item.clientId,
-								syncStatus: 'synced' as SyncStatus,
-							}))
-
-							// Deduplicate by clientId (local wins)
-							const pendingClientIds = new Set(pendingTemplates.map(t => t.clientId))
-
-							const mergedTemplates = [
-								...pendingTemplates,
-								...backendTemplates.filter((b: WorkoutTemplate) => !pendingClientIds.has(b.clientId)),
-							]
-
-							return {
-								templates: mergedTemplates,
-								templateLoading: false,
-							}
-						})
-					} else {
-						set({ templateLoading: false })
-					}
-				} catch (e) {
-					// console.error("Failed to fetch templates", e);
-					set({ templateLoading: false })
-				}
-			},
-
 			setSharedTemplate: template => {
 				set({ sharedTemplate: template })
 			},
-
-			/**
-			 * Fetches a single template by its ID
-			 */
-			getTemplateById: async (id: string) => {
-				// Check local state first
-				const localTemplate = get().templates.find(t => t.id === id || t.clientId === id)
-				if (localTemplate) return localTemplate
-
-				set({ templateLoading: true })
-				try {
-					const res = await getTemplateByIdService(id)
-					if (res.success && res.data) {
-						const fetchedTemplate: WorkoutTemplate = {
-							...res.data,
-							clientId: res.data.clientId,
-							syncStatus: 'synced' as SyncStatus,
-						}
-						// Merge into local list without duplicating
-						set(state => {
-							const exists = state.templates.some(t => t.id === fetchedTemplate.id)
-							return {
-								templates: exists ? state.templates : [...state.templates, fetchedTemplate],
-								templateLoading: false,
-							}
-						})
-						return fetchedTemplate
-					}
-					set({ templateLoading: false })
-					return null
-				} catch (e) {
-					console.error('Failed to fetch template by ID', e)
-					set({ templateLoading: false })
-					return null
-				}
-			},
-
-			/**
-			 * Fetches the shared template using shareId
-			 */
-			getTemplateByShareId: async (shareId: string) => {
-				try {
-					const res = await getTemplateByShareIdService(shareId)
-
-					if (!res.success) {
-						set({ templateLoading: false })
-						return
-					}
-
-					set(() => ({
-						sharedTemplate: res.data,
-						templateLoading: false,
-					}))
-				} catch (e) {
-					console.error('Failed to fetch template', e)
-					set({ templateLoading: false })
-				}
-			},
-
 			/**
 			 * Create template with offline-first support.
 			 * 1. Generate clientId and add optimistically to local state
@@ -180,6 +81,9 @@ export const useTemplate = create<TemplateState>()(
 				})
 
 				enqueueTemplateCreate(payload, userId)
+
+				// Invalidate TanStack Query cache so the list refetches on next focus
+				invalidateTemplatesCache()
 
 				return { success: true, id: clientId }
 			},
@@ -239,10 +143,11 @@ export const useTemplate = create<TemplateState>()(
 					enqueueTemplateUpdate(
 						serializeTemplateForApi({
 							...optimisticTemplate,
-							clientId: optimisticTemplate.clientId || Crypto.randomUUID(), // <-- fix
+							clientId: optimisticTemplate.clientId || Crypto.randomUUID(),
 						}),
 						userId
 					)
+					invalidateTemplatesCache()
 					return { success: true, id: overwriteId }
 				} else {
 					// New template
@@ -301,10 +206,13 @@ export const useTemplate = create<TemplateState>()(
 				enqueueTemplateUpdate(
 					serializeTemplateForApi({
 						...updatedTemplate,
-						clientId: updatedTemplate.clientId || Crypto.randomUUID(), // <-- fix
+						clientId: updatedTemplate.clientId || Crypto.randomUUID(),
 					}),
 					userId
 				)
+
+				invalidateTemplateCache(id)
+				invalidateTemplatesCache()
 
 				return { success: true }
 			},
@@ -336,6 +244,8 @@ export const useTemplate = create<TemplateState>()(
 				// Enqueue for background sync
 				// Pass id as second arg. Logic in queue handles skipping if it's a local CREATE.
 				enqueueTemplateDelete(clientId, actualDbId, userId)
+
+				invalidateTemplatesCache()
 
 				return { success: true }
 			},

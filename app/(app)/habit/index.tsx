@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/Button'
+import { useHabitsQuery } from '@/hooks/queries/useHabits'
 import { HabitFooterType, useHabitStore } from '@/stores/habitStore'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
@@ -33,7 +34,8 @@ export default function HabitCreatorScreen() {
 	const isEdit = !!id
 	const navigation = useNavigation()
 
-	const habits = useHabitStore(s => s.habits)
+	// Habits from TanStack Query (includes pending queue items via merge)
+	const { data: habits = [] } = useHabitsQuery()
 	const habitToEdit = habits.find(h => h.id === id)
 
 	const [title, setTitle] = useState(habitToEdit?.title || '')

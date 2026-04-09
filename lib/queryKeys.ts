@@ -39,6 +39,11 @@ export const queryKeys = {
 		all: ['workouts'] as const,
 		discover: ['discoverWorkouts'] as const,
 	},
+	habits: {
+		list: (userId: string) => ['habits', userId] as const,
+		logs: (userId: string, startDate?: string, endDate?: string) =>
+			['habits', 'logs', userId, startDate, endDate] as const,
+	},
 	comments: {
 		byWorkout: (workoutId: string) => ['comments', workoutId] as const,
 		replies: (commentId: string) => ['replies', commentId] as const,

@@ -1,9 +1,7 @@
 import { queryClient } from '@/lib/queryClient'
 import { queryKeys } from '@/lib/queryKeys'
 import { useAuth } from '@/stores/authStore'
-import { useTemplate } from '@/stores/templateStore'
 import { useUser } from '@/stores/userStore'
-import { useWorkout } from '@/stores/workoutStore'
 import { useEffect, useRef } from 'react'
 import { AppState } from 'react-native'
 import { useNetworkStatus } from './useNetworkStatus'
@@ -113,11 +111,7 @@ async function fetchUserData() {
 		if (!user?.userId) return
 
 		// Fetch user-specific data concurrently
-		await Promise.all([
-			useUser.getState().getUserData(user.userId),
-			useTemplate.getState().getAllTemplates(),
-			useWorkout.getState().getAllWorkouts(),
-		])
+		await Promise.all([useUser.getState().getUserData(user.userId)])
 	} catch (error) {
 		console.error('[InitialFetch] Error fetching user data:', error)
 	}

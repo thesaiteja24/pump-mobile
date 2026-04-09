@@ -1,6 +1,7 @@
 import { CustomModal, ModalHandle } from '@/components/ui/CustomModal'
 import { TextInput } from '@/components/ui/TextInput'
 import { useAnalytics } from '@/stores/analyticsStore'
+import { useHabitLogsQuery } from '@/hooks/queries/useHabits'
 import { HabitType, useHabitStore } from '@/stores/habitStore'
 import { toDateKey } from '@/utils/time'
 import { Ionicons } from '@expo/vector-icons'
@@ -29,7 +30,10 @@ const EMPTY_ARRAY: any[] = []
 
 export const HabitCard = ({ habit }: HabitCardProps) => {
 	const { width } = useWindowDimensions()
-	const habitLogs = useHabitStore(s => s.habitLogs[habit.id]) || EMPTY_ARRAY
+
+	// Habit logs from TanStack Query (merged with pending queue entries)
+	const { data: allLogs = {}, refetch: refetchLogs } = useHabitLogsQuery()
+	const habitLogs = allLogs[habit.id] || EMPTY_ARRAY
 
 	const heatmapValues = useMemo(() => {
 		return habitLogs.map(log => {
@@ -114,7 +118,8 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
 			})
 			setWeightValue('')
 			habitModalRef.current?.close()
-			useHabitStore.getState().getHabitLogs()
+			// Refetch habit logs to reflect new entry
+			refetchLogs()
 		} else {
 			Toast.show({
 				type: 'error',

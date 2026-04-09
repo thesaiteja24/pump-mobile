@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/Button'
 import TemplateSelectionModal, { TemplateSelectionModalHandle } from '@/components/workout/TemplateSelectionModal'
 import { useCreateProgram, usePrograms, useUpdateProgram } from '@/hooks/queries/usePrograms'
+import { useTemplatesQuery } from '@/hooks/queries/useTemplates'
 import { ProgramDay, ProgramWeek, useProgram } from '@/stores/programStore'
-import { useTemplate } from '@/stores/templateStore'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import * as Crypto from 'expo-crypto'
@@ -38,9 +38,8 @@ export default function ProgramEditor() {
 	const createProgramMutation = useCreateProgram()
 	const updateProgramMutation = useUpdateProgram()
 
-	// Template store selectors
-	const templates = useTemplate(s => s.templates)
-	const getAllTemplates = useTemplate(s => s.getAllTemplates)
+	// Template store — write actions only; list comes from TanStack Query
+	const { data: templates = [] } = useTemplatesQuery()
 	const [saving, setSaving] = useState(false)
 
 	const templateSelectionModalRef = useRef<TemplateSelectionModalHandle>(null)
@@ -61,11 +60,6 @@ export default function ProgramEditor() {
 			return t && t.syncStatus === 'synced'
 		})
 	}, [draftProgram, templates])
-
-	// Fetch templates so user can select them
-	useEffect(() => {
-		getAllTemplates()
-	}, [getAllTemplates])
 
 	// Init Draft
 	useEffect(() => {

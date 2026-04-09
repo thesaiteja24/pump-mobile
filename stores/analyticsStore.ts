@@ -1,3 +1,4 @@
+import { invalidateHabitLogsCache } from '@/hooks/queries/useHabits'
 import { zustandStorage } from '@/lib/storage'
 import { enqueueAnalyticsUpdate } from '@/lib/sync/queue/analyticsQueue'
 import { AnalyticsPayload } from '@/lib/sync/types'
@@ -5,7 +6,6 @@ import { getMeasurementsService, getUserAnalyticsService } from '@/services/anal
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useAuth } from './authStore'
-import { useHabitStore } from './habitStore'
 
 export interface AnalyticsMetrics {
 	streakDays: number
@@ -378,7 +378,7 @@ export const useAnalytics = create<AnalyticsState>()(
 					}
 					// Refetch habit logs if any internal metric is updated
 					if (payload.weight != null || payload.bodyFat != null || payload.waist != null) {
-						useHabitStore.getState().getHabitLogs()
+						invalidateHabitLogsCache(userId)
 					}
 
 					return { success: true }

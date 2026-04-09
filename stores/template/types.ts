@@ -72,16 +72,13 @@ export interface DraftTemplate {
 
 export interface TemplateState {
 	templates: WorkoutTemplate[]
-	templateLoading: boolean
 	sharedTemplate: WorkoutTemplate | null
 	setSharedTemplate: (template: WorkoutTemplate | null) => void
 
 	// Draft state
 	draftTemplate: DraftTemplate | null
 
-	getAllTemplates: () => Promise<void>
-	getTemplateById: (id: string) => Promise<WorkoutTemplate | null>
-	getTemplateByShareId: (shareId: string) => Promise<void>
+	// Server WRITE — offline-first (mutates Zustand local state + enqueues to sync queue)
 	createTemplate: (data: DraftTemplate) => Promise<any>
 	updateTemplate: (id: string, data: Partial<WorkoutTemplate>) => Promise<any>
 	saveSharedTemplate: (

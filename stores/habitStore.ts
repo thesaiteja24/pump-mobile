@@ -1,8 +1,7 @@
+import { invalidateHabitLogsCache, invalidateHabitsCache } from '@/hooks/queries/useHabits'
 import { zustandStorage } from '@/lib/storage'
 import { enqueueHabitUpdate } from '@/lib/sync/queue/habitQueue'
-import { getHabitQueue } from '@/lib/sync/queue/habitQueue'
 import { HabitPayload, SyncStatus } from '@/lib/sync/types'
-import { getHabitLogsService, getHabitsService } from '@/services/habitService'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useAuth } from './authStore'
@@ -41,8 +40,6 @@ interface HabitState {
 	setIsLoading: (loading: boolean) => void
 	setError: (error: string | null) => void
 
-	getHabits: () => Promise<any>
-	getHabitLogs: (startDate?: string, endDate?: string) => Promise<any>
 	createHabit: (data: Omit<HabitType, 'id'>) => Promise<any>
 	updateHabit: (id: string, data: Partial<HabitType>) => Promise<any>
 	deleteHabit: (id: string) => Promise<any>
@@ -68,85 +65,6 @@ export const useHabitStore = create<HabitState>()(
 			setHabitLogs: logs => set({ habitLogs: logs }),
 			setIsLoading: loading => set({ isLoading: loading }),
 			setError: error => set({ error }),
-
-			getHabits: async () => {
-				set({ isLoading: true, error: null })
-				try {
-					const user = useAuth.getState().user
-					const userId = user?.userId || (user as any)?.id
-					if (!userId) {
-						set({ error: 'User not logged in', isLoading: false })
-						return { success: false, error: 'User not logged in' }
-					}
-
-					const res = await getHabitsService(userId)
-					if (!res.success) {
-						set({ error: res.message, isLoading: false })
-						return res
-					}
-
-					const backendHabits = (res.data as HabitType[]) || []
-					const queue = getHabitQueue().filter(m => m.userId === userId)
-
-					// Merge pending creations
-					const pendingHabits = queue
-						.filter(m => m.type === 'CREATE_HABIT')
-						.map(m => ({ ...m.payload, id: m.payload.id!, syncStatus: 'pending' as SyncStatus }) as HabitType)
-
-					// Handle pending deletions
-					const deletedIds = new Set(queue.filter(m => m.type === 'DELETE_HABIT').map(m => m.payload.id))
-					const filteredBackend = backendHabits.filter(h => !deletedIds.has(h.id))
-
-					set({ habits: [...filteredBackend, ...pendingHabits], isLoading: false })
-					return { success: true }
-				} catch (err) {
-					set({ error: 'Failed to fetch habits', isLoading: false })
-					return { success: false, error: err }
-				}
-			},
-
-			getHabitLogs: async (startDate, endDate) => {
-				set({ isLoading: true, error: null })
-				try {
-					const user = useAuth.getState().user
-					const userId = user?.userId || (user as any)?.id
-					if (!userId) {
-						set({ error: 'User not logged in', isLoading: false })
-						return { success: false, error: 'User not logged in' }
-					}
-
-					const res = await getHabitLogsService(userId, startDate, endDate)
-					if (!res.success) {
-						set({ error: res.message, isLoading: false })
-						return res
-					}
-
-					const backendLogs = (res.data as Record<string, HabitLogType[]>) || {}
-					const queue = getHabitQueue().filter(m => m.userId === userId)
-
-					const mergedLogs = { ...backendLogs }
-					queue
-						.filter(m => m.type === 'LOG_HABIT')
-						.forEach(m => {
-							const habitId = m.payload.id!
-							if (!mergedLogs[habitId]) mergedLogs[habitId] = []
-							const existingIdx = mergedLogs[habitId].findIndex(l => l.date === m.payload.date)
-							const newLog = {
-								date: m.payload.date!,
-								value: m.payload.value!,
-								syncStatus: 'pending' as SyncStatus,
-							}
-							if (existingIdx !== -1) mergedLogs[habitId][existingIdx] = newLog
-							else mergedLogs[habitId].push(newLog)
-						})
-
-					set({ habitLogs: mergedLogs, isLoading: false })
-					return { success: true }
-				} catch (err) {
-					set({ error: 'Failed to fetch habit logs', isLoading: false })
-					return { success: false, error: err }
-				}
-			},
 
 			createHabit: async data => {
 				const user = useAuth.getState().user
@@ -178,8 +96,9 @@ export const useHabitStore = create<HabitState>()(
 				try {
 					enqueueHabitUpdate('CREATE_HABIT', payload, userId)
 					if (data.source === 'internal') {
-						get().getHabitLogs()
+						invalidateHabitLogsCache(userId)
 					}
+					invalidateHabitsCache(userId)
 					return { success: true }
 				} catch (error) {
 					return { success: false, error }
@@ -203,6 +122,7 @@ export const useHabitStore = create<HabitState>()(
 
 				try {
 					enqueueHabitUpdate('UPDATE_HABIT', payload, userId)
+					invalidateHabitsCache(userId)
 					return { success: true }
 				} catch (error) {
 					return { success: false, error }
@@ -226,6 +146,7 @@ export const useHabitStore = create<HabitState>()(
 
 				try {
 					enqueueHabitUpdate('DELETE_HABIT', payload, userId)
+					invalidateHabitsCache(userId)
 					return { success: true }
 				} catch (error) {
 					return { success: false, error }
@@ -265,6 +186,7 @@ export const useHabitStore = create<HabitState>()(
 
 				try {
 					enqueueHabitUpdate('LOG_HABIT', payload, userId)
+					invalidateHabitLogsCache(userId)
 					return { success: true }
 				} catch (error) {
 					return { success: false, error }

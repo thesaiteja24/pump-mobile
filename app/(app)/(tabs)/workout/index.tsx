@@ -5,11 +5,10 @@ import SkeletonProgramCard from '@/components/workout/SkeletonProgramCard'
 import SkeletonTemplateCard from '@/components/workout/SkeletonTemplateCard'
 import TemplateCard from '@/components/workout/TemplateCard'
 import { FREE_TIER_LIMITS } from '@/constants/limits'
-import { useThemeColor } from '@/hooks/useThemeColor'
-import { useProgram } from '@/stores/programStore'
 import { usePrograms } from '@/hooks/queries/usePrograms'
+import { useTemplatesQuery } from '@/hooks/queries/useTemplates'
+import { useThemeColor } from '@/hooks/useThemeColor'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
-import { useTemplate } from '@/stores/templateStore'
 import { useWorkout } from '@/stores/workoutStore'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { router } from 'expo-router'
@@ -29,16 +28,22 @@ export default function WorkoutScreen() {
 	const workout = useWorkout(s => s.workout)
 	const discardWorkout = useWorkout(s => s.discardWorkout)
 
-	// Template Store
-	const templates = useTemplate(s => s.templates)
-	const templateLoading = useTemplate(s => s.templateLoading)
-	const getAllTemplates = useTemplate(s => s.getAllTemplates)
-
-	// Program Store — draft UI state only
-	const draftProgram = useProgram(s => s.draftProgram)
+	// Template Store — draft/write actions only
+	// Templates list and loading state come from TanStack Query
+	const {
+		data: templates = [],
+		isLoading: templateLoading,
+		isFetching: templateIsFetching,
+		refetch: refetchTemplates,
+	} = useTemplatesQuery()
 
 	// Programs from TanStack Query
-	const { data: programs = [], isLoading: programLoading, refetch: refetchPrograms } = usePrograms()
+	const {
+		data: programs = [],
+		isLoading: programLoading,
+		isFetching: programIsFetching,
+		refetch: refetchPrograms,
+	} = usePrograms()
 
 	// Subscription Store
 	const isPro = useSubscriptionStore(s => s.isPro)
@@ -86,16 +91,11 @@ export default function WorkoutScreen() {
 		programsTranslateY,
 	])
 
-	useEffect(() => {
-		getAllTemplates()
-		// programs are managed by TanStack Query automatically
-	}, [getAllTemplates])
-
 	const onRefresh = React.useCallback(async () => {
 		setRefreshing(true)
-		await Promise.all([getAllTemplates(), refetchPrograms()])
+		await Promise.all([refetchTemplates(), refetchPrograms()])
 		setRefreshing(false)
-	}, [getAllTemplates, refetchPrograms])
+	}, [refetchTemplates, refetchPrograms])
 
 	const activeWorkoutStyle = useAnimatedStyle(() => ({
 		opacity: activeWorkoutOpacity.value,
@@ -182,7 +182,7 @@ export default function WorkoutScreen() {
 					</View> */}
 
 					{/* Available Programs Carousel */}
-					{programLoading ? (
+					{programLoading || programIsFetching ? (
 						<View>
 							<Carousel
 								loop={false}
@@ -235,7 +235,7 @@ export default function WorkoutScreen() {
 									<View
 										key={index}
 										className={`h-2 w-2 rounded-full ${
-											index === activeIndex
+											index === activeProgramIndex
 												? 'w-6 bg-blue-600'
 												: 'bg-neutral-300 dark:bg-neutral-700'
 										}`}
@@ -264,7 +264,7 @@ export default function WorkoutScreen() {
 						</TouchableOpacity>
 					</View>
 
-					{templateLoading ? (
+					{templateLoading || templateIsFetching ? (
 						<View>
 							<Carousel
 								loop={false}

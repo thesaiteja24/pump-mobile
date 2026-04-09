@@ -1,11 +1,12 @@
 import WorkoutCard from '@/components/home/WorkoutCard'
 import { ExerciseType, useExercises } from '@/hooks/queries/useExercises'
+import { useWorkoutHistoryQuery } from '@/hooks/queries/useWorkoutHistory'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
 import { useUser } from '@/stores/userStore'
-import { useWorkout, WorkoutHistoryItem } from '@/stores/workoutStore'
+import { WorkoutHistoryItem } from '@/stores/workoutStore'
 import { router } from 'expo-router'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import {
 	ActivityIndicator,
 	BackHandler,
@@ -136,18 +137,19 @@ const History = () => {
 	const user = useAuth(s => s.user)
 	const getUserData = useUser(s => s.getUserData)
 
-	const workoutHistory = useWorkout(s => s.workoutHistory)
-	const workoutLoading = useWorkout(s => s.workoutLoading)
-	const getAllWorkouts = useWorkout(s => s.getAllWorkouts)
-	const workoutPage = useWorkout(s => s.workoutPage)
-	const workoutHasMore = useWorkout(s => s.workoutHasMore)
+	// TanStack Query — infinite pagination with offline-first pending merge
+	const {
+		workoutHistory,
+		hasMore: workoutHasMore,
+		isFetching: workoutLoading,
+		fetchNextPage,
+		refetch: refetchHistory,
+	} = useWorkoutHistoryQuery()
 
 	const { data: exerciseList = [] } = useExercises()
 
-	const [refreshing, setRefreshing] = useState(false)
-
 	const hasExercises = exerciseList.length > 0
-	const showShimmer = refreshing || !hasExercises || (workoutLoading && workoutHistory.length === 0)
+	const showShimmer = workoutLoading && workoutHistory.length === 0
 
 	const exerciseTypeMap = useMemo(() => {
 		const map = new Map<string, ExerciseType>()
@@ -165,24 +167,12 @@ const History = () => {
 	}, [workoutHistory, showShimmer])
 
 	const onRefresh = useCallback(async () => {
-		try {
-			setRefreshing(true)
-			await getAllWorkouts(1)
-			// exercises are managed by TanStack Query, no manual call needed
-		} finally {
-			setRefreshing(false)
-		}
-	}, [getAllWorkouts])
-
-	const fetchNextPage = useCallback(() => {
-		if (!workoutLoading && workoutHasMore && workoutPage) {
-			getAllWorkouts(workoutPage + 1)
-		}
-	}, [workoutLoading, workoutHasMore, workoutPage, getAllWorkouts])
+		await refetchHistory()
+	}, [refetchHistory])
 
 	useEffect(() => {
-		Promise.all([getAllWorkouts(1), getUserData(user?.userId ?? '')])
-	}, [getAllWorkouts, getUserData, user?.userId])
+		useUser.getState().getUserData(user?.userId ?? '')
+	}, [user?.userId])
 
 	useEffect(() => {
 		const onBackPress = () => {
@@ -218,12 +208,14 @@ const History = () => {
 					}}
 					stickyHeaderIndices={listData.length > 0 ? [0] : []}
 					showsVerticalScrollIndicator={false}
-					refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-					onEndReached={fetchNextPage}
+					refreshControl={<RefreshControl refreshing={workoutLoading} onRefresh={onRefresh} />}
+					onEndReached={() => {
+						if (!workoutLoading && workoutHasMore) fetchNextPage()
+					}}
 					onEndReachedThreshold={0.5}
 					ListFooterComponent={
 						<View className="mb-[20%] items-center justify-center p-4 pb-12 pt-6">
-							{workoutLoading && workoutPage && workoutPage > 1 && (
+							{workoutLoading && workoutHistory.length > 0 && (
 								<ActivityIndicator size="small" color={colors.primary} />
 							)}
 						</View>

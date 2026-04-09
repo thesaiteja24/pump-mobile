@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/Button'
+import { useTemplateByShareIdQuery } from '@/hooks/queries/useTemplates'
 import { useTemplate } from '@/stores/templateStore'
 import { usePreventRemove } from '@react-navigation/native'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
@@ -17,19 +18,18 @@ export default function TemplateDetails() {
 	const [loading, setLoading] = React.useState(false)
 
 	// Stores
-	const sharedTemplate = useTemplate(s => s.sharedTemplate)
+	// sharedTemplate in Zustand is still used for the setSharedTemplate(null) reset on nav
+	// TODO (to be done by user only): see if we can remove this usage of setSharedTemplate so than we can move to tanstack query
 	const localTemplates = useTemplate(s => s.templates)
-	const getTemplateByShareId = useTemplate(s => s.getTemplateByShareId)
 	const saveSharedTemplate = useTemplate(s => s.saveSharedTemplate)
 	const setSharedTemplate = useTemplate(s => s.setSharedTemplate)
+
+	// TanStack Query — fetch shared template by shareId
+	const { data: sharedTemplate, isLoading: queryLoading } = useTemplateByShareIdQuery(shareId)
 
 	usePreventRemove(true, e => {
 		router.replace('/(app)/(tabs)/workout')
 	})
-
-	useEffect(() => {
-		getTemplateByShareId(shareId)
-	}, [shareId, getTemplateByShareId])
 
 	useEffect(() => {
 		navigation.setOptions({

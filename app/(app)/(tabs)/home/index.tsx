@@ -7,6 +7,7 @@ import ShimmerHomeScreen from '@/components/home/ShimmerHomeScreen'
 import StreakCard, { StreakDay } from '@/components/home/StreakCard'
 
 import { HabitCard } from '@/components/home/HabitCard'
+import { useHabitLogsQuery, useHabitsQuery } from '@/hooks/queries/useHabits'
 import { useAuth } from '@/stores/authStore'
 import { useHabitStore } from '@/stores/habitStore'
 import { useUser } from '@/stores/userStore'
@@ -31,7 +32,10 @@ export default function HomeScreen() {
 	const userAnalytics = useAnalytics(s => s.userAnalytics)
 	const latestMeasurements = useAnalytics(state => state.latestMeasurements)
 
-	const { habits, getHabits, getHabitLogs, preSeedDefaultHabits } = useHabitStore()
+	// Habits from TanStack Query
+	const { data: habits = [], refetch: refetchHabits } = useHabitsQuery()
+	const { refetch: refetchHabitLogs } = useHabitLogsQuery()
+	const { preSeedDefaultHabits } = useHabitStore()
 
 	const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
 	const age = useMemo(() => {
@@ -156,13 +160,13 @@ export default function HomeScreen() {
 				getUserData(user?.userId ?? ''),
 				getMeasurements(),
 				getUserAnalytics(),
-				getHabits(),
-				getHabitLogs(),
+				refetchHabits(),
+				refetchHabitLogs(),
 			])
 		} finally {
 			setRefreshing(false)
 		}
-	}, [getUserData, getMeasurements, getUserAnalytics, getHabits, getHabitLogs, user?.userId])
+	}, [getUserData, getMeasurements, getUserAnalytics, refetchHabits, refetchHabitLogs, user?.userId])
 
 	// ───────────────── Header animation ─────────────────
 	const headerOpacity = useSharedValue(0)
@@ -182,19 +186,22 @@ export default function HomeScreen() {
 	}))
 
 	// ───────────────── Initial Fetch ─────────────────
+	// Initial data is fetched automatically by TanStack Query hooks on mount
 	useEffect(() => {
-		Promise.all([
-			getUserData(user?.userId ?? ''),
-			getMeasurements(),
-			getUserAnalytics(),
-			getHabits().then(res => {
-				if (res.success && (!res.data || res.data.length === 0)) {
-					preSeedDefaultHabits()
-				}
-			}),
-			getHabitLogs(),
-		])
-	}, [getUserData, getMeasurements, getUserAnalytics, getHabits, getHabitLogs, preSeedDefaultHabits, user?.userId])
+		Promise.all([getUserData(user?.userId ?? ''), getMeasurements(), getUserAnalytics()])
+	}, [getUserData, getMeasurements, getUserAnalytics, user?.userId])
+
+	useEffect(() => {
+		const run = async () => {
+			const res = await refetchHabits()
+
+			if (res.data && res.data.length === 0) {
+				preSeedDefaultHabits()
+			}
+		}
+
+		run()
+	}, [refetchHabits, preSeedDefaultHabits])
 
 	// ───────────────── Render ─────────────────
 	return (
