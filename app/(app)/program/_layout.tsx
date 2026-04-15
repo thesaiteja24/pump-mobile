@@ -9,6 +9,7 @@ export default function ProgramLayout() {
 	return (
 		<Stack
 			screenOptions={{
+				animation: 'slide_from_right',
 				contentStyle: {
 					backgroundColor: colorScheme === 'dark' ? '#000000' : '#ffffff',
 				},

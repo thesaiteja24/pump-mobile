@@ -7,6 +7,7 @@ export default function ExercisesLayout() {
 	return (
 		<Stack
 			screenOptions={{
+				animation: 'slide_from_right',
 				contentStyle: {
 					backgroundColor: useColorScheme() === 'dark' ? '#000000' : '#ffffff',
 				},

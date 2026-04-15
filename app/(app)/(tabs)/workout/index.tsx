@@ -1,10 +1,10 @@
 import { Button } from '@/components/ui/Button'
 import { PaywallModal, PaywallModalHandle } from '@/components/ui/PaywallModal'
-import UserProgramCard from '@/components/workout/UserProgramCard'
 import ProgramCard from '@/components/workout/ProgramCard'
-import { SkeletonUserProgramCard, SkeletonProgramCard } from '@/components/workout/SkeletonProgramCard'
+import { SkeletonProgramCard, SkeletonUserProgramCard } from '@/components/workout/SkeletonProgramCard'
 import SkeletonTemplateCard from '@/components/workout/SkeletonTemplateCard'
 import TemplateCard from '@/components/workout/TemplateCard'
+import UserProgramCard from '@/components/workout/UserProgramCard'
 import { FREE_TIER_LIMITS } from '@/constants/limits'
 import { ROLES } from '@/constants/roles'
 import { useActiveProgram, usePrograms, useUserPrograms } from '@/hooks/queries/usePrograms'
@@ -183,7 +183,7 @@ export default function WorkoutScreen() {
 					</View>
 
 					{/* Active Program Card or Dotted Interface */}
-					<View className="mb-4">
+					<View className="">
 						{activeLoading || refreshing ? (
 							<SkeletonUserProgramCard />
 						) : activeProgram ? (
@@ -323,7 +323,7 @@ export default function WorkoutScreen() {
 							</View>
 						</View>
 					) : templates.length === 0 ? (
-						<View className="mb-4 h-32 items-center justify-center rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700">
+						<View className="h-32 items-center justify-center rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700">
 							<Text className="text-neutral-500 dark:text-neutral-400">
 								No templates yet. Create one!
 							</Text>

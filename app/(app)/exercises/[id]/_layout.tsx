@@ -8,6 +8,7 @@ export default function ExerciseDetailsStack() {
 	return (
 		<Stack
 			screenOptions={{
+				animation: 'slide_from_right',
 				contentStyle: {
 					backgroundColor: scheme === 'dark' ? '#000' : '#fff',
 				},

@@ -7,6 +7,7 @@ export default function SystemAdminLayout() {
 	return (
 		<Stack
 			screenOptions={{
+				animation: 'slide_from_right',
 				contentStyle: {
 					backgroundColor: useColorScheme() === 'dark' ? '#000000' : '#ffffff',
 				},

@@ -4,10 +4,12 @@ import CustomHeader from '@/components/navigation/CustomHeader'
 
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { Ionicons } from '@expo/vector-icons'
+import { BlurView } from 'expo-blur'
 import * as Haptics from 'expo-haptics'
+import { LinearGradient } from 'expo-linear-gradient'
 import { Tabs } from 'expo-router'
 import React, { useRef } from 'react'
-import { Pressable, useColorScheme, View } from 'react-native'
+import { Pressable, StyleSheet, useColorScheme, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function TabsLayout() {
@@ -15,8 +17,8 @@ export default function TabsLayout() {
 	const isDark = useColorScheme() === 'dark'
 	const insets = useSafeAreaInsets()
 
-	const barBg = colors.background
-	const barBorder = isDark ? '#222222' : '#DDDDDD'
+	const barBg = isDark ? 'rgba(10, 10, 10, 0.55)' : 'rgba(255, 255, 255, 0.72)'
+	const barBorder = isDark ? 'rgba(255, 255, 255, 0.14)' : 'rgba(17, 24, 39, 0.08)'
 	const activeColor = colors.text
 	const inactiveColor = '#A8A8A8'
 
@@ -45,6 +47,8 @@ export default function TabsLayout() {
 						backgroundColor: barBg,
 						borderWidth: 1,
 						borderColor: barBorder,
+						zIndex: 2,
+						overflow: 'hidden',
 
 						shadowColor: isDark ? '#fff' : '#000',
 						shadowOpacity: 0.08,
@@ -52,6 +56,14 @@ export default function TabsLayout() {
 						shadowOffset: { width: 0, height: 2 },
 						elevation: 2,
 					},
+					tabBarBackground: () => (
+						<BlurView
+							intensity={isDark ? 30 : 30}
+							tint={isDark ? 'dark' : 'light'}
+							experimentalBlurMethod="dimezisBlurView"
+							style={StyleSheet.absoluteFill}
+						/>
+					),
 
 					// ---- HEADER ----
 					header: props => {
@@ -201,6 +213,44 @@ export default function TabsLayout() {
 					}}
 				/>
 			</Tabs>
+
+			<View
+				pointerEvents="none"
+				style={{
+					position: 'absolute',
+					left: 0,
+					right: 0,
+					bottom: 0,
+					height: insets.bottom,
+					zIndex: 1,
+					elevation: 0,
+				}}
+			>
+				<BlurView
+					intensity={isDark ? 25 : 25}
+					tint={isDark ? 'dark' : 'light'}
+					experimentalBlurMethod="dimezisBlurView"
+					style={StyleSheet.absoluteFill}
+				/>
+
+				<LinearGradient
+					pointerEvents="none"
+					colors={[
+						isDark ? 'rgba(0, 0, 0, 0)' : 'rgba(255, 255, 255, 0)',
+						isDark ? 'rgba(0, 0, 0, 0.18)' : 'rgba(255, 255, 255, 0.22)',
+					]}
+					start={{ x: 0.5, y: 0 }}
+					end={{ x: 0.5, y: 1 }}
+					style={{
+						position: 'absolute',
+						left: 0,
+						right: 0,
+						top: 0,
+						height: 22,
+					}}
+				/>
+			</View>
+
 			<View
 				style={{
 					position: 'absolute',
@@ -208,10 +258,11 @@ export default function TabsLayout() {
 					marginRight: '10%',
 					bottom: insets.bottom,
 					height: 52,
+					zIndex: 2,
+					elevation: 6,
 					shadowOpacity: 0.15,
 					shadowRadius: 12,
 					shadowOffset: { width: 0, height: 4 },
-					elevation: 4,
 					alignItems: 'center',
 					justifyContent: 'center',
 				}}
