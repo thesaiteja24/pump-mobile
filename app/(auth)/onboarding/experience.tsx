@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/Button'
 import { SelectableCard } from '@/components/ui/SelectableCard'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useOnboarding } from '@/stores/onboardingStore'
+import { FitnessLevel } from '@/types/programApi'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import React from 'react'
@@ -60,7 +61,7 @@ export default function OnboardingExperience() {
 						<SelectableCard
 							key={lvl.value}
 							selected={fitnessLevel === lvl.value}
-							onSelect={() => setFitnessLevel(lvl.value as any)}
+							onSelect={() => setFitnessLevel(lvl.value as FitnessLevel)}
 							title={lvl.title}
 							className="flex-col items-start gap-1 p-4"
 						>

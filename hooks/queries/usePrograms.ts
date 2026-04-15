@@ -3,44 +3,116 @@ import { queryKeys } from '@/lib/queryKeys'
 import {
 	createProgramService,
 	deleteProgramService,
+	getActiveUserProgramService,
 	getAllProgramsService,
 	getProgramByIdService,
+	getUserProgramService,
 	updateProgramService,
 } from '@/services/programService'
 import { useAuth } from '@/stores/authStore'
-import { Program } from '@/stores/programStore'
+import {
+	DraftProgram,
+	ProgramDetails,
+	ProgramTemplateModel,
+	UserProgram,
+	UserProgramStartPayload,
+} from '@/types/programApi'
 import { useMutation, useQuery } from '@tanstack/react-query'
 
-// ─────────────────────────────────────────────────────
-// READ — programs list (staleTime 5 min, fresh enough for a production app)
-// ─────────────────────────────────────────────────────
-export function usePrograms() {
+export function usePrograms(page?: number, limit?: number) {
 	const userId = useAuth(s => s.user?.userId)
 
 	return useQuery({
-		queryKey: queryKeys.programs.all(userId ?? ''),
+		queryKey: [...queryKeys.programs.all(userId ?? ''), page ?? 'all', limit ?? 'all'],
 		queryFn: async () => {
-			if (!userId) return [] as Program[]
-			const res = await getAllProgramsService()
-			return (res.data.programs ?? []) as Program[]
+			if (!userId) return null
+
+			const fetchProgramsPage = async (pageNumber: number, pageLimit: number) => {
+				const res = await getAllProgramsService(pageNumber, pageLimit)
+				if (!res.success) throw new Error(res.message || 'Failed to load programs')
+				return res.data
+			}
+
+			if (page !== undefined || limit !== undefined) {
+				return fetchProgramsPage(page ?? 1, limit ?? 20)
+			}
+
+			const firstPage = await fetchProgramsPage(1, 20)
+			if (!firstPage) return null
+
+			const totalPages = firstPage.pagination.pages
+			if (totalPages <= 1) return firstPage
+
+			const nextPages = await Promise.all(
+				Array.from({ length: totalPages - 1 }, (_, index) => {
+					return fetchProgramsPage(index + 2, 20)
+				})
+			)
+
+			return {
+				...firstPage,
+				programs: [
+					...firstPage.programs,
+					...nextPages.flatMap(pageResponse => pageResponse?.programs ?? []),
+				],
+			}
 		},
 		enabled: !!userId,
-		staleTime: 7 * 24 * 60 * 60 * 1000, // 7 Days
+		staleTime: 30 * 24 * 60 * 60 * 1000, // 30 Days for global programs
 	})
 }
 
-// ─────────────────────────────────────────────────────
-// READ — single program (fetched on demand, staleTime 5 min)
-// ─────────────────────────────────────────────────────
 export function useProgramById(programId: string | null | undefined) {
 	return useQuery({
 		queryKey: queryKeys.programs.detail(programId ?? ''),
 		queryFn: async () => {
 			const res = await getProgramByIdService(programId!)
-			return res.data.program as Program
+			return (res.data?.program ?? null) as ProgramDetails | null
 		},
 		enabled: Boolean(programId),
 		staleTime: 7 * 24 * 60 * 60 * 1000, // 7 Days
+	})
+}
+
+export function useUserPrograms() {
+	const userId = useAuth(s => s.user?.userId)
+
+	return useQuery({
+		queryKey: queryKeys.programs.user.all(userId ?? ''),
+		queryFn: async () => {
+			if (!userId) return [] as UserProgram[]
+			const { listUserProgramsService } = await import('@/services/programService')
+			const res = await listUserProgramsService()
+			return (res.data?.programs ?? []) as UserProgram[]
+		},
+		enabled: !!userId,
+		staleTime: 24 * 60 * 60 * 1000, // 24 Hours
+	})
+}
+
+export function useUserProgram(userProgramId: string | null | undefined, weekIndex?: number) {
+	const userId = useAuth(s => s.user?.userId)
+	return useQuery({
+		queryKey: [queryKeys.programs.user.detail(userId ?? '', userProgramId ?? ''), weekIndex],
+		queryFn: async () => {
+			const res = await getUserProgramService(userProgramId!, weekIndex)
+			return (res.data?.program ?? null) as UserProgram | null
+		},
+		enabled: Boolean(userProgramId && userId),
+		staleTime: 24 * 60 * 60 * 1000, // 24 Hours
+	})
+}
+
+export function useActiveProgram() {
+	const userId = useAuth(s => s.user?.userId)
+	return useQuery({
+		queryKey: queryKeys.programs.user.active(userId ?? ''),
+		queryFn: async () => {
+			const res = await getActiveUserProgramService()
+			return (res.data?.program ?? null) as UserProgram | null
+		},
+		enabled: !!userId,
+		staleTime: 24 * 60 * 60 * 1000, // 24 Hours
 	})
 }
 
@@ -49,19 +121,16 @@ export function useProgramById(programId: string | null | undefined) {
 // ─────────────────────────────────────────────────────
 export function useCreateProgram() {
 	return useMutation({
-		mutationFn: async (data: Program) => {
-			const res = await createProgramService(data as any)
+		mutationFn: async (data: DraftProgram) => {
+			const { serializeProgramCreateForApi } = await import('@/utils/serializeForApi')
+			const serializedData = serializeProgramCreateForApi(data)
+			const res = await createProgramService(serializedData)
 			if (!res.success) throw new Error(res.message || 'Failed to create program')
-			return res.data.program as Program
+			return res.data?.program as ProgramTemplateModel
 		},
-		onSuccess: newProgram => {
+		onSuccess: () => {
 			const userId = useAuth.getState().user?.userId
 			if (userId) {
-				// Optimistically prepend to list without waiting for a refetch
-				queryClient.setQueryData<Program[]>(queryKeys.programs.all(userId), old =>
-					old ? [newProgram, ...old] : [newProgram]
-				)
-				// Then invalidate so background refetch normalises any discrepancy
 				queryClient.invalidateQueries({ queryKey: queryKeys.programs.all(userId) })
 			}
 		},
@@ -70,21 +139,25 @@ export function useCreateProgram() {
 
 export function useUpdateProgram() {
 	return useMutation({
-		mutationFn: async ({ id, data }: { id: string; data: Program }) => {
-			const res = await updateProgramService(id, data as any)
+		mutationFn: async ({ id, data }: { id: string; data: DraftProgram }) => {
+			const { serializeProgramUpdateForApi } = await import('@/utils/serializeForApi')
+			const serializedData = serializeProgramUpdateForApi(data)
+			const res = await updateProgramService(id, serializedData)
 			if (!res.success) throw new Error(res.message || 'Failed to update program')
-			return res.data.program as Program
+			return res.data?.program as ProgramTemplateModel
 		},
 		onSuccess: (updatedProgram, { id }) => {
 			const userId = useAuth.getState().user?.userId
 			if (userId) {
-				// Update list cache in-place
-				queryClient.setQueryData<Program[]>(queryKeys.programs.all(userId), old =>
-					old ? old.map(p => (p.id === id ? updatedProgram : p)) : [updatedProgram]
-				)
+				queryClient.invalidateQueries({ queryKey: queryKeys.programs.all(userId) })
 			}
-			// Update detail cache
-			queryClient.setQueryData(queryKeys.programs.detail(id), updatedProgram)
+
+			const detailKey = queryKeys.programs.detail(id)
+			if (Object.prototype.hasOwnProperty.call(updatedProgram, 'weeks')) {
+				queryClient.setQueryData(detailKey, updatedProgram)
+			} else {
+				queryClient.invalidateQueries({ queryKey: detailKey })
+			}
 		},
 	})
 }
@@ -99,11 +172,39 @@ export function useDeleteProgram() {
 		onSuccess: deletedId => {
 			const userId = useAuth.getState().user?.userId
 			if (userId) {
-				queryClient.setQueryData<Program[]>(queryKeys.programs.all(userId), old =>
-					old ? old.filter(p => p.id !== deletedId) : []
-				)
+				queryClient.invalidateQueries({ queryKey: queryKeys.programs.all(userId) })
 			}
 			queryClient.removeQueries({ queryKey: queryKeys.programs.detail(deletedId) })
+		},
+	})
+}
+
+export function useStartProgram() {
+	return useMutation({
+		mutationFn: async ({
+			programId,
+			duration,
+			startDate,
+		}: {
+			programId: string
+			duration: number
+			startDate: Date
+		}) => {
+			const { startProgramService } = await import('@/services/programService')
+			const payload: UserProgramStartPayload = {
+				duration,
+				startDate: startDate.toISOString(),
+			}
+			const res = await startProgramService(programId, payload)
+			if (!res.success) throw new Error(res.message || 'Failed to start program')
+			return res.data?.userProgram as UserProgram
+		},
+		onSuccess: () => {
+			const userId = useAuth.getState().user?.userId
+			if (userId) {
+				queryClient.invalidateQueries({ queryKey: queryKeys.programs.user.all(userId) })
+				queryClient.invalidateQueries({ queryKey: queryKeys.programs.user.active(userId) })
+			}
 		},
 	})
 }

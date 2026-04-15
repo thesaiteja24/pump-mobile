@@ -1,5 +1,5 @@
 import { ReadOnlyExerciseRow } from '@/components/workout/ReadOnlyExerciseRow'
-import { ProgramDay } from '@/stores/programStore'
+import { ProgramDay, UserProgramDay } from '@/types/programApi'
 import { FontAwesome6 } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'
@@ -7,7 +7,7 @@ import { BackHandler, Text, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export interface WorkoutDetailsModalHandle {
-	present: (day: ProgramDay) => void
+	present: (day: ProgramDay | UserProgramDay) => void
 	dismiss: () => void
 }
 
@@ -17,7 +17,7 @@ export interface WorkoutDetailsModalProps {
 
 export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, WorkoutDetailsModalProps>(
 	({ onOpenChange }, ref) => {
-	const [selectedDay, setSelectedDay] = useState<ProgramDay | null>(null)
+	const [selectedDay, setSelectedDay] = useState<ProgramDay | UserProgramDay | null>(null)
 	const isDark = useColorScheme() === 'dark'
 	const insets = useSafeAreaInsets()
 	const [isOpen, setIsOpen] = useState(false)
@@ -25,7 +25,7 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
 	const dynamicSizing = selectedDay?.isRestDay ? true : false
 
 	useImperativeHandle(ref, () => ({
-		present: (day: ProgramDay) => {
+		present: (day: ProgramDay | UserProgramDay) => {
 			setSelectedDay(day)
 			setIsOpen(true)
 			onOpenChange?.(true)
@@ -54,11 +54,18 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
 		[]
 	)
 
+	const template = useMemo(() => {
+		if (!selectedDay) return null
+		return 'template' in selectedDay
+			? (selectedDay as ProgramDay).template
+			: (selectedDay as UserProgramDay).templateSnapshot
+	}, [selectedDay])
+
 	const groupMap = useMemo(() => {
 		const map = new Map<string, any>()
-		selectedDay?.template?.exerciseGroups?.forEach(g => map.set(g.id, g))
+		template?.exerciseGroups?.forEach((g: any) => map.set(g.id, g))
 		return map
-	}, [selectedDay?.template?.exerciseGroups])
+	}, [template?.exerciseGroups])
 
 	const snapPoints = useMemo(() => ['75%'], [])
 
@@ -82,10 +89,10 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
 			)
 		}
 
-		if (!selectedDay.template) {
+		if (!template) {
 			return (
 				<View className="items-center justify-center py-12">
-					<Text className="text-neutral-500">No workout template linked for this day.</Text>
+					<Text className="text-neutral-500">No workout linked for this day.</Text>
 				</View>
 			)
 		}
@@ -95,17 +102,17 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
 				{/* Header */}
 				<View className="border-b border-neutral-100 p-4 dark:border-neutral-900">
 					<Text className="mb-2 text-2xl font-bold text-black dark:text-white">
-						{selectedDay.template.title}
+						{template.title}
 					</Text>
-					{selectedDay.template.notes && (
+					{template.notes && (
 						<Text className="mb-4 text-base text-neutral-600 dark:text-neutral-400">
-							{selectedDay.template.notes}
+							{template.notes}
 						</Text>
 					)}
 					<View className="flex-row gap-4">
 						<View className="rounded-full bg-neutral-100 px-3 py-1 dark:bg-neutral-800">
 							<Text className="text-sm font-medium text-neutral-500">
-								{selectedDay.template.exercises.length} Exercises
+								{template.exercises.length} Exercises
 							</Text>
 						</View>
 						<View className="rounded-full bg-blue-100 px-3 py-1 dark:bg-blue-900/30">
@@ -118,7 +125,7 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
 
 				{/* Exercise List */}
 				<View className="gap-4 p-4">
-					{selectedDay.template.exercises.map((ex, idx) => (
+					{template.exercises.map((ex: any, idx: number) => (
 						<ReadOnlyExerciseRow
 							key={ex.id || idx}
 							exercise={ex}

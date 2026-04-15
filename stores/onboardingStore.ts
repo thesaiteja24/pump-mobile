@@ -1,5 +1,6 @@
 import { toUTCISOString } from '@/utils/time'
 import { create } from 'zustand'
+import { FitnessLevel } from '@/types/programApi'
 
 export type Gender = 'male' | 'female' | 'other'
 export type WeightUnit = 'kg' | 'lbs'
@@ -25,7 +26,7 @@ interface OnboardingState {
 	targetWeight: number | null
 	targetBodyFat: number | null
 	activityLevel: 'sedentary' | 'lightlyActive' | 'moderatelyActive' | 'veryActive' | 'athlete' | null
-	fitnessLevel: 'beginner' | 'intermediate' | 'advanced' | null
+	fitnessLevel: FitnessLevel | null
 	weeklyRate: number | null
 	targetDate: Date | null
 

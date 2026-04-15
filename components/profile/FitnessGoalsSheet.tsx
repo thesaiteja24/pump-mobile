@@ -8,6 +8,7 @@ import {
 	useUpdateNutritionPlan,
 } from '@/hooks/queries/useAnalytics'
 import { FitnessGoal, useAuth } from '@/stores/authStore'
+import { FitnessLevel } from '@/types/programApi'
 
 import { calculateBMR, calculateBodyFat, calculateDailyTargets, calculateTDEE } from '@/utils/analytics'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
@@ -68,7 +69,7 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	>(currentActivityLevel)
 
 	const currentFitnessLevel = fitnessProfile?.fitnessLevel || 'beginner'
-	const [fitnessLevel, setFitnessLevel] = useState<'beginner' | 'intermediate' | 'advanced'>(currentFitnessLevel)
+	const [fitnessLevel, setFitnessLevel] = useState<FitnessLevel>(currentFitnessLevel)
 
 	// Preferred weight unit for display
 	const weightUnit = user?.preferredWeightUnit ?? 'kg'
