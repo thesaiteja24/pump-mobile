@@ -10,55 +10,60 @@
  * Type exports are kept so existing imports compile without changes.
  */
 
+import {
+	DraftProgram,
+	DraftProgramDay,
+	DraftProgramWeek,
+	FitnessLevel,
+	Program,
+	ProgramDay,
+	ProgramWeek,
+	UserProgram,
+	UserProgramDay,
+	UserProgramWeek,
+} from '@/types/programApi'
 import * as Crypto from 'expo-crypto'
 import { create } from 'zustand'
-import { WorkoutTemplate } from './template/types'
 
-// ─── Type Exports (consumed by service layer / serializer) ──────────────────
-
-export type FitnessLevel = 'beginner' | 'intermediate' | 'advanced'
-
-export interface ProgramDay {
-	id: string
-	weekId: string
-	name: string
-	dayIndex: number
-	isRestDay: boolean
-	templateId: string | null
-	template?: WorkoutTemplate | null
-	key?: string // frontend stability key
-}
-
-export interface ProgramWeek {
-	id: string
-	programId: string
-	name: string
-	weekIndex: number
-	days: ProgramDay[]
-	key?: string // frontend stability key
-}
-
-export interface Program {
-	id: string
-	clientId: string
-	title: string
-	description: string
-	experienceLevel: FitnessLevel
-	durationOptions: number[]
-	createdBy: string
-	createdAt: string
-	updatedAt: string
-	deletedAt: string
-	weeks: ProgramWeek[]
-}
 
 // ─── Draft State (pure UI — no network calls) ───────────────────────────────
 
 interface ProgramDraftState {
-	draftProgram: Program | null
+	draftProgram: DraftProgram | null
 	startDraftProgram: (program?: Program) => void
-	updateDraftProgram: (patch: Partial<Program>) => void
+	updateDraftProgram: (patch: Partial<DraftProgram>) => void
 	discardDraftProgram: () => void
+}
+
+function toDraftProgram(program: Program): DraftProgram {
+	return {
+		id: program.id,
+		clientId: program.clientId,
+		title: program.title,
+		description: program.description ?? '',
+		experienceLevel: program.experienceLevel,
+		durationOptions: program.durationOptions,
+		weeks: program.weeks
+			.map(week => ({
+				id: week.id,
+				programId: week.programId,
+				name: week.name,
+				weekIndex: week.weekIndex,
+				key: week.key || Crypto.randomUUID(),
+				days: week.days
+					.map(day => ({
+						id: day.id,
+						weekId: day.weekId,
+						name: day.name,
+						dayIndex: day.dayIndex,
+						isRestDay: day.isRestDay,
+						templateId: day.isRestDay ? null : (day.templateId ?? null),
+						key: day.key || Crypto.randomUUID(),
+					}))
+					.sort((a, b) => a.dayIndex - b.dayIndex),
+			}))
+			.sort((a, b) => a.weekIndex - b.weekIndex),
+	}
 }
 
 export const useProgram = create<ProgramDraftState>(set => ({
@@ -66,27 +71,15 @@ export const useProgram = create<ProgramDraftState>(set => ({
 
 	startDraftProgram: program => {
 		if (program) {
-			// Deep clone and stamp stability keys
-			const draft = JSON.parse(JSON.stringify(program)) as Program
-			draft.weeks.forEach(w => {
-				w.key = w.key || Crypto.randomUUID()
-				w.days.forEach(d => {
-					d.key = d.key || Crypto.randomUUID()
-				})
-			})
-			set({ draftProgram: draft })
+			set({ draftProgram: toDraftProgram(program) })
 		} else {
-			const newDraft: Program = {
+			const newDraft: DraftProgram = {
 				id: '',
 				clientId: Crypto.randomUUID(),
 				title: '',
 				description: '',
 				experienceLevel: 'beginner',
 				durationOptions: [4],
-				createdBy: '',
-				createdAt: '',
-				updatedAt: '',
-				deletedAt: '',
 				weeks: [
 					{
 						id: '',

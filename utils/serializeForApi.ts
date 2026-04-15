@@ -1,5 +1,5 @@
 import { TemplatePayload, UserPayload } from '@/lib/sync/types'
-import { Program } from '@/stores/programStore'
+import { DraftProgram, ProgramCreatePayload, ProgramDayPayload, ProgramUpdatePayload } from '@/types/programApi'
 import { DraftTemplate } from '@/stores/template/types'
 import { WorkoutLog } from '@/stores/workoutStore'
 
@@ -164,22 +164,77 @@ export function serializeUserUpdateForApi(user: UserPayload): UserPayload {
 	return payload as UserPayload
 }
 
-export function serializeProgramForApi(program: Program) {
+// Program serialization
+/**
+ * Normalizes duration options for API
+ * @param durationOptions - The duration options to normalize
+ * @returns The normalized duration options
+ */
+function normalizeDurationOptions(durationOptions: number[]): number[] {
+	return [...new Set(durationOptions.map(Number).filter(n => Number.isInteger(n) && n > 0))].sort((a, b) => a - b)
+}
+
+/**
+ * Serializes a program day for API
+ * @param day - The program day to serialize
+ * @returns The serialized program day
+ */
+function serializeProgramDay(day: DraftProgram['weeks'][number]['days'][number]): ProgramDayPayload {
+	const baseDay: ProgramDayPayload = {
+		name: day.name.trim(),
+		dayIndex: day.dayIndex,
+		isRestDay: day.isRestDay,
+	}
+
+	if (!day.isRestDay) {
+		baseDay.templateId = day.templateId && day.templateId.trim().length > 0 ? day.templateId : null
+	}
+
+	return baseDay
+}
+
+/**
+ * Serializes program weeks for API
+ * @param program - The program to serialize
+ * @returns The serialized program weeks
+ */
+function serializeProgramWeeks(program: DraftProgram): ProgramCreatePayload['weeks'] {
+	return [...program.weeks]
+		.sort((a, b) => a.weekIndex - b.weekIndex)
+		.map(week => ({
+			name: week.name.trim(),
+			weekIndex: week.weekIndex,
+			days: [...week.days].sort((a, b) => a.dayIndex - b.dayIndex).map(day => serializeProgramDay(day)),
+		}))
+}
+
+/**
+ * Serializes a program for API
+ * @param program - The program to serialize
+ * @returns The serialized program
+ */
+export function serializeProgramCreateForApi(program: DraftProgram): ProgramCreatePayload {
 	return {
 		clientId: program.clientId,
-		title: program.title,
-		description: program.description || null,
+		title: program.title.trim(),
+		description: program.description?.trim() ? program.description.trim() : null,
 		experienceLevel: program.experienceLevel,
-		durationOptions: program.durationOptions,
-		weeks: program.weeks.map(week => ({
-			name: week.name,
-			weekIndex: week.weekIndex,
-			days: week.days.map(day => ({
-				name: day.name,
-				dayIndex: day.dayIndex,
-				isRestDay: day.isRestDay,
-				templateId: day.isRestDay ? null : day.templateId,
-			})),
-		})),
+		durationOptions: normalizeDurationOptions(program.durationOptions),
+		weeks: serializeProgramWeeks(program),
+	}
+}
+
+/**
+ * Serializes a program for API
+ * @param program - The program to serialize
+ * @returns The serialized program
+ */
+export function serializeProgramUpdateForApi(program: DraftProgram): ProgramUpdatePayload {
+	return {
+		title: program.title.trim(),
+		description: program.description?.trim() ? program.description.trim() : null,
+		experienceLevel: program.experienceLevel,
+		durationOptions: normalizeDurationOptions(program.durationOptions),
+		weeks: serializeProgramWeeks(program),
 	}
 }
