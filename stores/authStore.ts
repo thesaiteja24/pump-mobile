@@ -2,64 +2,9 @@ import { registerUnauthorizedHandler } from '@/lib/authSession'
 import { clearTemplateQueue, clearWorkoutQueue } from '@/lib/sync/queue'
 import { setAccessToken } from '@/services/api'
 import { sendOtpService, verifyOtpService } from '@/services/authService'
+import { type User } from '@/types/auth'
 import * as SecureStore from 'expo-secure-store'
 import { create } from 'zustand'
-import { Gender } from './onboardingStore'
-import { LengthUnits, WeightUnits } from './userStore'
-
-type UserMeasurements = {
-	weight: number
-	bodyFat: number
-	leanBodyMass: number
-	neck: number
-	shoulders: number
-	chest: number
-	waist: number
-	abdomen: number
-	hips: number
-	leftBicep: number
-	rightBicep: number
-	leftForearm: number
-	rightForearm: number
-	leftThigh: number
-	rightThigh: number
-	leftCalf: number
-	rightCalf: number
-	notes: string
-	progressPics: string[]
-}
-
-export type FitnessGoal =
-	| 'loseWeight'
-	| 'gainMuscle'
-	| 'improveEndurance'
-	| 'improveFlexibility'
-	| 'improveStrength'
-	| 'improveOverallFitness'
-
-export interface User {
-	userId?: string
-	countryCode?: string
-	phone?: string
-	phoneE164?: string
-	email?: string
-	googleId?: string
-	firstName?: string
-	lastName?: string
-	dateOfBirth?: string | null
-	gender?: Gender
-	preferredWeightUnit?: WeightUnits
-	preferredLengthUnit?: LengthUnits
-	height?: number | null
-	weight?: number | null
-	profilePicUrl?: string | null
-	role?: string
-	privacyPolicyAcceptedAt?: string | null
-	followersCount?: number
-	followingCount?: number
-	createdAt?: string
-	updatedAt?: string
-}
 
 type AuthState = {
 	user: User | null

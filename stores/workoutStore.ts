@@ -4,9 +4,7 @@ import { persist } from 'zustand/middleware'
 import { createActiveWorkoutSlice } from './workout/activeWorkoutSlice'
 import { createHistorySlice } from './workout/historySlice'
 import { createRestTimerSlice } from './workout/restTimerSlice'
-import { WorkoutState } from './workout/types'
-
-export * from './workout/types'
+import { WorkoutState } from '@/types/workout'
 
 const initialState = {
 	workoutLoading: false,

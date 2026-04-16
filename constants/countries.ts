@@ -1,8 +1,4 @@
-export type Country = {
-	name: string
-	code: string // ISO 3166-1 alpha-2 (e.g., "IN")
-	dial_code: string // e.g., "+91"
-}
+import { type Country } from '@/types/country'
 
 export const COUNTRIES: Country[] = [
 	{

@@ -8,7 +8,7 @@
 import { storage } from '@/lib/storage'
 import * as Crypto from 'expo-crypto'
 import { queueEvents } from '../queueEvents'
-import { WorkoutMutation, WorkoutPayload } from '../types'
+import { WorkoutMutation, WorkoutPayload } from '@/types/sync'
 
 const WORKOUT_QUEUE_KEY = 'workout-mutation-queue'
 const WORKOUT_FAILED_QUEUE_KEY = 'workout-failed-queue'

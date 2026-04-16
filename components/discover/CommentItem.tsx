@@ -1,9 +1,9 @@
 import {
-	Comment as EngagementComment,
 	useCommentLikes,
 	useCommentReplies,
 	useToggleCommentLike,
 } from '@/hooks/queries/useComments'
+import { Comment as EngagementComment } from '@/types/comments'
 import { useAuth } from '@/stores/authStore'
 import { formatTimeAgo } from '@/utils/time'
 import { MaterialCommunityIcons } from '@expo/vector-icons'

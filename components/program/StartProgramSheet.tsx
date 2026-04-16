@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/Button'
 import { SelectableCard } from '@/components/ui/SelectableCard'
 import { PaywallModal, PaywallModalHandle } from '@/components/ui/PaywallModal'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
-import { Program, UserProgram } from '@/types/programApi'
+import { Program, UserProgram } from '@/types/program'
 import { Ionicons } from '@expo/vector-icons'
 import {
 	BottomSheetBackdrop,
@@ -101,7 +101,7 @@ export const StartProgramSheet = forwardRef<StartProgramSheetHandle, StartProgra
 							Ready to start?
 						</Text>
 						<Text className="mt-2 text-center text-neutral-500">
-							Choose your duration and plan type to activate "{program.title}"
+							{`Choose your duration and plan type to activate "${program.title}"`}
 						</Text>
 
 						{/* Duration Selection */}
@@ -169,8 +169,7 @@ export const StartProgramSheet = forwardRef<StartProgramSheetHandle, StartProgra
 									</Text>
 								</View>
 								<Text className="mt-2 text-sm text-amber-700 dark:text-amber-300">
-									Starting this will pause "{activeProgram.program.title}". You can resume it
-									later from your library.
+									{`Starting this will pause "${activeProgram.program.title}". You can resume it later from your library.`}
 								</Text>
 							</View>
 						)}
@@ -231,8 +230,8 @@ function ComingSoonModal({ onDismiss }: { onDismiss: () => void }) {
 			<BottomSheetView style={{ paddingBottom: insets.bottom + 24 }} className="px-6 pt-2">
 				<Text className="text-center text-xl font-bold dark:text-white">Coming Soon ✨</Text>
 				<Text className="mt-3 text-center text-base text-neutral-500">
-					Personalized programs are being polished for a perfect experience. We'll notify you as soon
-					as they're live!
+					Personalized programs are being polished for a perfect experience. We&apos;ll notify you as
+					soon as they&apos;re live!
 				</Text>
 				<Button title="Got it" variant="primary" className="mt-8" onPress={() => modalRef.current?.dismiss()} />
 			</BottomSheetView>

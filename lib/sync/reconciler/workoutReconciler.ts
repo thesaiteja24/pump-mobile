@@ -6,7 +6,7 @@
  */
 
 import { useWorkout } from '@/stores/workoutStore'
-import { SyncStatus } from '../types'
+import { SyncStatus } from '@/types/sync'
 
 /**
  * Reconcile a workout's ID after successful CREATE sync.

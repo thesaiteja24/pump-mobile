@@ -3,9 +3,10 @@ import PhoneInputField from '@/components/auth/PhoneInputField'
 import { Button } from '@/components/ui/Button'
 import PrivacyPolicyModal, { PrivacyPolicyModalHandle } from '@/components/ui/PrivacyPolicyModal'
 import { useThemeColor } from '@/hooks/useThemeColor'
-import { useAuth, User } from '@/stores/authStore'
+import { useAuth } from '@/stores/authStore'
 import { useOnboarding } from '@/stores/onboardingStore'
 import { useUser } from '@/stores/userStore'
+import { User } from '@/types/auth'
 import { calculateBMR, calculateDailyTargets, calculateTDEE } from '@/utils/analytics'
 import {
 	updateFitnessProfileService,

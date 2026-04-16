@@ -1,4 +1,5 @@
-import { CoachMessage, useCoach } from '@/hooks/useCoach'
+import { useCoach } from '@/hooks/useCoach'
+import { CoachMessage } from '@/types/coach'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 import { MaterialCommunityIcons } from '@expo/vector-icons'

@@ -3,7 +3,7 @@ import {
 	updateFitnessProfileService,
 	updateNutritionPlanService,
 } from '@/services/analyticsService'
-import { AnalyticsMutation } from '../types'
+import { AnalyticsMutation } from '@/types/sync'
 
 /**
  * Process an analytics mutation off the queue

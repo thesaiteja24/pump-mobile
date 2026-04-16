@@ -23,40 +23,10 @@ import {
 	getExerciseByIdService,
 	updateExerciseService,
 } from '@/services/exerciseService'
+import type { Equipment } from '@/types/equipment'
+import type { Exercise, ExerciseType } from '@/types/exercises'
+import type { MuscleGroup } from '@/types/muscle-groups'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-
-export type ExerciseType = 'repsOnly' | 'assisted' | 'weighted' | 'durationOnly'
-
-// TODO (to be done by user only): we declare the type here and as well as in useMuscleGroups see if we can use the one from useMuscleGroups
-export type MuscleGroup = {
-	id: string
-	title: string
-	thumbnailUrl: string
-	tags: string[]
-}
-
-// TODO (to be done by user only): we declare the type here and as well as in useEquipment see if we can use the one from useEquipment
-export type Equipment = {
-	id: string
-	title: string
-	thumbnailUrl: string
-}
-
-export type Exercise = {
-	id: string
-	title: string
-	instructions: string
-	thumbnailUrl: string
-	videoUrl: string
-	primaryMuscleGroupId: string
-	primaryMuscleGroup: MuscleGroup
-	equipmentId: string
-	equipment: Equipment
-	exerciseType: ExerciseType
-	createdAt: string
-	updatedAt: string
-	otherMuscleGroups: MuscleGroup[]
-}
 
 // ─────────────────────────────────────────────────────────────────
 // READ — full list

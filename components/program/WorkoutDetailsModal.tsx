@@ -1,5 +1,5 @@
 import { ReadOnlyExerciseRow } from '@/components/workout/ReadOnlyExerciseRow'
-import { ProgramDay, UserProgramDay } from '@/types/programApi'
+import { ProgramDay, UserProgramDay } from '@/types/program'
 import { FontAwesome6 } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'

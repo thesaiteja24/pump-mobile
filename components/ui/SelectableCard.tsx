@@ -2,7 +2,7 @@ import * as Haptics from 'expo-haptics'
 import React from 'react'
 import { Pressable, Text, View } from 'react-native'
 
-interface SelectableCardProps {
+export interface SelectableCardProps {
 	selected: boolean
 	onSelect: () => void
 	title: string

@@ -1,6 +1,6 @@
 import { TEMPLATES_ENDPOINT, TEMPLATE_ITEM_ENDPOINT } from '@/constants/urls'
-import { TemplatePayload } from '@/lib/sync/types'
-import { WorkoutTemplate } from '@/stores/template/types'
+import { TemplatePayload } from '@/types/sync'
+import { WorkoutTemplate } from '@/types/template'
 import { handleApiResponse } from '@/utils/handleApiResponse'
 import client from './api'
 

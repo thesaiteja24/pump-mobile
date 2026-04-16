@@ -1,4 +1,4 @@
-import type { Country } from '@/constants/countries'
+import type { Country } from '@/types/country'
 import { COUNTRIES } from '@/constants/countries'
 import { useThemeColor } from '@/hooks/useThemeColor'
 

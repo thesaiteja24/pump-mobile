@@ -1,4 +1,4 @@
-import { WorkoutTemplate } from '@/stores/templateStore'
+import { WorkoutTemplate } from '@/types/template'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'

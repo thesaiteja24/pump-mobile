@@ -20,19 +20,7 @@ import {
 import * as Crypto from 'expo-crypto'
 import { useState } from 'react'
 import { Alert } from 'react-native'
-
-enum CoachState {
-	idle,
-	recording,
-	stopped,
-}
-
-export interface CoachMessage {
-	id: string
-	role: 'coach' | 'user'
-	text: string
-	thinking: boolean
-}
+import { CoachState, type CoachMessage } from '@/types/coach'
 
 interface CoachVoice {
 	conversationId: string | null

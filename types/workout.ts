@@ -1,26 +1,13 @@
-import { ExerciseType } from '@/hooks/queries/useExercises'
-import { SyncStatus } from '@/lib/sync/types'
-import { WorkoutTemplate } from '@/stores/template/types'
-
-/* ───────────────── Types ───────────────── */
+import type { ExerciseType } from './exercises'
+import type { WorkoutTemplate } from './template'
+import type { SyncStatus } from './sync'
 
 export type SetType = 'warmup' | 'working' | 'dropSet' | 'failureSet'
 
 export type ExerciseGroupType = 'superSet' | 'giantSet'
 
-/**
- * Re-export SyncStatus for convenience
- */
-export type { SyncStatus } from '@/lib/sync/types'
-
 export type VisibilityType = 'public' | 'private'
 
-/**
- * Active workout state during a workout session.
- * - clientId: Always present, generated at creation (stable local identifier)
- * - id: Backend-generated ID, null until synced
- * - syncStatus: Track sync state for offline-first
- */
 export type WorkoutLog = {
 	clientId: string
 	id: string | null
@@ -45,7 +32,6 @@ export type WorkoutLogExercise = {
 export type WorkoutLogSet = {
 	id: string
 	setIndex: number
-
 	weight?: number
 	reps?: number
 	rpe?: number
@@ -53,8 +39,6 @@ export type WorkoutLogSet = {
 	restSeconds?: number
 	note?: string
 	setType: SetType
-
-	// runtime-only
 	completed: boolean
 	durationStartedAt?: number | null
 }
@@ -84,14 +68,12 @@ export type WorkoutHistoryExercise = {
 	exerciseId: string
 	exerciseIndex: number
 	exerciseGroupId: string | null
-
 	exercise: {
 		id: string
 		title: string
 		thumbnailUrl: string
 		exerciseType: ExerciseType
 	}
-
 	sets: WorkoutHistorySet[]
 }
 
@@ -107,12 +89,6 @@ export type WorkoutHistorySet = {
 	note: string | null
 }
 
-/**
- * Workout history item returned from backend or created optimistically.
- * - clientId: Client-generated stable identifier (for offline lookup)
- * - id: Backend-generated ID (always present in synced items)
- * - syncStatus: Track sync state for UI indicators
- */
 export type WorkoutHistoryItem = {
 	clientId: string
 	id: string
@@ -136,12 +112,9 @@ export type WorkoutHistoryItem = {
 		isPro: boolean
 		proSubscriptionType: string | null
 	} | null
-
 	exerciseGroups: WorkoutHistoryGroup[]
 	exercises: WorkoutHistoryExercise[]
 }
-
-/* ───────────────── State Interface ───────────────── */
 
 export interface RestState {
 	seconds: number | null
@@ -161,8 +134,6 @@ export interface WorkoutState {
 	discoverWorkouts: WorkoutHistoryItem[]
 	workout: WorkoutLog | null
 	rest: RestState
-
-	/* Workout */
 	getAllWorkouts: (page?: number) => Promise<void>
 	getDiscoverWorkouts: (page?: number) => Promise<void>
 	getWorkoutById: (id: string) => WorkoutHistoryItem | undefined
@@ -179,32 +150,22 @@ export interface WorkoutState {
 	saveWorkout: (prepared: WorkoutLog) => Promise<{ success: boolean; error?: any }>
 	resetWorkout: () => void
 	discardWorkout: () => void
-
-	/* Exercises */
 	addExercise: (exerciseId: string) => void
 	removeExercise: (exerciseId: string) => void
 	replaceExercise: (oldId: string, newId: string) => void
 	reorderExercises: (ordered: WorkoutLogExercise[]) => void
 	createExerciseGroup: (type: ExerciseGroupType, exerciseIds: string[]) => void
 	removeExerciseFromGroup: (exerciseId: string) => void
-
 	loadTemplate: (template: WorkoutTemplate) => void
-
-	/* Sets */
 	addSet: (exerciseId: string) => void
 	updateSet: (exerciseId: string, setId: string, patch: Partial<WorkoutLogSet>) => void
 	toggleSetCompleted: (exerciseId: string, setId: string) => void
 	removeSet: (exerciseId: string, setId: string) => void
-
-	/* Timers */
 	startSetTimer: (exerciseId: string, setId: string) => void
 	stopSetTimer: (exerciseId: string, setId: string) => void
-
-	/* Rest */
 	startRestTimer: (seconds: number) => void
 	stopRestTimer: () => void
 	adjustRestTimer: (deltaSeconds: number) => void
 	saveRestForSet: (exerciseId: string, setId: string, seconds: number) => void
-
 	resetState: () => void
 }

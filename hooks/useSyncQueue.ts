@@ -12,11 +12,9 @@ import {
 	incrementWorkoutRetry,
 	moveTemplateToFailedQueue,
 	moveWorkoutToFailedQueue,
-	TemplateMutation,
-	UserMutation,
-	WorkoutMutation,
 } from '@/lib/sync/queue'
 import { queueEvents } from '@/lib/sync/queueEvents'
+import { TemplateMutation, UserMutation, WorkoutMutation } from '@/types/sync'
 import {
 	markTemplateFailed,
 	markTemplateSynced,

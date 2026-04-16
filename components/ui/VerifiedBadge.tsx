@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { G, Path, Svg } from 'react-native-svg'
 
-interface VerifiedBadgeProps {
+export interface VerifiedBadgeProps {
 	tier: string | null
 	size?: number
 }

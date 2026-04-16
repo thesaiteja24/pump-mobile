@@ -1,7 +1,8 @@
 import { queryClient } from '@/lib/queryClient'
 import { queryKeys } from '@/lib/queryKeys'
 import { getAllWorkoutsService, getDiscoverWorkoutsService } from '@/services/workoutServices'
-import { SyncStatus, WorkoutHistoryItem } from '@/stores/workout/types'
+import { SyncStatus } from '@/types/sync'
+import { WorkoutHistoryItem } from '@/types/workout'
 import { useWorkout } from '@/stores/workoutStore'
 import { useInfiniteQuery } from '@tanstack/react-query'
 

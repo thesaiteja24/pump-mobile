@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button'
 import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
-import { useDeleteProgram, useProgramById, useStartProgram } from '@/hooks/queries/usePrograms'
+import { useActiveProgram, useDeleteProgram, useProgramById, useStartProgram } from '@/hooks/queries/usePrograms'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useMemo, useRef } from 'react'
@@ -12,9 +12,7 @@ import ShimmerProgramDetails from '@/components/program/ShimmerProgramDetails'
 import { StartProgramSheet, StartProgramSheetHandle } from '@/components/program/StartProgramSheet'
 import { WorkoutDetailsModal, WorkoutDetailsModalHandle } from '@/components/program/WorkoutDetailsModal'
 import { ROLES } from '@/constants/roles'
-import { useActiveProgram } from '@/hooks/queries/usePrograms'
 import { useAuth } from '@/stores/authStore'
-import { useSubscriptionStore } from '@/stores/subscriptionStore'
 
 export default function ProgramTemplateDetails() {
 	const params = useLocalSearchParams()
@@ -23,7 +21,6 @@ export default function ProgramTemplateDetails() {
 	const { data: activeProgram } = useActiveProgram()
 	const deleteProgramMutation = useDeleteProgram()
 	const startProgramMutation = useStartProgram()
-	const isPro = useSubscriptionStore(s => s.isPro)
 
 	const [isModalOpen, setIsModalOpen] = React.useState(false)
 	const deleteModalRef = useRef<DeleteConfirmModalHandle>(null)

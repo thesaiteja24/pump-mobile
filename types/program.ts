@@ -32,7 +32,6 @@ export interface ProgramUpdatePayload {
 	weeks?: ProgramWeekPayload[]
 }
 
-// Used by both create and update endpoints.
 export type ProgramPayload = ProgramCreatePayload | ProgramUpdatePayload
 
 export interface ProgramTemplateSet {

@@ -10,29 +10,14 @@ import {
 	updateHabitService,
 } from '@/services/habitService'
 import { useAuth } from '@/stores/authStore'
-
+import type {
+	HabitFooterType,
+	HabitLogType,
+	HabitSourceType,
+	HabitTrackingType,
+	HabitType,
+} from '@/types/habits'
 import { useMutation, useQuery } from '@tanstack/react-query'
-
-export type HabitFooterType = 'weeklyStreak' | 'weeklyCount'
-export type HabitTrackingType = 'streak' | 'quantity'
-export type HabitSourceType = 'manual' | 'internal'
-
-export type HabitType = {
-	id: string
-	title: string
-	colorScheme: string
-	trackingType: HabitTrackingType
-	targetValue?: number | null
-	unit?: string | null
-	footerType: HabitFooterType
-	source: HabitSourceType
-	internalMetricId?: string | null
-}
-
-export type HabitLogType = {
-	date: string
-	value: number
-}
 
 // ─────────────────────────────────────────────────────
 // READ — habits list

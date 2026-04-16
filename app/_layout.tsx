@@ -5,6 +5,7 @@ import { useThemeColor } from '@/hooks/useThemeColor'
 import { queryClient } from '@/lib/queryClient'
 import { useAuth } from '@/stores/authStore'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
+import { UpdateState } from '@/types/updates'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { useFonts } from 'expo-font'
@@ -21,8 +22,6 @@ import './globals.css'
 // Prevent splash auto-hide (explicit release only)
 // ─────────────────────────────────────────────
 SplashScreen.preventAutoHideAsync()
-
-type UpdateState = 'idle' | 'downloading' | 'restarting'
 
 if (!__DEV__) {
 	vexo('8f13f010-99f1-4a89-881b-b1b0d2321412')

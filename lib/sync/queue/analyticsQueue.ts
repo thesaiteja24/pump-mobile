@@ -1,7 +1,7 @@
 import { storage } from '@/lib/storage'
 import * as Crypto from 'expo-crypto'
 import { queueEvents } from '../queueEvents'
-import { AnalyticsMutation, AnalyticsMutationType, AnalyticsPayload } from '../types'
+import { AnalyticsMutation, AnalyticsMutationType, AnalyticsPayload } from '@/types/sync'
 
 const ANALYTICS_QUEUE_KEY = 'analytics_sync_queue'
 const ANALYTICS_FAILED_QUEUE_KEY = 'analytics_failed_queue'

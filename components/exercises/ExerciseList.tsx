@@ -1,4 +1,4 @@
-import { Exercise } from '@/hooks/queries/useExercises'
+import { Exercise } from '@/types/exercises'
 import { Image } from 'expo-image'
 import React, { useCallback } from 'react'
 import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native'

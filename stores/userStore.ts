@@ -1,5 +1,5 @@
 import { enqueueUserUpdate } from '@/lib/sync/queue/userQueue'
-import { UserPayload } from '@/lib/sync/types'
+import { UserPayload } from '@/types/sync'
 import {
 	deleteProfilePicService,
 	followUserService,
@@ -11,25 +11,10 @@ import {
 	unFollowUserService,
 	updateProfilePicService,
 } from '@/services/userService'
+import { type SearchedUser, type UserPreferences } from '@/types/user'
 import { serializeUserUpdateForApi } from '@/utils/serializeForApi'
 import { create } from 'zustand'
 import { useAuth } from './authStore'
-
-export type WeightUnits = 'kg' | 'lbs'
-export type LengthUnits = 'cm' | 'inches'
-
-type Preferences = {
-	preferredWeightUnit?: WeightUnits
-	preferredLengthUnit?: LengthUnits
-}
-
-export interface SearchedUser {
-	id: string
-	firstName: string
-	lastName: string
-	profilePicUrl: string | null
-	isFollowing?: boolean
-}
 
 type UserState = {
 	isLoading: boolean
@@ -179,7 +164,7 @@ export const useUser = create<UserState>(set => ({
 		}
 	},
 
-	updatePreferences(userId, data: Preferences) {
+	updatePreferences(userId, data: UserPreferences) {
 		return new Promise(async resolve => {
 			// offline-first implementation
 			const currentUser = useAuth.getState().user

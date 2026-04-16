@@ -10,7 +10,7 @@ import {
 	UserProgramsListResponse,
 	UserProgramStartPayload,
 	UserProgramStartResponse,
-} from '@/types/programApi'
+} from '@/types/program'
 import { ApiError, ApiResponse, handleApiResponse } from '@/utils/handleApiResponse'
 import { AxiosError } from 'axios'
 import client from './api'

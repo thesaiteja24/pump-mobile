@@ -7,8 +7,9 @@ import {
 	useUpdateFitnessProfile,
 	useUpdateNutritionPlan,
 } from '@/hooks/queries/useAnalytics'
-import { FitnessGoal, useAuth } from '@/stores/authStore'
-import { FitnessLevel } from '@/types/programApi'
+import { useAuth } from '@/stores/authStore'
+import { FitnessGoal } from '@/types/auth'
+import { FitnessLevel } from '@/types/program'
 
 import { calculateBMR, calculateBodyFat, calculateDailyTargets, calculateTDEE } from '@/utils/analytics'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'

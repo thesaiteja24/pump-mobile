@@ -1,7 +1,7 @@
 import { storage } from '@/lib/storage'
 import * as Crypto from 'expo-crypto'
 import { queueEvents } from '../queueEvents'
-import { HabitMutation, HabitMutationType, HabitPayload } from '../types'
+import { HabitMutation, HabitMutationType, HabitPayload } from '@/types/sync'
 
 const HABIT_QUEUE_KEY = 'habit_sync_queue'
 const HABIT_FAILED_QUEUE_KEY = 'habit_failed_queue'

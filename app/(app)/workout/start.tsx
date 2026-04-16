@@ -4,9 +4,11 @@ import ExerciseGroupModal, { ExerciseGroupModalHandle } from '@/components/worko
 import ExerciseRow from '@/components/workout/ExerciseRow'
 import RestTimerSnack from '@/components/workout/RestTimerSnack'
 
-import { Exercise, ExerciseType, useExercises } from '@/hooks/queries/useExercises'
+import { useExercises } from '@/hooks/queries/useExercises'
 import { useAuth } from '@/stores/authStore'
-import { ExerciseGroupType, useWorkout, WorkoutLogGroup } from '@/stores/workoutStore'
+import { Exercise, ExerciseType } from '@/types/exercises'
+import { ExerciseGroupType, WorkoutLogGroup } from '@/types/workout'
+import { useWorkout } from '@/stores/workoutStore'
 
 import { convertWeight } from '@/utils/converter'
 import { calculateWorkoutMetrics } from '@/utils/workout'

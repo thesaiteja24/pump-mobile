@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand'
-import { RestState, WorkoutState } from './types'
+import { RestState, WorkoutState } from '@/types/workout'
 
 export interface RestTimerSlice {
 	rest: RestState

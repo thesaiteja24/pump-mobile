@@ -1,9 +1,9 @@
 import { queryClient } from '@/lib/queryClient'
 import { queryKeys } from '@/lib/queryKeys'
-import { SyncStatus } from '@/lib/sync/types'
+import { SyncStatus } from '@/types/sync'
 import { getAllTemplatesService, getTemplateByIdService, getTemplateByShareIdService } from '@/services/templateService'
 import { useAuth } from '@/stores/authStore'
-import { WorkoutTemplate } from '@/stores/template/types'
+import { WorkoutTemplate } from '@/types/template'
 import { useQuery } from '@tanstack/react-query'
 
 // ─────────────────────────────────────────────────────

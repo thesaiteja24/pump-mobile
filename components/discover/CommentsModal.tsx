@@ -1,5 +1,6 @@
 import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
-import { Comment as EngagementComment, useDeleteComment, useWorkoutComments } from '@/hooks/queries/useComments'
+import { useDeleteComment, useWorkoutComments } from '@/hooks/queries/useComments'
+import { Comment as EngagementComment } from '@/types/comments'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'

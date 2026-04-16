@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/Button'
-import { WorkoutTemplate } from '@/stores/template/types'
+import { WorkoutTemplate } from '@/types/template'
 import { useTemplate } from '@/stores/templateStore'
 import * as Haptics from 'expo-haptics'
 import { Image } from 'expo-image'

@@ -4,11 +4,10 @@ import {
 	WORKOUT_SHARE_ENDPOINT as workout_share_endpoint,
 	WORKOUTS_ENDPOINT as workouts_endpoint,
 } from '@/constants/urls'
-import { WorkoutPayload } from '@/lib/sync/types'
+import { WorkoutPayload } from '@/types/sync'
 import { handleApiResponse } from '@/utils/handleApiResponse'
+import { WorkoutHistoryItem } from '@/types/workout'
 import client from './api'
-
-import { WorkoutHistoryItem } from '@/stores/workoutStore'
 
 export async function getWorkoutByShareIdService(shareId: string): Promise<WorkoutHistoryItem> {
 	try {

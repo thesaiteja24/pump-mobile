@@ -2,7 +2,8 @@ import { enqueueWorkoutDelete } from '@/lib/sync/queue'
 import { getAllWorkoutsService, getDiscoverWorkoutsService } from '@/services/workoutServices'
 import { StateCreator } from 'zustand'
 import { useAuth } from '../authStore'
-import { SyncStatus, WorkoutHistoryItem, WorkoutState } from './types'
+import { SyncStatus } from '@/types/sync'
+import { WorkoutHistoryItem, WorkoutState } from '@/types/workout'
 
 export interface HistorySlice {
 	workoutLoading: boolean

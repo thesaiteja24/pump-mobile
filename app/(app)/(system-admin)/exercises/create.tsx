@@ -1,7 +1,8 @@
 import EquipmentModal, { EquipmentModalHandle } from '@/components/exercises/EquipmentModal'
 import MuscleGroupModal, { MuscleGroupModalHandle } from '@/components/exercises/MuscleGroupModal'
 import { useEquipment } from '@/hooks/queries/useEquipment'
-import { ExerciseType, useCreateExercise } from '@/hooks/queries/useExercises'
+import { useCreateExercise } from '@/hooks/queries/useExercises'
+import { ExerciseType } from '@/types/exercises'
 import { useMuscleGroups } from '@/hooks/queries/useMuscleGroups'
 
 import { Ionicons } from '@expo/vector-icons'

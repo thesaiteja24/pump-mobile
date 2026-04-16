@@ -1,7 +1,7 @@
-import { TemplatePayload, UserPayload } from '@/lib/sync/types'
-import { DraftProgram, ProgramCreatePayload, ProgramDayPayload, ProgramUpdatePayload } from '@/types/programApi'
-import { DraftTemplate } from '@/stores/template/types'
-import { WorkoutLog } from '@/stores/workoutStore'
+import { TemplatePayload, UserPayload } from '@/types/sync'
+import { DraftProgram, ProgramCreatePayload, ProgramDayPayload, ProgramUpdatePayload } from '@/types/program'
+import { DraftTemplate } from '@/types/template'
+import { WorkoutLog } from '@/types/workout'
 
 /**
  * Serializes a template for API

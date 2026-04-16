@@ -1,37 +1,17 @@
-/**
- * Sync Types
- *
- * Core type definitions for the offline-first sync system.
- * These types are used across the sync infrastructure.
- */
+import type { MeasurementType } from './analytics'
+import type { HabitFooterType, HabitSourceType, HabitTrackingType } from './habits'
+import type { LengthUnits, WeightUnits } from './user'
 
-import { HabitFooterType, HabitSourceType, HabitTrackingType } from '@/hooks/queries/useHabits'
-import { LengthUnits, WeightUnits } from '@/stores/userStore'
-
-export type { MeasurementType } from '@/hooks/queries/useAnalytics'
-
-/**
- * Sync status for any syncable entity (workout, template, etc.)
- */
 export type SyncStatus = 'pending' | 'syncing' | 'synced' | 'failed'
 
-/**
- * Base interface for any entity that can be synced
- */
 export interface SyncableEntity {
-	clientId: string // Client-generated UUID, stable identifier
-	id: string | null // Backend-generated ID, null until synced
+	clientId: string
+	id: string | null
 	syncStatus: SyncStatus
 }
 
-/**
- * Mutation types for the workout domain
- */
 export type WorkoutMutationType = 'CREATE' | 'UPDATE' | 'DELETE'
 
-/**
- * Serialized workout payload for API/queue
- */
 export interface WorkoutPayload {
 	clientId: string
 	id?: string | null
@@ -42,9 +22,6 @@ export interface WorkoutPayload {
 	exerciseGroups?: SerializedExerciseGroup[]
 }
 
-/**
- * Serialized exercise for API payload
- */
 export interface SerializedExercise {
 	exerciseId: string
 	exerciseIndex: number
@@ -52,9 +29,6 @@ export interface SerializedExercise {
 	sets: SerializedSet[]
 }
 
-/**
- * Serialized set for API payload
- */
 export interface SerializedSet {
 	setIndex: number
 	setType: string
@@ -66,9 +40,6 @@ export interface SerializedSet {
 	note?: string | null
 }
 
-/**
- * Serialized exercise group for API payload
- */
 export interface SerializedExerciseGroup {
 	id: string
 	groupType: string
@@ -76,12 +47,9 @@ export interface SerializedExerciseGroup {
 	restSeconds?: number | null
 }
 
-/**
- * Workout mutation stored in the queue
- */
 export interface WorkoutMutation {
-	queueId: string // Unique queue item ID
-	clientId: string // Workout clientId (dedup key)
+	queueId: string
+	clientId: string
 	type: WorkoutMutationType
 	payload: WorkoutPayload
 	userId: string
@@ -89,16 +57,8 @@ export interface WorkoutMutation {
 	retryCount: number
 }
 
-/* ───────────────── Template Types ───────────────── */
-
-/**
- * Mutation types for the template domain
- */
 export type TemplateMutationType = 'CREATE' | 'UPDATE' | 'DELETE'
 
-/**
- * Serialized template exercise for API payload
- */
 export interface SerializedTemplateExercise {
 	exerciseId: string
 	exerciseIndex: number
@@ -106,9 +66,6 @@ export interface SerializedTemplateExercise {
 	sets: SerializedSet[]
 }
 
-/**
- * Serialized template payload for API/queue
- */
 export interface TemplatePayload {
 	clientId: string
 	id?: string | null
@@ -121,9 +78,6 @@ export interface TemplatePayload {
 	exerciseGroups?: SerializedExerciseGroup[]
 }
 
-/**
- * Template mutation stored in the queue
- */
 export interface TemplateMutation {
 	queueId: string
 	clientId: string
@@ -134,20 +88,10 @@ export interface TemplateMutation {
 	retryCount: number
 }
 
-/* ───────────────── Analytics Types ───────────────── */
-
-/**
- * Mutation types for the analytics domain
- */
 export type AnalyticsMutationType = 'UPDATE_FITNESS_PROFILE' | 'ADD_MEASUREMENT' | 'UPDATE_NUTRITION_PLAN'
 
-/**
- * Serialized analytics payload for API/queue
- */
 export interface AnalyticsPayload {
 	userId: string
-
-	// For UPDATE_FITNESS_PROFILE
 	fitnessGoal?: string | null
 	fitnessLevel?: string | null
 	activityLevel?: string | null
@@ -158,9 +102,7 @@ export interface AnalyticsPayload {
 	targetDate?: string | null
 	injuries?: string | null
 	availableEquipment?: string[]
-
-	// For ADD_MEASUREMENT
-	date?: string // used to identify which day's measurement this is
+	date?: string
 	weight?: number | null
 	bodyFat?: number | null
 	waist?: number | null
@@ -179,8 +121,6 @@ export interface AnalyticsPayload {
 	rightCalf?: number | null
 	notes?: string | null
 	progressPics?: { uri: string; name: string; type: string }[]
-
-	// For UPDATE_NUTRITION_PLAN
 	caloriesTarget?: number | null
 	proteinTarget?: number | null
 	fatsTarget?: number | null
@@ -190,9 +130,6 @@ export interface AnalyticsPayload {
 	startDate?: string | null
 }
 
-/**
- * Analytics mutation stored in the queue
- */
 export interface AnalyticsMutation {
 	queueId: string
 	type: AnalyticsMutationType
@@ -202,51 +139,27 @@ export interface AnalyticsMutation {
 	retryCount: number
 }
 
-/* ───────────────── Sync Result ───────────────── */
-
-/**
- * Result of a sync operation
- */
 export interface SyncResult<T = unknown> {
 	success: boolean
 	data?: T
 	error?: Error | string
 	shouldRetry?: boolean
 }
-/* ───────────────── User Types ───────────────── */
 
-/**
- * Mutation types for the user domain
- */
 export type UserMutationType = 'UPDATE_USER' | 'UPDATE_PREFERENCES'
 
-/**
- * Serialized user payload for API/queue
- */
 export interface UserPayload {
-	// Common fields
 	userId: string
-
-	// For UPDATE_USER
 	firstName?: string
 	lastName?: string
 	dateOfBirth?: string | null
 	height?: number | null
 	weight?: number | null
 	gender?: 'male' | 'female' | 'other' | null
-
-	// For UPDATE_PREFERENCES
 	preferredWeightUnit?: WeightUnits
 	preferredLengthUnit?: LengthUnits
-
-	// For profile pic (separate handling might be needed but keeping simple for now)
-	// Profile pic upload usually involves FormData and is harder to serialize in JSON queue.
-	// For now, we focusing on data updates.
 }
 
-/**
- * User mutation stored in the queue
- */
 export interface UserMutation {
 	queueId: string
 	type: UserMutationType
@@ -256,19 +169,11 @@ export interface UserMutation {
 	retryCount: number
 }
 
-/* ───────────────── Habit Types ───────────────── */
-
-/**
- * Mutation types for the habit domain
- */
 export type HabitMutationType = 'CREATE_HABIT' | 'UPDATE_HABIT' | 'DELETE_HABIT' | 'LOG_HABIT'
 
-/**
- * Serialized habit payload for API/queue
- */
 export interface HabitPayload {
 	userId: string
-	id?: string // Habit ID for update/delete/log
+	id?: string
 	title?: string
 	colorScheme?: string
 	trackingType?: HabitTrackingType
@@ -277,15 +182,10 @@ export interface HabitPayload {
 	footerType?: HabitFooterType
 	source?: HabitSourceType
 	internalMetricId?: string | null
-
-	// For LOG_HABIT
 	date?: string
 	value?: number
 }
 
-/**
- * Habit mutation stored in the queue
- */
 export interface HabitMutation {
 	queueId: string
 	type: HabitMutationType

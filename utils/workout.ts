@@ -1,5 +1,5 @@
-import { ExerciseType } from '@/hooks/queries/useExercises'
-import { WorkoutHistoryItem, WorkoutLog, WorkoutLogSet, WorkoutPruneReport } from '@/stores/workoutStore'
+import { ExerciseType } from '@/types/exercises'
+import { WorkoutHistoryItem, WorkoutLog, WorkoutLogSet, WorkoutPruneReport } from '@/types/workout'
 
 /* ───────────────── Metrics ───────────────── */
 

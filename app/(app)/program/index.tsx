@@ -3,7 +3,7 @@ import TemplateSelectionModal, { TemplateSelectionModalHandle } from '@/componen
 import { useCreateProgram, useProgramById, useUpdateProgram } from '@/hooks/queries/usePrograms'
 import { useTemplatesQuery } from '@/hooks/queries/useTemplates'
 import { useProgram } from '@/stores/programStore'
-import { DraftProgramDay, DraftProgramWeek } from '@/types/programApi'
+import { DraftProgramDay, DraftProgramWeek } from '@/types/program'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import * as Crypto from 'expo-crypto'

@@ -16,7 +16,7 @@ import {
 	ProgramTemplateModel,
 	UserProgram,
 	UserProgramStartPayload,
-} from '@/types/programApi'
+} from '@/types/program'
 import { useMutation, useQuery } from '@tanstack/react-query'
 
 export function usePrograms(page?: number, limit?: number) {

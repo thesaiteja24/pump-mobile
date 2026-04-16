@@ -1,7 +1,7 @@
 import { useAuth } from '@/stores/authStore'
 import { useUser } from '@/stores/userStore'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
-import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { forwardRef, useEffect, useMemo, useState } from 'react'
 import { BackHandler, Text, TouchableOpacity, useColorScheme, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 

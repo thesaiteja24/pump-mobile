@@ -3,24 +3,8 @@ import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
 import { Platform, Text, TouchableOpacity, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { type CustomHeaderProps } from '@/types/navigation'
 import SyncStatus from '../ui/SyncStatus'
-
-type IoniconName = keyof typeof Ionicons.glyphMap
-
-type RightIcon = {
-	name: IoniconName
-	onPress: () => void
-	disabled?: boolean
-	color?: string // optional per-icon color override
-}
-
-type CustomHeaderProps = {
-	title: string
-	leftIcon?: IoniconName
-	rightIcons?: RightIcon[]
-	onLeftPress?: () => void
-	iconColor?: string // global override for enabled icon color
-}
 
 export default function CustomHeader({ title, leftIcon, rightIcons = [], onLeftPress, iconColor }: CustomHeaderProps) {
 	const insets = useSafeAreaInsets()

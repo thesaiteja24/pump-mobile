@@ -1,5 +1,5 @@
 import { useAuth } from '@/stores/authStore'
-import { LengthUnits, WeightUnits } from '@/stores/userStore'
+import { LengthUnits, WeightUnits } from '@/types/user'
 
 /* ---------------------------------------------
    Constants (never magic numbers)

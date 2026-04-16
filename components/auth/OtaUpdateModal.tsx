@@ -1,8 +1,7 @@
 import { useThemeColor } from '@/hooks/useThemeColor'
+import { type UpdateState } from '@/types/updates'
 import { useRef } from 'react'
 import { Modal, Pressable, Text, View } from 'react-native'
-
-type UpdateState = 'idle' | 'downloading' | 'restarting'
 
 type Props = {
 	visible: boolean

@@ -1,6 +1,6 @@
 import { useCountUp } from '@/hooks/useCountUp'
 import { useThemeColor } from '@/hooks/useThemeColor'
-import { WeightUnits } from '@/stores/userStore'
+import { WeightUnits } from '@/types/user'
 import { BodyFatFeedback, classifyBodyFat } from '@/utils/analytics'
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'

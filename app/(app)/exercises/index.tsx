@@ -6,9 +6,10 @@ import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/De
 
 import { ROLES as roles } from '@/constants/roles'
 import { useEquipment } from '@/hooks/queries/useEquipment'
-import { Exercise, useDeleteExercise, useExercises } from '@/hooks/queries/useExercises'
+import { useDeleteExercise, useExercises } from '@/hooks/queries/useExercises'
 import { useMuscleGroups } from '@/hooks/queries/useMuscleGroups'
 import { useAuth } from '@/stores/authStore'
+import { Exercise } from '@/types/exercises'
 
 import { useTemplate } from '@/stores/templateStore'
 import { useWorkout } from '@/stores/workoutStore'

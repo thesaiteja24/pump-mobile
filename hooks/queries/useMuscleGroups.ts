@@ -17,15 +17,8 @@ import {
 	getMuscleGroupByIdService,
 	updateMuscleGroupService,
 } from '@/services/muscleGroupService'
+import type { MuscleGroup } from '@/types/muscle-groups'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-
-export type MuscleGroup = {
-	id: string
-	thumbnailUrl: string
-	title: string
-	createdAt: string
-	updatedAt: string
-}
 
 // ─────────────────────────────────────────────────────────────────
 // READ — full list

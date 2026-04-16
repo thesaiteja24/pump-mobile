@@ -6,7 +6,7 @@
  */
 
 import { useTemplate } from '@/stores/templateStore'
-import { SyncStatus } from '../types'
+import { SyncStatus } from '@/types/sync'
 
 /**
  * Reconcile a template's ID after successful CREATE sync.

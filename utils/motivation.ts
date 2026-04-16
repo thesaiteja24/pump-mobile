@@ -1,18 +1,4 @@
-export type MotivationCategory = 'progress' | 'streak' | 'consistency' | 'recovery' | 'neutral'
-
-export interface MotivationInput {
-	weeklyVolume: number
-	lastWeekVolume: number
-	streakDays: number
-	workoutsThisWeek: number
-	daysSinceLastWorkout: number
-	prCount?: number // Optional: if we track PRs directly
-}
-
-export interface MotivationResult {
-	text: string
-	category: MotivationCategory
-}
+import { type MotivationInput, type MotivationResult } from '@/types/motivation'
 
 /**
  * Determines the motivational line based on multiple conditions.

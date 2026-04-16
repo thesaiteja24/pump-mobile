@@ -1,6 +1,7 @@
 import { CustomModal, ModalHandle } from '@/components/ui/CustomModal'
 import { TextInput } from '@/components/ui/TextInput'
-import { HabitType, useDeleteHabit, useHabitLogsQuery, useLogHabit, useLogWeight } from '@/hooks/queries/useHabits'
+import { useDeleteHabit, useHabitLogsQuery, useLogHabit, useLogWeight } from '@/hooks/queries/useHabits'
+import { HabitType } from '@/types/habits'
 import { toDateKey } from '@/utils/time'
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'

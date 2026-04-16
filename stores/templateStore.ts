@@ -1,18 +1,16 @@
-import { Exercise } from '@/hooks/queries/useExercises'
+import { Exercise } from '@/types/exercises'
 import { invalidateTemplateCache, invalidateTemplatesCache } from '@/hooks/queries/useTemplates'
 import { queryClient } from '@/lib/queryClient'
 import { queryKeys } from '@/lib/queryKeys'
 import { zustandStorage } from '@/lib/storage'
 import { enqueueTemplateCreate, enqueueTemplateDelete, enqueueTemplateUpdate } from '@/lib/sync/queue'
-import { SyncStatus } from '@/lib/sync/types'
+import { SyncStatus } from '@/types/sync'
 import { serializeTemplateForApi } from '@/utils/serializeForApi'
 import * as Crypto from 'expo-crypto'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useAuth } from './authStore'
-import { DraftTemplate, TemplateExercise, TemplateSet, TemplateState, WorkoutTemplate } from './template/types'
-
-export { DraftTemplate, WorkoutTemplate }
+import { DraftTemplate, TemplateExercise, TemplateSet, TemplateState, WorkoutTemplate } from '@/types/template'
 
 // Initial State
 const initialState = {

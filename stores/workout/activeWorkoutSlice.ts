@@ -1,15 +1,14 @@
 import { queryClient } from '@/lib/queryClient'
 import { queryKeys } from '@/lib/queryKeys'
 import { enqueueWorkoutCreate, enqueueWorkoutUpdate } from '@/lib/sync/queue'
-import { SyncStatus } from '@/lib/sync/types'
-import { WorkoutTemplate } from '@/stores/template/types'
+import { Exercise, ExerciseType } from '@/types/exercises'
+import { SyncStatus } from '@/types/sync'
+import { WorkoutTemplate } from '@/types/template'
 import { serializeWorkoutForApi } from '@/utils/serializeForApi'
 import { finalizeSetTimer, isValidCompletedSet } from '@/utils/workout'
 import * as Crypto from 'expo-crypto'
 import { StateCreator } from 'zustand'
 import { useAuth } from '../authStore'
-
-import { Exercise, ExerciseType } from '@/hooks/queries/useExercises'
 import { invalidateHabitLogsCache } from '@/hooks/queries/useHabits'
 import {
 	ExerciseGroupType,
@@ -19,7 +18,7 @@ import {
 	WorkoutLogSet,
 	WorkoutPruneReport,
 	WorkoutState,
-} from './types'
+} from '@/types/workout'
 
 export interface ActiveWorkoutSlice {
 	workoutSaving: boolean

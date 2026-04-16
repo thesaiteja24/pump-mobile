@@ -1,6 +1,6 @@
 import { useExercises } from '@/hooks/queries/useExercises'
-import { TemplateExercise, TemplateSet } from '@/stores/template/types'
-import { SetType, WorkoutHistoryExercise, WorkoutHistorySet } from '@/stores/workout/types'
+import { TemplateExercise, TemplateSet } from '@/types/template'
+import { SetType, WorkoutHistoryExercise, WorkoutHistorySet } from '@/types/workout'
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
 import React, { useMemo } from 'react'

@@ -1,10 +1,6 @@
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo'
 import { useEffect, useState } from 'react'
-
-export interface NetworkStatus {
-	isConnected: boolean
-	isInternetReachable: boolean | null
-}
+import { type NetworkStatus } from '@/types/network'
 
 /**
  * Hook to monitor network connectivity status

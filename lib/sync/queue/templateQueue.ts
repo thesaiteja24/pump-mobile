@@ -8,7 +8,7 @@
 import { storage } from '@/lib/storage'
 import * as Crypto from 'expo-crypto'
 import { queueEvents } from '../queueEvents'
-import { TemplateMutation, TemplatePayload } from '../types'
+import { TemplateMutation, TemplatePayload } from '@/types/sync'
 
 const TEMPLATE_QUEUE_KEY = 'template-mutation-queue'
 const TEMPLATE_FAILED_QUEUE_KEY = 'template-failed-queue'

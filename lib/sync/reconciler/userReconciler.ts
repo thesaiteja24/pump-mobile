@@ -1,5 +1,5 @@
 import { updateUserDataService } from '@/services/userService'
-import { UserMutation } from '../types'
+import { UserMutation } from '@/types/sync'
 
 /**
  * Process a user mutation

@@ -1,7 +1,7 @@
 import { storage } from '@/lib/storage'
 import * as Crypto from 'expo-crypto'
 import { queueEvents } from '../queueEvents'
-import { UserMutation, UserMutationType, UserPayload } from '../types'
+import { UserMutation, UserMutationType, UserPayload } from '@/types/sync'
 
 const USER_QUEUE_KEY = 'user_sync_queue'
 

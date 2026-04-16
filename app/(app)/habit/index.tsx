@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/Button'
-import { HabitFooterType, useCreateHabit, useHabitsQuery, useUpdateHabit } from '@/hooks/queries/useHabits'
+import { useCreateHabit, useHabitsQuery, useUpdateHabit } from '@/hooks/queries/useHabits'
+import { HabitFooterType } from '@/types/habits'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useState } from 'react'

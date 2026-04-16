@@ -18,15 +18,8 @@ import {
 	getEquipmentByIdService,
 	updateEquipmentService,
 } from '@/services/equipmentService'
+import type { Equipment } from '@/types/equipment'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-
-export type Equipment = {
-	id: string
-	thumbnailUrl: string
-	title: string
-	createdAt: string
-	updatedAt: string
-}
 
 // ─────────────────────────────────────────────────────────────────
 // READ — full list

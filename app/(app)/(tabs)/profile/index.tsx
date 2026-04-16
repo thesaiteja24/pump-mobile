@@ -10,19 +10,18 @@ import { useAuth } from '@/stores/authStore'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 import { useUser } from '@/stores/userStore'
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons'
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
+import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import { router } from 'expo-router'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { BackHandler, Pressable, Text, TouchableOpacity, useColorScheme, View } from 'react-native'
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
+import React, { useEffect, useRef } from 'react'
+import { BackHandler, Pressable, Text, useColorScheme, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
 
 export default function ProfileScreen() {
 	const { user, logout } = useAuth()
-	const { getUserData, updatePreferences } = useUser()
+	const { getUserData } = useUser()
 	const { isPro, activePlanId } = useSubscriptionStore()
 	const isDarkMode = useColorScheme() === 'dark'
-	const insets = useSafeAreaInsets()
 
 	const unitSheetRef = useRef<BottomSheetModal>(null)
 	const editProfileSheetRef = useRef<BottomSheetModal>(null)

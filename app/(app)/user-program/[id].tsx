@@ -19,7 +19,6 @@ export default function UserProgramDashboard() {
 	const [viewedWeekIndex, setViewedWeekIndex] = useState<number | null>(null)
 
 	const { data: userProgram, isLoading } = useUserProgram(userProgramId, viewedWeekIndex ?? undefined)
-	const [isModalOpen, setIsModalOpen] = React.useState(false)
 	const workoutDetailsModalRef = React.useRef<WorkoutDetailsModalHandle>(null)
 
 	const getStatusColor = () => {
@@ -191,7 +190,7 @@ export default function UserProgramDashboard() {
 				/>
 			</ScrollView>
 
-			<WorkoutDetailsModal ref={workoutDetailsModalRef} onOpenChange={setIsModalOpen} />
+			<WorkoutDetailsModal ref={workoutDetailsModalRef} />
 		</SafeAreaView>
 	)
 }

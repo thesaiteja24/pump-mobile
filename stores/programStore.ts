@@ -12,16 +12,8 @@
 
 import {
 	DraftProgram,
-	DraftProgramDay,
-	DraftProgramWeek,
-	FitnessLevel,
 	Program,
-	ProgramDay,
-	ProgramWeek,
-	UserProgram,
-	UserProgramDay,
-	UserProgramWeek,
-} from '@/types/programApi'
+} from '@/types/program'
 import * as Crypto from 'expo-crypto'
 import { create } from 'zustand'
 

@@ -1,10 +1,7 @@
 import { toUTCISOString } from '@/utils/time'
+import { FitnessLevel } from '@/types/program'
+import type { Gender, HeightUnit, WeightUnit } from '@/types/onboarding'
 import { create } from 'zustand'
-import { FitnessLevel } from '@/types/programApi'
-
-export type Gender = 'male' | 'female' | 'other'
-export type WeightUnit = 'kg' | 'lbs'
-export type HeightUnit = 'cm' | 'inches'
 
 interface OnboardingState {
 	// Data

@@ -2,9 +2,11 @@ import { Button } from '@/components/ui/Button'
 import DateTimePicker from '@/components/ui/DateTimePicker'
 import VisibilitySelectionModal, { VisibilitySelectionModalHandle } from '@/components/workout/VisibilitySelectionModal'
 
-import { ExerciseType, useExercises } from '@/hooks/queries/useExercises'
+import { useExercises } from '@/hooks/queries/useExercises'
 import { useAuth } from '@/stores/authStore'
-import { useWorkout, VisibilityType, WorkoutLog } from '@/stores/workoutStore'
+import { ExerciseType } from '@/types/exercises'
+import { VisibilityType, WorkoutLog } from '@/types/workout'
+import { useWorkout } from '@/stores/workoutStore'
 
 import { convertWeight } from '@/utils/converter'
 import { buildPruneMessage, calculateWorkoutMetrics } from '@/utils/workout'
