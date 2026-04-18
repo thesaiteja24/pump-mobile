@@ -17,7 +17,7 @@ import {
 	UserProgram,
 	UserProgramStartPayload,
 } from '@/types/program'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
 
 export function usePrograms(page?: number, limit?: number) {
 	const userId = useAuth(s => s.user?.userId)
@@ -51,10 +51,7 @@ export function usePrograms(page?: number, limit?: number) {
 
 			return {
 				...firstPage,
-				programs: [
-					...firstPage.programs,
-					...nextPages.flatMap(pageResponse => pageResponse?.programs ?? []),
-				],
+				programs: [...firstPage.programs, ...nextPages.flatMap(pageResponse => pageResponse?.programs ?? [])],
 			}
 		},
 		enabled: !!userId,
@@ -70,7 +67,7 @@ export function useProgramById(programId: string | null | undefined) {
 			return (res.data?.program ?? null) as ProgramDetails | null
 		},
 		enabled: Boolean(programId),
-		staleTime: 7 * 24 * 60 * 60 * 1000, // 7 Days
+		staleTime: 6 * 24 * 60 * 60 * 1000, // 7 Days
 	})
 }
 
@@ -86,7 +83,7 @@ export function useUserPrograms() {
 			return (res.data?.programs ?? []) as UserProgram[]
 		},
 		enabled: !!userId,
-		staleTime: 24 * 60 * 60 * 1000, // 24 Hours
+		staleTime: 6 * 60 * 60 * 1000, // 6 Hours
 	})
 }
 
@@ -99,7 +96,8 @@ export function useUserProgram(userProgramId: string | null | undefined, weekInd
 			return (res.data?.program ?? null) as UserProgram | null
 		},
 		enabled: Boolean(userProgramId && userId),
-		staleTime: 24 * 60 * 60 * 1000, // 24 Hours
+		placeholderData: keepPreviousData,
+		staleTime: 6 * 60 * 60 * 1000, // 6 Hours
 	})
 }
 
@@ -112,7 +110,7 @@ export function useActiveProgram() {
 			return (res.data?.program ?? null) as UserProgram | null
 		},
 		enabled: !!userId,
-		staleTime: 24 * 60 * 60 * 1000, // 24 Hours
+		staleTime: 6 * 60 * 60 * 1000, // 6 Hours
 	})
 }
 

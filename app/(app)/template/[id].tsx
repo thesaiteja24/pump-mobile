@@ -5,7 +5,7 @@ import { useTemplate } from '@/stores/templateStore'
 import * as Clipboard from 'expo-clipboard'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
-import { ScrollView, Text, View, useColorScheme } from 'react-native'
+import { BackHandler, ScrollView, Text, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
@@ -69,6 +69,21 @@ export default function TemplateDetails() {
 			rightIcons,
 		})
 	}, [id, navigation, handleEdit, handleShare, template, isDark])
+
+	useEffect(() => {
+		const onBackPress = () => {
+			if (router.canGoBack()) {
+				router.back()
+			} else {
+				router.push('/(app)/(tabs)/home')
+			}
+			return true
+		}
+
+		const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
+
+		return () => subscription.remove()
+	}, [])
 
 	const groupMap = useMemo(() => {
 		const map = new Map<string, any>()

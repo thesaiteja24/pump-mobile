@@ -138,7 +138,12 @@ export default function ExercisesScreen() {
 				muscleGroupsModalRef.current?.dismiss()
 				return true
 			}
-			return false // Allow default back behavior
+			if (router.canGoBack()) {
+				router.back()
+			} else {
+				router.push('/(app)/(tabs)/home')
+			}
+			return true
 		}
 
 		const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)

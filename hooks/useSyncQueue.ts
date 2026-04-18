@@ -1,3 +1,5 @@
+import { queryClient } from '@/lib/queryClient'
+import { queryKeys } from '@/lib/queryKeys'
 import {
 	dequeueTemplate,
 	dequeueUser,
@@ -14,7 +16,6 @@ import {
 	moveWorkoutToFailedQueue,
 } from '@/lib/sync/queue'
 import { queueEvents } from '@/lib/sync/queueEvents'
-import { TemplateMutation, UserMutation, WorkoutMutation } from '@/types/sync'
 import {
 	markTemplateFailed,
 	markTemplateSynced,
@@ -30,7 +31,9 @@ import { updateUserDataService } from '@/services/userService'
 import { createWorkoutService, deleteWorkoutService, updateWorkoutService } from '@/services/workoutServices'
 import { useAuth } from '@/stores/authStore'
 import { useSyncStore } from '@/stores/syncStore'
+import { TemplateMutation, UserMutation, WorkoutMutation } from '@/types/sync'
 import { useCallback, useEffect, useRef } from 'react'
+import { invalidateHabitLogsCache } from './queries/useHabits'
 import { useNetworkStatus } from './useNetworkStatus'
 
 /* ─────────────────────────────────────────────
@@ -43,9 +46,9 @@ const RETRY_DELAY_MS = 2000
    Dev-only logger
 ───────────────────────────────────────────── */
 const log = {
-	info: (...a: any[]) => (process.env.NODE_ENV === 'development') && console.log(...a),
-	warn: (...a: any[]) => (process.env.NODE_ENV === 'development') && console.warn(...a),
-	error: (...a: any[]) => (process.env.NODE_ENV === 'development') && console.error(...a),
+	info: (...a: any[]) => process.env.NODE_ENV === 'development' && console.log(...a),
+	warn: (...a: any[]) => process.env.NODE_ENV === 'development' && console.warn(...a),
+	error: (...a: any[]) => process.env.NODE_ENV === 'development' && console.error(...a),
 }
 
 /* ─────────────────────────────────────────────
@@ -93,6 +96,7 @@ export function useSyncQueue() {
   ───────────────────────────────────────────── */
 	const processWorkoutMutation = useCallback(async (mutation: WorkoutMutation): Promise<boolean> => {
 		try {
+			const userId = useAuth.getState().user?.userId
 			switch (mutation.type) {
 				case 'CREATE': {
 					const res = await createWorkoutService(mutation.payload)
@@ -105,6 +109,15 @@ export function useSyncQueue() {
 						reconcileWorkoutId(mutation.clientId, res.data.workout.id)
 						markWorkoutSynced(mutation.clientId)
 					}
+
+					// Refetch habit logs to reflect the new workout in the frequency habit
+					invalidateHabitLogsCache(userId!!)
+
+					// Invalidate program-related caches to reflect progress
+					queryClient.invalidateQueries({ queryKey: queryKeys.programs.user.active(userId!!) })
+					queryClient.invalidateQueries({ queryKey: queryKeys.programs.user.all(userId!!) })
+					// Partial match to invalidate all program details for this user
+					queryClient.invalidateQueries({ queryKey: ['userPrograms', 'detail', userId] })
 					return true
 				}
 
@@ -118,6 +131,15 @@ export function useSyncQueue() {
 						// Fallback
 						markWorkoutSynced(mutation.clientId)
 					}
+
+					// Refetch habit logs to reflect the new workout in the frequency habit
+					invalidateHabitLogsCache(userId!!)
+
+					// Invalidate program-related caches to reflect progress
+					queryClient.invalidateQueries({ queryKey: queryKeys.programs.user.active(userId!!) })
+					queryClient.invalidateQueries({ queryKey: queryKeys.programs.user.all(userId!!) })
+					// Partial match to invalidate all program details for this user
+					queryClient.invalidateQueries({ queryKey: ['userPrograms', 'detail', userId] })
 					return true
 				}
 
@@ -125,6 +147,15 @@ export function useSyncQueue() {
 					if (mutation.payload.id) {
 						await deleteWorkoutService(mutation.payload.id)
 					}
+
+					// Refetch habit logs to reflect the new workout in the frequency habit
+					invalidateHabitLogsCache(userId!!)
+
+					// Invalidate program-related caches to reflect progress
+					queryClient.invalidateQueries({ queryKey: queryKeys.programs.user.active(userId!!) })
+					queryClient.invalidateQueries({ queryKey: queryKeys.programs.user.all(userId!!) })
+					// Partial match to invalidate all program details for this user
+					queryClient.invalidateQueries({ queryKey: ['userPrograms', 'detail', userId] })
 					return true
 				}
 
@@ -297,7 +328,6 @@ export function useSyncQueue() {
 					await new Promise(r => setTimeout(r, RETRY_DELAY_MS))
 				}
 			}
-
 		} finally {
 			isSyncing.current = false
 			useSyncStore.getState().setSyncStatus(false)

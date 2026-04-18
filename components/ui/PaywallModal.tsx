@@ -70,6 +70,7 @@ export const PaywallModal = forwardRef<PaywallModalHandle, Props>(
 
 		return (
 			<BottomSheetModal
+				stackBehavior="push"
 				ref={bottomSheetModalRef}
 				backdropComponent={renderBackdrop}
 				enableDynamicSizing

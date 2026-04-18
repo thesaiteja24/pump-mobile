@@ -3,22 +3,100 @@ import { useUserProgram } from '@/hooks/queries/usePrograms'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useState } from 'react'
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import {
+	BackHandler,
+	ScrollView,
+	Text,
+	TouchableOpacity,
+	View,
+	useColorScheme,
+	type DimensionValue,
+	type ViewStyle,
+} from 'react-native'
+import Animated, {
+	useAnimatedStyle,
+	useSharedValue,
+	withRepeat,
+	withSequence,
+	withTiming,
+} from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
 import ShimmerProgramDetails from '@/components/program/ShimmerProgramDetails'
 import { WorkoutDetailsModal, WorkoutDetailsModalHandle } from '@/components/program/WorkoutDetailsModal'
+import { useWorkout } from '@/stores/workoutStore'
+
+function SkeletonBlock({
+	width = '100%',
+	height = 14,
+	rounded = 8,
+}: {
+	width?: DimensionValue
+	height?: number
+	rounded?: number
+}) {
+	const scheme = useColorScheme()
+
+	const fade = useSharedValue(0)
+	const shimmer = useSharedValue(0.4)
+
+	useEffect(() => {
+		fade.value = withTiming(1, { duration: 250 })
+		shimmer.value = withRepeat(
+			withSequence(withTiming(0.85, { duration: 900 }), withTiming(0.4, { duration: 900 })),
+			-1,
+			true
+		)
+	}, [fade, shimmer])
+
+	const animatedStyle = useAnimatedStyle(() => ({
+		opacity: fade.value * shimmer.value,
+	}))
+
+	const blockStyle: ViewStyle = {
+		width,
+		height,
+		borderRadius: rounded,
+		backgroundColor: scheme === 'dark' ? '#3F3F46' : '#E5E7EB',
+	}
+
+	return <Animated.View style={[animatedStyle, blockStyle]} />
+}
+
+function ShimmerDaysList({ count = 6 }: { count?: number }) {
+	return (
+		<View className="gap-3">
+			{Array.from({ length: count }).map((_, i) => (
+				<View
+					key={i}
+					className="flex-row items-center justify-between rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+				>
+					<View className="flex-1">
+						<SkeletonBlock width="55%" height={18} rounded={6} />
+						<View className="mt-2" />
+						<SkeletonBlock width="40%" height={14} rounded={6} />
+					</View>
+					<SkeletonBlock width={40} height={40} rounded={999} />
+				</View>
+			))}
+		</View>
+	)
+}
 
 export default function UserProgramDashboard() {
 	const params = useLocalSearchParams()
 	const navigation = useNavigation()
 	const userProgramId = params.id as string
 
-	// Track which week we are viewing (default to the user's current week)
-	const [viewedWeekIndex, setViewedWeekIndex] = useState<number | null>(null)
+	const loadProgramDay = useWorkout(s => s.loadProgramDay)
+	const startWorkout = useWorkout(s => s.startWorkout)
 
-	const { data: userProgram, isLoading } = useUserProgram(userProgramId, viewedWeekIndex ?? undefined)
+	// Track the week requested from the API separately from the week highlighted in the UI.
+	const [requestedWeekIndex, setRequestedWeekIndex] = useState<number | null>(null)
+	const [highlightedWeekIndex, setHighlightedWeekIndex] = useState<number | null>(null)
+
+	const { data: userProgram, isLoading, isFetching } = useUserProgram(userProgramId, requestedWeekIndex ?? undefined)
 	const workoutDetailsModalRef = React.useRef<WorkoutDetailsModalHandle>(null)
 
 	const getStatusColor = () => {
@@ -38,12 +116,27 @@ export default function UserProgramDashboard() {
 
 	const statusColor = getStatusColor()
 
+	useEffect(() => {
+		const onBackPress = () => {
+			if (router.canGoBack()) {
+				router.back()
+			} else {
+				router.push('/(app)/(tabs)/home')
+			}
+			return true
+		}
+
+		const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
+
+		return () => subscription.remove()
+	}, [])
+
 	// Set initial week index once data arrives
 	useEffect(() => {
-		if (userProgram && viewedWeekIndex === null) {
-			setViewedWeekIndex(userProgram.progress.currentWeek)
+		if (userProgram && highlightedWeekIndex === null) {
+			setHighlightedWeekIndex(userProgram.progress.currentWeek)
 		}
-	}, [userProgram, viewedWeekIndex])
+	}, [userProgram, highlightedWeekIndex])
 
 	useEffect(() => {
 		if (userProgram) {
@@ -74,14 +167,24 @@ export default function UserProgramDashboard() {
 	}
 
 	const currentWeekData = userProgram.weeks?.[0] // Backend returns requested week at index 0
+	const activeWeekIndex = requestedWeekIndex ?? userProgram.progress.currentWeek
+	const isWeekSwitchLoading = Boolean(requestedWeekIndex !== null && isFetching)
 	const progressPercent = Math.round(
 		((userProgram.progress.currentWeek * 7 + userProgram.progress.currentDay) / (userProgram.durationWeeks * 7)) *
 			100
 	)
+	const todayDay = currentWeekData?.days.find(
+		d => userProgram.progress.currentWeek === activeWeekIndex && d.dayIndex === userProgram.progress.currentDay
+	)
+	const isRestDay = todayDay?.isRestDay
+	const hasWorkout = !!todayDay?.templateSnapshot
 
 	return (
 		<SafeAreaView className="flex-1 bg-white dark:bg-black" edges={['bottom']}>
-			<ScrollView contentContainerStyle={{ padding: 16 }}>
+			<ScrollView
+				contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+				showsVerticalScrollIndicator={false}
+			>
 				{/* Header Section */}
 				<View className="mb-6">
 					<Text className="text-3xl font-bold text-black dark:text-white">{userProgram.program.title}</Text>
@@ -116,14 +219,17 @@ export default function UserProgramDashboard() {
 						{Array.from({ length: userProgram.durationWeeks }).map((_, i) => (
 							<TouchableOpacity
 								key={i}
-								onPress={() => setViewedWeekIndex(i)}
+								onPress={() => {
+									setRequestedWeekIndex(i)
+									setHighlightedWeekIndex(i)
+								}}
 								className={`mr-2 rounded-xl px-4 py-2 ${
-									viewedWeekIndex === i ? 'bg-indigo-600' : 'bg-neutral-100 dark:bg-neutral-800'
+									highlightedWeekIndex === i ? 'bg-indigo-600' : 'bg-neutral-100 dark:bg-neutral-800'
 								}`}
 							>
 								<Text
 									className={`font-semibold ${
-										viewedWeekIndex === i ? 'text-white' : 'text-neutral-500'
+										highlightedWeekIndex === i ? 'text-white' : 'text-neutral-500'
 									}`}
 								>
 									Week {i + 1}
@@ -134,63 +240,123 @@ export default function UserProgramDashboard() {
 				</View>
 
 				{/* Daily Schedule */}
-				<View className="gap-3">
-					{currentWeekData?.days.map(day => {
-						const isToday =
-							userProgram.progress.currentWeek === viewedWeekIndex &&
-							userProgram.progress.currentDay === day.dayIndex
+				{isWeekSwitchLoading ? (
+					<ShimmerDaysList count={Math.max(4, currentWeekData?.days?.length ?? 6)} />
+				) : (
+					<View className="gap-3">
+						{currentWeekData?.days.map(day => {
+							const isToday =
+								userProgram.progress.currentWeek === activeWeekIndex &&
+								userProgram.progress.currentDay === day.dayIndex
 
-						return (
-							<TouchableOpacity
-								key={day.id}
-								activeOpacity={0.7}
-								onPress={() => workoutDetailsModalRef.current?.present(day as any)}
-								className={`flex-row items-center justify-between rounded-2xl border p-4 ${
-									isToday
-										? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/10'
-										: 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900'
-								}`}
-							>
-								<View className="flex-1">
-									<View className="flex-row items-center gap-2">
-										<Text className="text-lg font-semibold text-black dark:text-white">
-											{day.name}
-										</Text>
-										{isToday && (
-											<View className="rounded-full bg-indigo-600 px-2 py-0.5">
-												<Text className="text-[10px] font-bold text-white">TODAY</Text>
-											</View>
+							const isFuture =
+								activeWeekIndex > userProgram.progress.currentWeek ||
+								(activeWeekIndex === userProgram.progress.currentWeek &&
+									day.dayIndex > userProgram.progress.currentDay)
+
+							const isCompleted = day.completed
+
+							return (
+								<TouchableOpacity
+									key={day.id}
+									activeOpacity={0.7}
+									onPress={() =>
+										workoutDetailsModalRef.current?.present(
+											day as any,
+											isToday && !day.isRestDay && !isCompleted
+										)
+									}
+									className={`flex-row items-center justify-between rounded-2xl border p-4 ${
+										isToday
+											? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/10'
+											: isFuture
+												? 'border-neutral-100 bg-neutral-50/50 opacity-60 dark:border-neutral-900 dark:bg-neutral-950'
+												: 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900'
+									}`}
+								>
+									<View className="flex-1">
+										<View className="flex-row items-center gap-2">
+											<Text className="text-lg font-semibold text-black dark:text-white">
+												{day.name}
+											</Text>
+											{isToday && (
+												<View className="rounded-full bg-indigo-600 px-2 py-0.5">
+													<Text className="text-[10px] font-bold text-white">UP NEXT</Text>
+												</View>
+											)}
+											{isCompleted && (
+												<View className="rounded-full bg-emerald-100 px-2 py-0.5 dark:bg-emerald-900/30">
+													<Text className="text-[10px] font-bold text-emerald-600">DONE</Text>
+												</View>
+											)}
+										</View>
+										{day.isRestDay ? (
+											<Text className="mt-1 text-sm font-medium text-emerald-500">Rest Day</Text>
+										) : (
+											<Text className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+												{day.templateSnapshot?.title || 'No Workout Assigned'}
+											</Text>
 										)}
 									</View>
-									{day.isRestDay ? (
-										<Text className="mt-1 text-sm font-medium text-emerald-500">Rest Day</Text>
-									) : (
-										<Text className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-											{day.templateSnapshot?.title || 'No Workout Assigned'}
-										</Text>
-									)}
-								</View>
-								<View className="h-10 w-10 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-									<MaterialCommunityIcons
-										name={day.isRestDay ? 'coffee-outline' : 'arm-flex-outline'}
-										size={20}
-										color={isToday ? '#6366f1' : '#9ca3af'}
-									/>
-								</View>
-							</TouchableOpacity>
-						)
-					})}
-				</View>
-
-				<Button
-					title="Log Manual Workout"
-					variant="secondary"
-					className="mb-4 mt-8"
-					onPress={() => Toast.show({ type: 'info', text1: 'Manual logging coming soon' })}
-				/>
+									<View
+										className={`h-10 w-10 items-center justify-center rounded-full ${
+											isCompleted
+												? 'bg-emerald-100 dark:bg-emerald-900/30'
+												: 'bg-neutral-100 dark:bg-neutral-800'
+										}`}
+									>
+										<MaterialCommunityIcons
+											name={
+												isCompleted
+													? 'check-circle'
+													: isFuture
+														? 'lock-outline'
+														: day.isRestDay
+															? 'coffee-outline'
+															: 'arm-flex-outline'
+											}
+											size={isCompleted ? 24 : 20}
+											color={isCompleted ? '#059669' : isToday ? '#6366f1' : '#9ca3af'}
+										/>
+									</View>
+								</TouchableOpacity>
+							)
+						})}
+					</View>
+				)}
 			</ScrollView>
 
-			<WorkoutDetailsModal ref={workoutDetailsModalRef} />
+			<View className="absolute bottom-0 left-0 right-0 bg-transparent p-4">
+				{
+					<Button
+						title={isRestDay ? 'View Rest Day' : hasWorkout ? "Start Today's Workout" : 'No Workout Today'}
+						variant="primary"
+						className="mb-4 min-h-[52px]"
+						liquidGlass
+						onPress={() => {
+							if (!todayDay) return
+
+							if (isRestDay) {
+								workoutDetailsModalRef.current?.present(todayDay, false)
+							} else if (todayDay.templateSnapshot) {
+								loadProgramDay(todayDay.id, todayDay.templateSnapshot)
+								router.push('/(app)/workout/start')
+							} else {
+								startWorkout()
+								router.push('/(app)/workout/start')
+							}
+						}}
+					/>
+				}
+			</View>
+			<WorkoutDetailsModal
+				ref={workoutDetailsModalRef}
+				onStartWorkout={day => {
+					if (day.templateSnapshot) {
+						loadProgramDay(day.id, day.templateSnapshot)
+					}
+				}}
+			/>
 		</SafeAreaView>
 	)
 }

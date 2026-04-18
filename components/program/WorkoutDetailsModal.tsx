@@ -5,19 +5,23 @@ import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@g
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { BackHandler, Text, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Button } from '../ui/Button'
+import { router } from 'expo-router'
 
 export interface WorkoutDetailsModalHandle {
-	present: (day: ProgramDay | UserProgramDay) => void
+	present: (day: ProgramDay | UserProgramDay, isStartable?: boolean) => void
 	dismiss: () => void
 }
 
 export interface WorkoutDetailsModalProps {
 	onOpenChange?: (isOpen: boolean) => void
+	onStartWorkout?: (day: UserProgramDay) => void
 }
 
 export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, WorkoutDetailsModalProps>(
-	({ onOpenChange }, ref) => {
+	({ onOpenChange, onStartWorkout }, ref) => {
 	const [selectedDay, setSelectedDay] = useState<ProgramDay | UserProgramDay | null>(null)
+	const [isStartable, setIsStartable] = useState(false)
 	const isDark = useColorScheme() === 'dark'
 	const insets = useSafeAreaInsets()
 	const [isOpen, setIsOpen] = useState(false)
@@ -25,8 +29,9 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
 	const dynamicSizing = selectedDay?.isRestDay ? true : false
 
 	useImperativeHandle(ref, () => ({
-		present: (day: ProgramDay | UserProgramDay) => {
+		present: (day: ProgramDay | UserProgramDay, startable: boolean = false) => {
 			setSelectedDay(day)
+			setIsStartable(startable)
 			setIsOpen(true)
 			onOpenChange?.(true)
 			bottomSheetModalRef.current?.present()
@@ -133,6 +138,24 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
 						/>
 					))}
 				</View>
+
+				{/* Footer Start Button */}
+				{isStartable && (
+					<View className="mt-4 p-4">
+						<Button
+							title="Start Scheduled Workout"
+							onPress={() => {
+								if (selectedDay && 'templateSnapshot' in selectedDay) {
+									onStartWorkout?.(selectedDay as UserProgramDay)
+								}
+								bottomSheetModalRef.current?.dismiss()
+								router.push({
+									pathname: '/(app)/workout/start',
+								})
+							}}
+						/>
+					</View>
+				)}
 			</View>
 		)
 	}

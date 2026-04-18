@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/Button'
 import { PaywallModal, PaywallModalHandle } from '@/components/ui/PaywallModal'
 import ProgramCard from '@/components/workout/ProgramCard'
+import ProgramWorkoutPromptModal, { ProgramWorkoutPromptHandle } from '@/components/workout/ProgramWorkoutPromptModal'
 import { SkeletonProgramCard, SkeletonUserProgramCard } from '@/components/workout/SkeletonProgramCard'
 import SkeletonTemplateCard from '@/components/workout/SkeletonTemplateCard'
 import TemplateCard from '@/components/workout/TemplateCard'
@@ -37,6 +38,8 @@ export default function WorkoutScreen() {
 	// Workout Store
 	const workout = useWorkout(s => s.workout)
 	const discardWorkout = useWorkout(s => s.discardWorkout)
+	const startWorkout = useWorkout(s => s.startWorkout)
+	const loadProgramDay = useWorkout(s => s.loadProgramDay)
 	const userRole = useAuth(s => s.user?.role)
 
 	// Template Store — draft/write actions only
@@ -58,6 +61,7 @@ export default function WorkoutScreen() {
 
 	// Refs
 	const paywallModalRef = useRef<PaywallModalHandle>(null)
+	const programPromptRef = useRef<ProgramWorkoutPromptHandle>(null)
 
 	// Animation values initialized at 0 opacity
 	const activeWorkoutOpacity = useSharedValue(0)
@@ -152,7 +156,20 @@ export default function WorkoutScreen() {
 					<Button
 						title={workout ? 'Continue the Pump' : 'Ready to Get Pumped?'}
 						variant="primary"
-						onPress={() => router.push('/(app)/workout/start')}
+						onPress={() => {
+							if (workout) {
+								router.push('/(app)/workout/start')
+								return
+							}
+
+							// Check if there is an active program with a scheduled workout for today
+							if (activeProgram?.progress && !activeProgram.progress.isRestDay) {
+								programPromptRef.current?.present()
+							} else {
+								startWorkout()
+								router.push('/(app)/workout/start')
+							}
+						}}
 						className="flex-1"
 					/>
 					{workout && (
@@ -189,7 +206,7 @@ export default function WorkoutScreen() {
 						) : activeProgram ? (
 							<UserProgramCard program={activeProgram} />
 						) : (
-							<View className="h-32 items-center justify-center rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700">
+							<View className="h-44 items-center justify-center rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700">
 								<Text className="mb-2 text-neutral-500 dark:text-neutral-400">
 									No active program. Choose one below!
 								</Text>
@@ -239,7 +256,7 @@ export default function WorkoutScreen() {
 							</View>
 						</View>
 					) : programs.length === 0 ? (
-						<View className="h-32 items-center justify-center rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700">
+						<View className="h-40 items-center justify-center rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700">
 							<Text className="text-neutral-500 dark:text-neutral-400">
 								No programs available. Create one!
 							</Text>
@@ -382,6 +399,25 @@ export default function WorkoutScreen() {
 					</Animated.View>
 				)}
 			</View>
+
+			<ProgramWorkoutPromptModal
+				ref={programPromptRef}
+				programTitle={activeProgram?.program?.title || 'Active Program'}
+				workoutTitle={activeProgram?.progress?.workoutTitle || 'Scheduled Workout'}
+				onSelectProgram={() => {
+					if (activeProgram?.progress?.userProgramDayId && activeProgram?.progress?.templateSnapshot) {
+						loadProgramDay(activeProgram.progress.userProgramDayId, activeProgram.progress.templateSnapshot)
+						router.push('/(app)/workout/start')
+					} else {
+						startWorkout()
+						router.push('/(app)/workout/start')
+					}
+				}}
+				onSelectEmpty={() => {
+					startWorkout()
+					router.push('/(app)/workout/start')
+				}}
+			/>
 
 			<PaywallModal
 				ref={paywallModalRef}

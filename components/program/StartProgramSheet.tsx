@@ -1,15 +1,10 @@
 import { Button } from '@/components/ui/Button'
-import { SelectableCard } from '@/components/ui/SelectableCard'
 import { PaywallModal, PaywallModalHandle } from '@/components/ui/PaywallModal'
+import { SelectableCard } from '@/components/ui/SelectableCard'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 import { Program, UserProgram } from '@/types/program'
 import { Ionicons } from '@expo/vector-icons'
-import {
-	BottomSheetBackdrop,
-	BottomSheetModal,
-	BottomSheetScrollView,
-	BottomSheetView,
-} from '@gorhom/bottom-sheet'
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet'
 import React, { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react'
 import { Text, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -46,9 +41,7 @@ export const StartProgramSheet = forwardRef<StartProgramSheetHandle, StartProgra
 		}))
 
 		const renderBackdrop = useCallback(
-			(props: any) => (
-				<BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
-			),
+			(props: any) => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />,
 			[]
 		)
 
@@ -201,9 +194,7 @@ export const StartProgramSheet = forwardRef<StartProgramSheetHandle, StartProgra
 					// Actually, I'll just use a local modal here for Coming Soon.
 				/>
 
-				{comingSoonVisible && (
-					<ComingSoonModal onDismiss={() => setComingSoonVisible(false)} />
-				)}
+				{comingSoonVisible && <ComingSoonModal onDismiss={() => setComingSoonVisible(false)} />}
 			</>
 		)
 	}
@@ -222,6 +213,7 @@ function ComingSoonModal({ onDismiss }: { onDismiss: () => void }) {
 		<BottomSheetModal
 			ref={modalRef}
 			enableDynamicSizing
+			stackBehavior="push"
 			onDismiss={onDismiss}
 			backgroundStyle={{
 				backgroundColor: isDark ? '#171717' : 'white',
@@ -230,8 +222,8 @@ function ComingSoonModal({ onDismiss }: { onDismiss: () => void }) {
 			<BottomSheetView style={{ paddingBottom: insets.bottom + 24 }} className="px-6 pt-2">
 				<Text className="text-center text-xl font-bold dark:text-white">Coming Soon ✨</Text>
 				<Text className="mt-3 text-center text-base text-neutral-500">
-					Personalized programs are being polished for a perfect experience. We&apos;ll notify you as
-					soon as they&apos;re live!
+					Personalized programs are being polished for a perfect experience. We&apos;ll notify you as soon as
+					they&apos;re live!
 				</Text>
 				<Button title="Got it" variant="primary" className="mt-8" onPress={() => modalRef.current?.dismiss()} />
 			</BottomSheetView>

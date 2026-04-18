@@ -261,7 +261,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 				backdropComponent={renderBackdrop}
 				backgroundStyle={{ backgroundColor: bgColor }}
 				handleIndicatorStyle={{ backgroundColor: isDark ? '#525252' : '#d1d5db' }}
-				animationConfigs={{ duration: 350 }}
+				animationConfigs={{ duration: 550 }}
 			>
 				<BottomSheetView style={{ paddingBottom: insets.bottom + 16 }}>
 					<TouchableOpacity

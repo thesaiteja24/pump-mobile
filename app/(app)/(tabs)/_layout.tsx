@@ -6,7 +6,6 @@ import { useThemeColor } from '@/hooks/useThemeColor'
 import { Ionicons } from '@expo/vector-icons'
 import { BlurView } from 'expo-blur'
 import * as Haptics from 'expo-haptics'
-import { LinearGradient } from 'expo-linear-gradient'
 import { Tabs } from 'expo-router'
 import React, { useRef } from 'react'
 import { Pressable, StyleSheet, useColorScheme, View } from 'react-native'
@@ -58,7 +57,7 @@ export default function TabsLayout() {
 					},
 					tabBarBackground: () => (
 						<BlurView
-							intensity={isDark ? 30 : 30}
+							intensity={isDark ? 20 : 20}
 							tint={isDark ? 'dark' : 'light'}
 							experimentalBlurMethod="dimezisBlurView"
 							style={StyleSheet.absoluteFill}
@@ -214,7 +213,7 @@ export default function TabsLayout() {
 				/>
 			</Tabs>
 
-			<View
+			{/* <View
 				pointerEvents="none"
 				style={{
 					position: 'absolute',
@@ -227,7 +226,7 @@ export default function TabsLayout() {
 				}}
 			>
 				<BlurView
-					intensity={isDark ? 25 : 25}
+					intensity={isDark ? 20 : 20}
 					tint={isDark ? 'dark' : 'light'}
 					experimentalBlurMethod="dimezisBlurView"
 					style={StyleSheet.absoluteFill}
@@ -249,7 +248,7 @@ export default function TabsLayout() {
 						height: 22,
 					}}
 				/>
-			</View>
+			</View> */}
 
 			<View
 				style={{

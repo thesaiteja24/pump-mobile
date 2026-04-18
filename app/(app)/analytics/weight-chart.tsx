@@ -1,11 +1,12 @@
+import { useFitnessProfileQuery, useMeasurementsQuery } from '@/hooks/queries/useAnalytics'
 import { useThemeColor } from '@/hooks/useThemeColor'
-import { useMeasurementsQuery, useFitnessProfileQuery } from '@/hooks/queries/useAnalytics'
 import { useAuth } from '@/stores/authStore'
 import { convertWeight } from '@/utils/converter'
 import { Ionicons } from '@expo/vector-icons'
 import { format, isAfter, subDays, subMonths, subYears } from 'date-fns'
-import React, { useMemo, useState } from 'react'
-import { Dimensions, Pressable, ScrollView, Text, View } from 'react-native'
+import { router } from 'expo-router'
+import React, { useEffect, useMemo, useState } from 'react'
+import { BackHandler, Dimensions, Pressable, ScrollView, Text, View } from 'react-native'
 import { LineChart } from 'react-native-chart-kit'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
@@ -114,6 +115,21 @@ const WeightChart = () => {
 	const ranges: TimeRange[] = ['1W', '1M', '3M', '6M', '1Y', 'All']
 
 	const screenWidth = Dimensions.get('window').width
+
+	useEffect(() => {
+		const onBackPress = () => {
+			if (router.canGoBack()) {
+				router.back()
+			} else {
+				router.push('/(app)/(tabs)/home')
+			}
+			return true
+		}
+
+		const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
+
+		return () => subscription.remove()
+	}, [])
 
 	return (
 		<SafeAreaView className="flex-1 bg-white dark:bg-black" edges={['bottom']}>

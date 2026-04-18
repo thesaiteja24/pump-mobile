@@ -1,18 +1,18 @@
 import { Button } from '@/components/ui/Button'
 import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
 import { useExercises } from '@/hooks/queries/useExercises'
+import { useTemplate } from '@/stores/templateStore'
+import { useWorkout } from '@/stores/workoutStore'
 import { ExerciseType } from '@/types/exercises'
 import { TemplateExercise, TemplateExerciseGroup } from '@/types/template'
 import { WorkoutHistoryExercise, WorkoutHistorySet, WorkoutLogGroup } from '@/types/workout'
-import { useTemplate } from '@/stores/templateStore'
-import { useWorkout } from '@/stores/workoutStore'
 import { formatDate, formatDurationFromDates } from '@/utils/time'
 import { calculateWorkoutMetrics } from '@/utils/workout'
 import * as Crypto from 'expo-crypto'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { BackHandler, ScrollView, Text, View } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
 import { VerifiedBadge } from '@/components/ui/VerifiedBadge'
@@ -28,7 +28,6 @@ import { Image } from 'expo-image'
 export default function WorkoutDetails() {
 	/* Local State */
 	const { id } = useLocalSearchParams<{ id: string }>()
-	const safeAreaInsets = useSafeAreaInsets()
 	const navigation = useNavigation()
 	const isDark = useThemeColor().isDark
 
@@ -262,22 +261,20 @@ export default function WorkoutDetails() {
 			</ScrollView>
 
 			{/* Floating Action Button */}
-			<View
-				className="absolute bottom-0 left-0 right-0 border-t border-neutral-100 bg-white p-4 dark:border-neutral-900 dark:bg-black"
-				style={{ paddingBottom: safeAreaInsets.bottom + 16 }}
-			>
+			<View className="absolute bottom-0 left-0 right-0 mb-4 bg-transparent p-4">
 				<View className="flex-row items-center justify-center gap-4">
 					<Button
 						variant="primary"
 						title="Save as Template"
-						className="w-2/3"
+						className="min-h-[52px] w-2/3"
 						onPress={handleSaveAsTemplate}
+						liquidGlass
 					/>
 
 					{isAuthrized && (
 						<Button
 							title="Delete"
-							className="w-1/3"
+							className="min-h-[52px] w-1/3"
 							variant="danger"
 							onPress={() => deleteModalRef.current?.present()}
 						/>

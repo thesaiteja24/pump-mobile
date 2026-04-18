@@ -180,6 +180,7 @@ export interface UserProgramDay {
 	dayIndex: number
 	isRestDay: boolean
 	templateSnapshotId: string | null
+	completed: boolean
 	completedAt?: string | null
 	workoutLogId?: string | null
 	templateSnapshot?: WorkoutTemplateSnapshot | null
@@ -199,6 +200,8 @@ export interface UserProgramProgress {
 	currentDay: number
 	workoutTitle?: string | null
 	isRestDay?: boolean | null
+	userProgramDayId?: string | null
+	templateSnapshot?: WorkoutTemplateSnapshot | null
 }
 
 export interface UserProgram {

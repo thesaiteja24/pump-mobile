@@ -20,6 +20,7 @@ export type WorkoutLog = {
 	isEdited?: boolean
 	editedAt?: Date | null
 	visibility?: VisibilityType
+	userProgramDayId?: string
 }
 
 export type WorkoutLogExercise = {
@@ -157,6 +158,7 @@ export interface WorkoutState {
 	createExerciseGroup: (type: ExerciseGroupType, exerciseIds: string[]) => void
 	removeExerciseFromGroup: (exerciseId: string) => void
 	loadTemplate: (template: WorkoutTemplate) => void
+	loadProgramDay: (userProgramDayId: string, template: any) => void
 	addSet: (exerciseId: string) => void
 	updateSet: (exerciseId: string, setId: string, patch: Partial<WorkoutLogSet>) => void
 	toggleSetCompleted: (exerciseId: string, setId: string) => void

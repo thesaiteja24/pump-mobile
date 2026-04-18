@@ -4,7 +4,7 @@ import { useActiveProgram, useDeleteProgram, useProgramById, useStartProgram } f
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useMemo, useRef } from 'react'
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { BackHandler, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
@@ -94,6 +94,21 @@ export default function ProgramTemplateDetails() {
 	}, [navigation, program, isModalOpen, rightIcons])
 
 	useEffect(() => {
+		const onBackPress = () => {
+			if (router.canGoBack()) {
+				router.back()
+			} else {
+				router.push('/(app)/(tabs)/home')
+			}
+			return true
+		}
+
+		const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
+
+		return () => subscription.remove()
+	}, [])
+
+	useEffect(() => {
 		const unsubscribe = navigation.addListener('beforeRemove', e => {
 			if (isModalOpen) {
 				e.preventDefault()
@@ -119,20 +134,11 @@ export default function ProgramTemplateDetails() {
 
 	return (
 		<SafeAreaView className="flex-1 bg-white dark:bg-black" edges={['bottom']}>
-			<ScrollView contentContainerStyle={{ padding: 16 }}>
+			<ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
 				<Text className="mb-2 text-3xl font-bold text-black dark:text-white">{program.title}</Text>
 				{program.description ? (
 					<Text className="mb-6 text-base text-neutral-600 dark:text-neutral-400">{program.description}</Text>
 				) : null}
-
-				<Button
-					title="Start This Program"
-					variant="primary"
-					onPress={() => {
-						startProgramSheetRef.current?.present()
-					}}
-					className="mb-8"
-				/>
 
 				<Text className="mb-4 text-xl font-bold text-black dark:text-white">Full Schedule</Text>
 
@@ -167,6 +173,17 @@ export default function ProgramTemplateDetails() {
 				))}
 			</ScrollView>
 
+			<View className="absolute bottom-0 left-0 right-0 bg-transparent p-4">
+				<Button
+					title="Start This Program"
+					variant="primary"
+					onPress={() => {
+						startProgramSheetRef.current?.present()
+					}}
+					className="mb-4 min-h-[52px]"
+					liquidGlass
+				/>
+			</View>
 			<DeleteConfirmModal
 				ref={deleteModalRef}
 				title="Delete Program"

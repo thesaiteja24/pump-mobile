@@ -1,6 +1,15 @@
+import { BlurView } from 'expo-blur'
 import * as Haptics from 'expo-haptics'
 import React from 'react'
-import { ActivityIndicator, Text, TouchableOpacity, TouchableOpacityProps } from 'react-native'
+import {
+	ActivityIndicator,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	TouchableOpacityProps,
+	View,
+	useColorScheme,
+} from 'react-native'
 import { twMerge } from 'tailwind-merge'
 
 /* --------------------------------------------------
@@ -82,6 +91,13 @@ export interface ButtonProps extends TouchableOpacityProps {
 	 * Optional callback when the button is disabled.
 	 */
 	onDisabledPress?: () => void
+
+	/**
+	 * Render the button with a frosted liquid glass treatment.
+	 *
+	 * @default false
+	 */
+	liquidGlass?: boolean
 }
 
 /* --------------------------------------------------
@@ -126,30 +142,46 @@ export function Button({
 	textClassName = '',
 	onPress,
 	onDisabledPress,
+	liquidGlass = false,
 	...props
 }: ButtonProps) {
 	const isDisabled = disabled || loading
+	const isDark = useColorScheme() === 'dark'
 
 	const widthClass = props.fullWidth ? 'w-full' : ''
-	const baseClass = 'min-h-[42px] flex-row items-center justify-center gap-2 rounded-2xl px-4 py-2'
+	const baseClass = liquidGlass
+		? 'min-h-[42px] flex-row items-center justify-center gap-2 overflow-hidden rounded-full px-4 py-2 shadow-sm shadow-black/10 dark:shadow-black/30'
+		: 'min-h-[42px] flex-row items-center justify-center gap-2 rounded-2xl px-4 py-2'
 
 	const variantClass: Record<ButtonVariant, string> = {
-		primary: `bg-[#3b82f6]`,
-		secondary: 'bg-white border border-neutral-200/60 dark:bg-neutral-900 dark:border-neutral-800',
-		success: 'bg-green-600',
-		danger: 'bg-white border border-red-200/60 dark:bg-neutral-900 dark:border-red-800',
-		ghost: 'bg-transparent',
-		outline: 'bg-transparent border border-neutral-300 dark:border-neutral-700',
+		primary: liquidGlass
+			? 'border border-blue-500/25 bg-blue-500/18 dark:border-blue-400/20 dark:bg-blue-400/16'
+			: 'bg-[#3b82f6]',
+		secondary: liquidGlass
+			? 'border border-white/20 bg-white/20 dark:border-white/12 dark:bg-white/8'
+			: 'bg-white border border-neutral-200/60 dark:bg-neutral-900 dark:border-neutral-800',
+		success: liquidGlass
+			? 'border border-emerald-500/25 bg-emerald-500/18 dark:border-emerald-400/20 dark:bg-emerald-400/16'
+			: 'bg-green-600',
+		danger: liquidGlass
+			? 'border border-red-500/25 bg-red-500/18 dark:border-red-400/20 dark:bg-red-400/16'
+			: 'bg-white border border-red-200/60 dark:bg-neutral-900 dark:border-red-800',
+		ghost: liquidGlass ? 'border border-white/12 bg-white/8 dark:border-white/8 dark:bg-white/5' : 'bg-transparent',
+		outline: liquidGlass
+			? 'border border-white/15 bg-white/8 dark:border-white/8 dark:bg-white/5'
+			: 'bg-transparent border border-neutral-300 dark:border-neutral-700',
 	}
 
 	const textVariantClass: Record<ButtonVariant, string> = {
-		primary: 'text-white',
-		secondary: 'text-black dark:text-white',
-		success: 'text-white',
-		danger: 'text-red-600',
-		ghost: 'text-blue-500',
-		outline: 'text-neutral-700 dark:text-neutral-300',
+		primary: liquidGlass ? 'text-neutral-900 dark:text-white' : 'text-white',
+		secondary: liquidGlass ? 'text-neutral-900 dark:text-white' : 'text-black dark:text-white',
+		success: liquidGlass ? 'text-neutral-900 dark:text-white' : 'text-white',
+		danger: liquidGlass ? 'text-neutral-900 dark:text-white' : 'text-red-600',
+		ghost: liquidGlass ? 'text-neutral-900 dark:text-white' : 'text-blue-500',
+		outline: liquidGlass ? 'text-neutral-900 dark:text-white' : 'text-neutral-700 dark:text-neutral-300',
 	}
+
+	const spinnerColor = liquidGlass ? (isDark ? '#ffffff' : '#111827') : variant === 'primary' ? 'white' : '#6b7280'
 
 	return (
 		<TouchableOpacity
@@ -170,8 +202,46 @@ export function Button({
 			className={twMerge(baseClass, widthClass, variantClass[variant], isDisabled && 'opacity-50', className)}
 			{...props}
 		>
+			{liquidGlass && (
+				<>
+					<BlurView
+						intensity={20}
+						tint={isDark ? 'dark' : 'light'}
+						experimentalBlurMethod="dimezisBlurView"
+						pointerEvents="none"
+						style={StyleSheet.absoluteFill}
+					/>
+					{/* <LinearGradient
+						pointerEvents="none"
+						colors={
+							isDark
+								? ['rgba(255,255,255,0.22)', 'rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)']
+								: ['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.18)', 'rgba(255,255,255,0.04)']
+						}
+						start={{ x: 0.18, y: 0 }}
+						end={{ x: 0.82, y: 1 }}
+						style={StyleSheet.absoluteFill}
+					/> */}
+					<View
+						pointerEvents="none"
+						className={twMerge(
+							'absolute inset-0 border',
+							variant === 'primary' && 'border-blue-200/30 dark:border-blue-300/15',
+							variant === 'secondary' && 'border-white/25 dark:border-white/10',
+							variant === 'success' && 'border-emerald-200/30 dark:border-emerald-300/15',
+							variant === 'danger' && 'border-red-200/30 dark:border-red-300/15',
+							variant === 'ghost' && 'border-white/15 dark:border-white/10',
+							variant === 'outline' && 'border-white/15 dark:border-white/10'
+						)}
+					/>
+					{/* <View
+						pointerEvents="none"
+						className={twMerge('absolute inset-x-0 top-0 h-1/2', isDark ? 'bg-white/5' : 'bg-white/25')}
+					/> */}
+				</>
+			)}
 			{loading ? (
-				<ActivityIndicator size="small" color={variant === 'primary' ? 'white' : '#6b7280'} />
+				<ActivityIndicator size="small" color={spinnerColor} />
 			) : (
 				<>
 					{leftIcon}

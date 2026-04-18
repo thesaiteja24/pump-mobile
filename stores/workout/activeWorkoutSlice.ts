@@ -4,12 +4,6 @@ import { enqueueWorkoutCreate, enqueueWorkoutUpdate } from '@/lib/sync/queue'
 import { Exercise, ExerciseType } from '@/types/exercises'
 import { SyncStatus } from '@/types/sync'
 import { WorkoutTemplate } from '@/types/template'
-import { serializeWorkoutForApi } from '@/utils/serializeForApi'
-import { finalizeSetTimer, isValidCompletedSet } from '@/utils/workout'
-import * as Crypto from 'expo-crypto'
-import { StateCreator } from 'zustand'
-import { useAuth } from '../authStore'
-import { invalidateHabitLogsCache } from '@/hooks/queries/useHabits'
 import {
 	ExerciseGroupType,
 	WorkoutHistoryItem,
@@ -19,6 +13,11 @@ import {
 	WorkoutPruneReport,
 	WorkoutState,
 } from '@/types/workout'
+import { serializeWorkoutForApi } from '@/utils/serializeForApi'
+import { finalizeSetTimer, isValidCompletedSet } from '@/utils/workout'
+import * as Crypto from 'expo-crypto'
+import { StateCreator } from 'zustand'
+import { useAuth } from '../authStore'
 
 export interface ActiveWorkoutSlice {
 	workoutSaving: boolean
@@ -27,6 +26,7 @@ export interface ActiveWorkoutSlice {
 	startWorkout: () => void
 	loadWorkoutHistory: (historyItem: WorkoutHistoryItem) => void
 	loadTemplate: (template: WorkoutTemplate) => void
+	loadProgramDay: (userProgramDayId: string, template: any) => void
 	updateWorkout: (patch: Partial<WorkoutLog>) => void
 	prepareWorkoutForSave: () => {
 		workout: WorkoutLog
@@ -286,6 +286,56 @@ export const createActiveWorkoutSlice: StateCreator<WorkoutState, [], [], Active
 	},
 
 	/**
+	 * This function is used to load a program day's template snapshot into the active workout state
+	 */
+	loadProgramDay: (userProgramDayId, template) => {
+		const exerciseList = queryClient.getQueryData<Exercise[]>(queryKeys.exercises.all) ?? []
+		const exerciseMap = new Map(exerciseList.map(e => [e.id, e.exerciseType as ExerciseType]))
+
+		const validExercises = (template.exercises as any[]).filter(ex => {
+			const exists = exerciseMap.has(ex.exerciseId)
+			return exists
+		})
+
+		const clientId = Crypto.randomUUID()
+
+		const workoutLog: WorkoutLog = {
+			clientId,
+			id: null,
+			syncStatus: 'pending' as SyncStatus,
+			title: template.title || 'Program Workout',
+			startTime: new Date(),
+			endTime: new Date(),
+			userProgramDayId, // Link to the program day
+			exercises: validExercises.map((ex, index) => ({
+				exerciseId: ex.exerciseId,
+				exerciseIndex: index,
+				groupId: ex.exerciseGroupId || null,
+				sets: ex.sets.map((s: any) => ({
+					id: Crypto.randomUUID(),
+					setIndex: s.setIndex,
+					setType: s.setType,
+					weight: s.weight,
+					reps: s.reps,
+					rpe: s.rpe,
+					durationSeconds: s.durationSeconds,
+					restSeconds: s.restSeconds,
+					note: s.note,
+					completed: false,
+				})),
+			})),
+			exerciseGroups: (template.exerciseGroups as any[]).map((g: any) => ({
+				id: g.id,
+				groupType: g.groupType,
+				groupIndex: g.groupIndex,
+				restSeconds: g.restSeconds,
+			})),
+		}
+
+		set({ workout: workoutLog })
+	},
+
+	/**
 	 * Save workout with optimistic-first approach:
 	 * 1. Always update local state immediately (no network delay for user)
 	 * 2. Enqueue for background sync (useSyncQueue handles sync reactively)
@@ -361,6 +411,7 @@ export const createActiveWorkoutSlice: StateCreator<WorkoutState, [], [], Active
 
 		// Serialize for API
 		const payload = serializeWorkoutForApi(prepared)
+
 		const workoutPayload = {
 			clientId,
 			id: prepared.id,
@@ -379,8 +430,6 @@ export const createActiveWorkoutSlice: StateCreator<WorkoutState, [], [], Active
 		} else {
 			enqueueWorkoutCreate(workoutPayload, userId)
 		}
-		// Refetch habit logs to reflect the new workout in the frequency habit
-		invalidateHabitLogsCache(userId)
 
 		set({ workoutSaving: false })
 		return { success: true }
