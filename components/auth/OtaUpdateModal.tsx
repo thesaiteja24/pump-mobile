@@ -1,7 +1,9 @@
+import { Button } from '@/components/ui/Button'
+import { GlassView } from '@/components/ui/GlassView'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { type UpdateState } from '@/types/updates'
 import { useRef } from 'react'
-import { Modal, Pressable, Text, View } from 'react-native'
+import { Modal, Platform, Text, View } from 'react-native'
 
 type Props = {
 	visible: boolean
@@ -19,90 +21,68 @@ export function OtaUpdateModal({ visible, state, onLater, onRestart }: Props) {
 
 	return (
 		<Modal transparent visible={visible} animationType="fade">
-			<View className="flex-1 items-center justify-center bg-black/60 px-6">
-				<View
-					className="w-full rounded-2xl border p-6 shadow-xl"
-					style={{
-						backgroundColor: colors.background,
-						borderColor: colors.neutral[200],
-						shadowColor: '#000',
-						elevation: 8,
-					}}
+			<View className="flex-1 items-center justify-center bg-black/40 px-6">
+				<GlassView
+					className="w-full overflow-hidden rounded-3xl"
 					pointerEvents={isBusy ? 'none' : 'auto'}
+					lightIntensity={Platform.OS === 'ios' ? 25 : 85}
+					darkIntensity={Platform.OS === 'ios' ? 25 : 85}
 				>
-					<Text className="text-center text-xl font-bold" style={{ color: colors.text }}>
-						Update available
-					</Text>
+					<View className="p-6">
+						<Text className="text-center text-xl font-bold" style={{ color: colors.text }}>
+							Update available
+						</Text>
 
-					<Text className="mt-3 text-center" style={{ color: colors.neutral[500] }}>
-						{state === 'idle' && 'A new version of Pump is ready. Restart to apply it.'}
-						{state === 'downloading' && 'Downloading update…'}
-						{state === 'restarting' && 'Restarting app…'}
-					</Text>
+						<Text className="mt-3 text-center" style={{ color: colors.neutral[500] }}>
+							{state === 'idle' && 'A new version of Pump is ready. Restart to apply it.'}
+							{state === 'downloading' && 'Downloading update…'}
+							{state === 'restarting' && 'Restarting app…'}
+						</Text>
 
-					{/* Progress bar */}
-					{state !== 'idle' && (
-						<View
-							className="mt-5 h-2 w-full overflow-hidden rounded-full"
-							style={{ backgroundColor: colors.neutral[200] }}
-						>
+						{/* Progress bar */}
+						{state !== 'idle' && (
 							<View
-								className={`h-full ${state === 'downloading' ? 'w-2/3' : 'w-full'}`}
-								style={{ backgroundColor: colors.text }}
-							/>
-						</View>
-					)}
-
-					<View className="mt-6 flex-row gap-3">
-						{/* Later */}
-						<Pressable
-							disabled={isBusy}
-							onPress={onLater}
-							className={`flex-1 rounded-xl border py-3 ${isBusy ? 'opacity-40' : ''}`}
-							style={{
-								borderColor: colors.neutral[200],
-							}}
-						>
-							<Text className="text-center" style={{ color: colors.text }}>
-								Later
-							</Text>
-						</Pressable>
-
-						{/* Restart */}
-						<Pressable
-							disabled={isBusy}
-							onPress={async () => {
-								// 🔐 Guard against multi-tap
-								if (restartLockedRef.current) return
-								restartLockedRef.current = true
-
-								try {
-									await onRestart()
-								} catch {
-									// Unlock only if something goes wrong
-									restartLockedRef.current = false
-								}
-							}}
-							className={`flex-1 rounded-xl py-3 ${isBusy ? 'bg-gray-400' : ''}`}
-							style={
-								!isBusy
-									? {
-											backgroundColor: colors.text, // Invert bg for primary button effect if using text color, or use colors.primary
-										}
-									: undefined
-							}
-						>
-							<Text
-								className="text-center font-semibold"
-								style={{
-									color: !isBusy ? colors.background : 'white', // Text color should be background color (inverted)
-								}}
+								className="mt-5 h-2 w-full overflow-hidden rounded-full"
+								style={{ backgroundColor: colors.neutral[200] }}
 							>
-								Restart
-							</Text>
-						</Pressable>
+								<View
+									className={`h-full ${state === 'downloading' ? 'w-2/3' : 'w-full'}`}
+									style={{ backgroundColor: colors.text }}
+								/>
+							</View>
+						)}
+
+						<View className="mt-6 flex-row gap-3">
+							<View className="flex-1">
+								<Button
+									title="Later"
+									variant="secondary"
+									onPress={onLater}
+									disabled={isBusy}
+									liquidGlass
+								/>
+							</View>
+							<View className="flex-1">
+								<Button
+									title="Restart"
+									variant="primary"
+									onPress={async () => {
+										if (restartLockedRef.current) return
+										restartLockedRef.current = true
+										try {
+											await onRestart()
+										} catch {
+											restartLockedRef.current = false
+										}
+									}}
+									disabled={isBusy}
+									loading={state === 'restarting'}
+									liquidGlass
+								/>
+							</View>
+						</View>
 					</View>
-				</View>
+				</GlassView>
 			</View>
 		</Modal>
 	)

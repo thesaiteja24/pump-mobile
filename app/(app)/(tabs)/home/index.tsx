@@ -1,3 +1,4 @@
+import { StoreUpdateModal } from '@/components/auth/StoreUpdateModal'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native'
 import Animated, { Easing, FadeInDown, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
@@ -12,6 +13,7 @@ import { WeightMetricCard } from '@/components/home/WeightMetricCard'
 import { Button } from '@/components/ui/Button'
 import { useMeasurementsQuery, useUserAnalyticsQuery } from '@/hooks/queries/useAnalytics'
 import { useHabitLogsQuery, useHabitsQuery } from '@/hooks/queries/useHabits'
+import { useStoreUpdate } from '@/hooks/useStoreUpdate'
 import { useAuth } from '@/stores/authStore'
 import { useUser } from '@/stores/userStore'
 import { calculateBMI, calculateBodyFat, calculateComposition, estimateBodyFatFromBMI } from '@/utils/analytics'
@@ -203,6 +205,30 @@ export default function HomeScreen() {
 		getUserData(user?.userId ?? '')
 	}, [getUserData, user?.userId])
 
+	// ───── Store Update check ─────
+	const {
+		showModal: updateModalVisible,
+		latestVersion: storeLatestVersion,
+		handleUpdate: onStoreUpdate,
+		handleLater: onStoreLater,
+	} = useStoreUpdate()
+
+	const isFullyLoaded =
+		!isLoadingMeasurements && !isLoadingUserAnalytics && !isLoadingHabits && !isLoadingHabitLogs && !refreshing
+
+	const [hasFinishedAnimations, setHasFinishedAnimations] = useState(false)
+
+	useEffect(() => {
+		if (isFullyLoaded) {
+			const timer = setTimeout(() => {
+				setHasFinishedAnimations(true)
+			}, 1500) // Wait for the longest FadeInDown (delay 900ms + duration 500ms) plus a small buffer
+			return () => clearTimeout(timer)
+		} else {
+			setHasFinishedAnimations(false)
+		}
+	}, [isFullyLoaded])
+
 	// ───────────────── Render ─────────────────
 	return (
 		<SafeAreaView className="flex-1 bg-white px-4 pt-4 dark:bg-black" edges={['top']}>
@@ -344,6 +370,13 @@ export default function HomeScreen() {
 					</Animated.View>
 				</ScrollView>
 			)}
+
+			<StoreUpdateModal
+				visible={updateModalVisible && isFullyLoaded && hasFinishedAnimations}
+				latestVersion={storeLatestVersion}
+				onLater={onStoreLater}
+				onUpdate={onStoreUpdate}
+			/>
 		</SafeAreaView>
 	)
 }
