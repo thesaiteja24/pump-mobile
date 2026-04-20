@@ -1,6 +1,6 @@
 import type { ExerciseType } from './exercises'
-import type { WorkoutTemplate } from './template'
 import type { SyncStatus } from './sync'
+import type { WorkoutTemplate } from './template'
 
 export type SetType = 'warmup' | 'working' | 'dropSet' | 'failureSet'
 
@@ -135,7 +135,7 @@ export interface WorkoutState {
 	discoverWorkouts: WorkoutHistoryItem[]
 	workout: WorkoutLog | null
 	rest: RestState
-	getAllWorkouts: (page?: number) => Promise<void>
+	getUserWorkouts: (page?: number) => Promise<void>
 	getDiscoverWorkouts: (page?: number) => Promise<void>
 	getWorkoutById: (id: string) => WorkoutHistoryItem | undefined
 	upsertWorkoutHistoryItem: (item: WorkoutHistoryItem) => void

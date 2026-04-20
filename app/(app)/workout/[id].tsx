@@ -18,7 +18,7 @@ import Toast from 'react-native-toast-message'
 import { VerifiedBadge } from '@/components/ui/VerifiedBadge'
 import { ReadOnlyExerciseRow } from '@/components/workout/ReadOnlyExerciseRow'
 import ShimmerWorkoutScreen from '@/components/workout/ShimmerWorkoutScreen'
-import { useDiscoverWorkoutsQuery } from '@/hooks/queries/useWorkoutHistory'
+import { useDiscoverWorkoutsQuery, useUserWorkoutHistoryQuery, useWorkoutByIdQuery } from '@/hooks/queries/useWorkoutHistory'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
 import { Image } from 'expo-image'
@@ -38,7 +38,9 @@ export default function WorkoutDetails() {
 	const { getWorkoutById, deleteWorkout } = useWorkout()
 	const { data: exerciseList = [] } = useExercises()
 	const currentUserId = useAuth(state => state.user?.userId)
+
 	const { discoverWorkouts, isLoading: isDiscoverLoading } = useDiscoverWorkoutsQuery()
+	const { workoutHistory, isLoading: isHistoryLoading } = useUserWorkoutHistoryQuery()
 
 	/* Derived State */
 	const exerciseTypeMap = useMemo(() => {
@@ -50,18 +52,27 @@ export default function WorkoutDetails() {
 	}, [exerciseList])
 
 	const workoutFromStore = getWorkoutById(id!)
+	const workoutFromHistory = useMemo(() => {
+		return workoutHistory.find(w => w.id === id || w.clientId === id)
+	}, [workoutHistory, id])
 	const workoutFromDiscover = useMemo(() => {
 		return discoverWorkouts.find(w => w.id === id || w.clientId === id)
 	}, [discoverWorkouts, id])
 
-	const workout = workoutFromStore ?? workoutFromDiscover
-	const isLoading = !workoutFromStore && isDiscoverLoading
+	const hasLocalData = !!(workoutFromStore || workoutFromHistory || workoutFromDiscover)
+
+	const { data: workoutFromNetwork, isLoading: isByIdLoading } = useWorkoutByIdQuery(id!, {
+		enabled: !hasLocalData && !!id,
+	})
+
+	const workout = workoutFromStore ?? workoutFromHistory ?? workoutFromDiscover ?? (workoutFromNetwork as any)
+	const isLoading = !workout && (isDiscoverLoading || isHistoryLoading || isByIdLoading)
 
 	const isAuthrized = currentUserId === workout?.user?.id
 
 	const groupMap = useMemo(() => {
 		const map = new Map<string, WorkoutLogGroup>()
-		workout?.exerciseGroups.forEach(g => map.set(g.id, g))
+		workout?.exerciseGroups.forEach((g: WorkoutLogGroup) => map.set(g.id, g))
 		return map
 	}, [workout?.exerciseGroups])
 
@@ -113,7 +124,7 @@ export default function WorkoutDetails() {
 		// 1. Create ID Mappings for Groups
 		// We Map <OldDBGroupId, NewDraftGroupUUID>
 		const groupIdMap = new Map<string, string>()
-		workout.exerciseGroups.forEach(g => {
+		workout.exerciseGroups.forEach((g: WorkoutLogGroup) => {
 			groupIdMap.set(g.id, Crypto.randomUUID())
 		})
 

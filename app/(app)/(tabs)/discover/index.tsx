@@ -6,7 +6,7 @@ import { useThemeColor } from '@/hooks/useThemeColor'
 
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { router } from 'expo-router'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native'
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -25,7 +25,7 @@ export default function DiscoverScreen() {
 
 	const { data: exerciseList = [] } = useExercises()
 
-	const showShimmer = discoverLoading && discoverWorkouts.length === 0
+	const [refreshing, setRefreshing] = useState(false)
 
 	// ───────────────── Derived data ─────────────────
 	const exerciseTypeMap = useMemo(() => {
@@ -35,7 +35,9 @@ export default function DiscoverScreen() {
 	}, [exerciseList])
 
 	const onRefresh = useCallback(async () => {
+		setRefreshing(true)
 		await refetchDiscover()
+		setRefreshing(false)
 	}, [refetchDiscover])
 
 	const onEndReached = useCallback(() => {
@@ -80,7 +82,7 @@ export default function DiscoverScreen() {
 			</Animated.View>
 
 			{/* Workout List */}
-			{showShimmer ? (
+			{refreshing || discoverLoading ? (
 				<ShimmerDiscoverScreen />
 			) : (
 				<FlatList

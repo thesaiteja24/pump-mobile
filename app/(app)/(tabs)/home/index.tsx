@@ -11,6 +11,7 @@ import { HabitCard } from '@/components/home/HabitCard'
 import { WeeklyDurationCard, WeeklyRepsCard, WeeklyVolumeCard } from '@/components/home/TrainingMetricCards'
 import { WeightMetricCard } from '@/components/home/WeightMetricCard'
 import { Button } from '@/components/ui/Button'
+import { useAskNotificationPermission } from '@/hooks/notifications/useAskNotificationPermission'
 import { useMeasurementsQuery, useUserAnalyticsQuery } from '@/hooks/queries/useAnalytics'
 import { useHabitLogsQuery, useHabitsQuery } from '@/hooks/queries/useHabits'
 import { useStoreUpdate } from '@/hooks/useStoreUpdate'
@@ -228,6 +229,8 @@ export default function HomeScreen() {
 			setHasFinishedAnimations(false)
 		}
 	}, [isFullyLoaded])
+
+	useAskNotificationPermission(isFullyLoaded && hasFinishedAnimations)
 
 	// ───────────────── Render ─────────────────
 	return (

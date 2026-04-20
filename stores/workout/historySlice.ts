@@ -1,9 +1,9 @@
 import { enqueueWorkoutDelete } from '@/lib/sync/queue'
-import { getAllWorkoutsService, getDiscoverWorkoutsService } from '@/services/workoutServices'
-import { StateCreator } from 'zustand'
-import { useAuth } from '../authStore'
+import { getDiscoverWorkoutsService, getUserWorkoutsService } from '@/services/workoutServices'
 import { SyncStatus } from '@/types/sync'
 import { WorkoutHistoryItem, WorkoutState } from '@/types/workout'
+import { StateCreator } from 'zustand'
+import { useAuth } from '../authStore'
 
 export interface HistorySlice {
 	workoutLoading: boolean
@@ -14,7 +14,7 @@ export interface HistorySlice {
 	discoverHasMore: boolean
 	workoutHistory: WorkoutHistoryItem[]
 	discoverWorkouts: WorkoutHistoryItem[]
-	getAllWorkouts: (page?: number) => Promise<void>
+	getUserWorkouts: (page?: number) => Promise<void>
 	getDiscoverWorkouts: (page?: number) => Promise<void>
 	getWorkoutById: (id: string) => WorkoutHistoryItem | undefined
 	upsertWorkoutHistoryItem: (item: WorkoutHistoryItem) => void
@@ -36,14 +36,14 @@ export const createHistorySlice: StateCreator<WorkoutState, [], [], HistorySlice
 	workoutHistory: [],
 	discoverWorkouts: [],
 
-	getAllWorkouts: async (page = 1) => {
+	getUserWorkouts: async (page = 1) => {
 		const state = get()
 		if (state.workoutLoading && page > 1) return // Prevent duplicate requests
 
 		set({ workoutLoading: true })
 
 		try {
-			const res = await getAllWorkoutsService(page)
+			const res = await getUserWorkoutsService(page)
 			if (!res.success || !res.data) return
 
 			const fetchedWorkouts = res.data.workouts || []
@@ -82,7 +82,7 @@ export const createHistorySlice: StateCreator<WorkoutState, [], [], HistorySlice
 				}
 			})
 		} catch (e) {
-			console.error('getAllWorkouts failed', e)
+			console.error('getUserWorkouts failed', e)
 		} finally {
 			set({ workoutLoading: false })
 		}

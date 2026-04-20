@@ -1,5 +1,6 @@
 import { OtaUpdateModal } from '@/components/auth/OtaUpdateModal'
 import { CustomToast } from '@/components/ui/CustomToast'
+import { useOneSignal } from '@/hooks/notifications/useOneSignal'
 import { useSyncQueue } from '@/hooks/useSyncQueue'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { queryClient } from '@/lib/queryClient'
@@ -55,6 +56,9 @@ export default function RootLayout() {
 	// ───── Offline sync ─────
 	useSyncQueue()
 
+	// ───── OneSignal SDK ─────
+	const { login: loginOneSignal, logout: logoutOneSignal } = useOneSignal()
+
 	// ───── Initial Data Fetch ─────
 	// useInitialDataFetch();
 
@@ -75,17 +79,27 @@ export default function RootLayout() {
 	}, [hasRestored, initializeSubscription])
 
 	// ─────────────────────────────────────────────
-	// 1.6️⃣ Sync Subscription Store with Auth
+	// 1.6️⃣ Sync Stores with Auth (Subscription & OneSignal)
 	// ─────────────────────────────────────────────
 	useEffect(() => {
 		if (hasRestored) {
 			if (isAuthenticated && user?.userId) {
 				loginSubscription(user.userId)
+				loginOneSignal(user.userId)
 			} else if (!isAuthenticated) {
 				logoutSubscription()
+				logoutOneSignal()
 			}
 		}
-	}, [hasRestored, isAuthenticated, user?.userId, loginSubscription, logoutSubscription])
+	}, [
+		hasRestored,
+		isAuthenticated,
+		user?.userId,
+		loginSubscription,
+		logoutSubscription,
+		loginOneSignal,
+		logoutOneSignal,
+	])
 
 	// ─────────────────────────────────────────────
 	// 2️⃣ Silent OTA check (NO UI, NO splash blocking)

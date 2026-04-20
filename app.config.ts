@@ -84,6 +84,12 @@ export default ({ config }: { config: ExpoConfig }): ExpoConfig => {
 				},
 			],
 			'expo-video',
+			[
+				'onesignal-expo-plugin',
+				{
+					mode: isProd ? 'production' : 'development',
+				},
+			],
 		],
 
 		experiments: {

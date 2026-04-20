@@ -155,23 +155,25 @@ export function Button({
 
 	const variantClass: Record<ButtonVariant, string> = {
 		primary: liquidGlass
-			? 'border border-blue-500/25 bg-blue-500/18 dark:border-blue-400/20 dark:bg-blue-400/16'
+			? 'border-2 border-blue-500/25 bg-blue-500/18 dark:border-blue-400/20 dark:bg-blue-400/16'
 			: 'bg-[#3b82f6]',
 		secondary: liquidGlass
-			? 'border border-white/20 bg-white/20 dark:border-white/12 dark:bg-white/8'
+			? 'border-2 border-white/20 bg-white/20 dark:border-white/12 dark:bg-white/8'
 			: 'bg-white border border-neutral-200/60 dark:bg-neutral-900 dark:border-neutral-800',
 		success: liquidGlass
-			? 'border border-emerald-500/25 bg-emerald-500/18 dark:border-emerald-400/20 dark:bg-emerald-400/16'
+			? 'border-2 border-emerald-500/25 bg-emerald-500/18 dark:border-emerald-400/20 dark:bg-emerald-400/16'
 			: 'bg-green-600',
 		danger: liquidGlass
-			? 'border border-red-500/25 bg-red-500/18 dark:border-red-400/20 dark:bg-red-400/16'
+			? 'border-2 border-red-500/25 bg-red-500/18 dark:border-red-400/20 dark:bg-red-400/16'
 			: 'bg-white border border-red-200/60 dark:bg-neutral-900 dark:border-red-800',
-		ghost: liquidGlass ? 'border border-white/12 bg-white/8 dark:border-white/8 dark:bg-white/5' : 'bg-transparent',
+		ghost: liquidGlass
+			? 'border-2 border-white/12 bg-white/8 dark:border-white/8 dark:bg-white/5'
+			: 'bg-transparent',
 		outline: liquidGlass
-			? 'border border-white/15 bg-white/8 dark:border-white/8 dark:bg-white/5'
+			? 'border-2 border-white/15 bg-white/8 dark:border-white/8 dark:bg-white/5'
 			: 'bg-transparent border border-neutral-300 dark:border-neutral-700',
 		warning: liquidGlass
-			? 'border border-yellow-500/25 bg-yellow-500/18 dark:border-yellow-400/20 dark:bg-yellow-400/16'
+			? 'border-2 border-yellow-500/25 bg-yellow-500/18 dark:border-yellow-400/20 dark:bg-yellow-400/16'
 			: 'bg-yellow-500',
 	}
 

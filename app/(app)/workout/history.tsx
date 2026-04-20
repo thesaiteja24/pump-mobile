@@ -1,6 +1,6 @@
 import WorkoutCard from '@/components/home/WorkoutCard'
 import { useExercises } from '@/hooks/queries/useExercises'
-import { useWorkoutHistoryQuery } from '@/hooks/queries/useWorkoutHistory'
+import { useUserWorkoutHistoryQuery } from '@/hooks/queries/useWorkoutHistory'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
 import { useUser } from '@/stores/userStore'
@@ -144,7 +144,7 @@ const History = () => {
 		isFetching: workoutLoading,
 		fetchNextPage,
 		refetch: refetchHistory,
-	} = useWorkoutHistoryQuery()
+	} = useUserWorkoutHistoryQuery()
 
 	const { data: exerciseList = [] } = useExercises()
 
@@ -175,7 +175,11 @@ const History = () => {
 
 	useEffect(() => {
 		const onBackPress = () => {
-			router.back()
+			if (router.canGoBack()) {
+				router.back()
+			} else {
+				router.push('/(app)/(tabs)/home')
+			}
 			return true
 		}
 

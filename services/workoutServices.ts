@@ -5,8 +5,8 @@ import {
 	WORKOUTS_ENDPOINT as workouts_endpoint,
 } from '@/constants/urls'
 import { WorkoutPayload } from '@/types/sync'
-import { handleApiResponse } from '@/utils/handleApiResponse'
 import { WorkoutHistoryItem } from '@/types/workout'
+import { handleApiResponse } from '@/utils/handleApiResponse'
 import client from './api'
 
 export async function getWorkoutByShareIdService(shareId: string): Promise<WorkoutHistoryItem> {
@@ -19,7 +19,7 @@ export async function getWorkoutByShareIdService(shareId: string): Promise<Worko
 	}
 }
 
-export async function getAllWorkoutsService(page: number = 1, limit: number = 2) {
+export async function getUserWorkoutsService(page: number = 1, limit: number = 2) {
 	try {
 		const res = await client.get(workouts_endpoint, { params: { page, limit } })
 

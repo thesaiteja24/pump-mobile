@@ -1,10 +1,10 @@
 import { queryClient } from '@/lib/queryClient'
 import { queryKeys } from '@/lib/queryKeys'
-import { getAllWorkoutsService, getDiscoverWorkoutsService } from '@/services/workoutServices'
+import { getDiscoverWorkoutsService, getUserWorkoutsService, getWorkoutByIdService } from '@/services/workoutServices'
+import { useWorkout } from '@/stores/workoutStore'
 import { SyncStatus } from '@/types/sync'
 import { WorkoutHistoryItem } from '@/types/workout'
-import { useWorkout } from '@/stores/workoutStore'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 
 const PAGE_LIMIT = 20
 
@@ -16,14 +16,14 @@ const PAGE_LIMIT = 20
 // upsertWorkoutHistoryItem so offline-first reconcilers still work.
 // Pending (offline) workouts are merged at the top.
 // ─────────────────────────────────────────────────────
-export function useWorkoutHistoryQuery() {
+export function useUserWorkoutHistoryQuery() {
 	const workoutHistoryStore = useWorkout(s => s.workoutHistory)
 	const pendingWorkouts = workoutHistoryStore.filter(w => w.syncStatus === 'pending')
 
 	const query = useInfiniteQuery({
 		queryKey: queryKeys.workouts.all,
 		queryFn: async ({ pageParam = 1 }) => {
-			const res = await getAllWorkoutsService(pageParam as number, PAGE_LIMIT)
+			const res = await getUserWorkoutsService(pageParam as number, PAGE_LIMIT)
 			if (!res.success || !res.data) return { workouts: [] as WorkoutHistoryItem[], meta: null }
 
 			const workouts = (res.data.workouts || []).map((w: WorkoutHistoryItem) => ({
@@ -43,7 +43,7 @@ export function useWorkoutHistoryQuery() {
 			return (lastPage.meta.currentPage ?? 1) + 1
 		},
 		initialPageParam: 1,
-		staleTime: 3 * 60 * 1000, // 3 min
+		staleTime: Infinity,
 	})
 
 	// Flatten all fetched pages and prepend any pending (offline-first) workouts
@@ -111,6 +111,23 @@ export function useDiscoverWorkoutsQuery() {
 	}
 }
 
+export function useWorkoutByIdQuery(id: string, options?: { enabled?: boolean }) {
+	const query = useQuery({
+		queryKey: queryKeys.workouts.byId(id),
+		queryFn: async () => {
+			const res = await getWorkoutByIdService(id)
+			if (!res.success || !res.data) return null
+			return {
+				...res.data,
+				syncStatus: 'synced' as SyncStatus,
+			}
+		},
+		staleTime: Infinity,
+		...options,
+	})
+
+	return query
+}
 // ─────────────────────────────────────────────────────
 // Cache helpers — called from workoutReconciler after sync
 // ─────────────────────────────────────────────────────

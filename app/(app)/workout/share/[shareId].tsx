@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/Button'
 import { ReadOnlyExerciseRow } from '@/components/workout/ReadOnlyExerciseRow'
 import { createWorkoutService, getWorkoutByShareIdService } from '@/services/workoutServices'
-import { WorkoutHistoryItem } from '@/types/workout'
 import { useWorkout } from '@/stores/workoutStore'
+import { WorkoutHistoryItem } from '@/types/workout'
 import * as Crypto from 'expo-crypto'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useMemo, useState } from 'react'
@@ -19,7 +19,7 @@ export default function SharedWorkoutDetails() {
 	const [sharedWorkout, setSharedWorkout] = useState<WorkoutHistoryItem | null>(null)
 	const [saving, setSaving] = useState(false)
 
-	const getAllWorkouts = useWorkout(s => s.getAllWorkouts)
+	const getUserWorkouts = useWorkout(s => s.getUserWorkouts)
 
 	useEffect(() => {
 		if (shareId) {
@@ -88,7 +88,7 @@ export default function SharedWorkoutDetails() {
 			}
 
 			await createWorkoutService(payload)
-			await getAllWorkouts() // refresh local store
+			await getUserWorkouts() // refresh local store
 
 			Alert.alert('Success', 'Workout copied to your history!', [
 				{
