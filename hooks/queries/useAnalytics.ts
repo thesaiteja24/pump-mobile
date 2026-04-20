@@ -210,9 +210,9 @@ export function useAddMeasurement() {
 			await queryClient.cancelQueries({ queryKey: queryKeys.analytics.measurements(userId!) })
 			await queryClient.cancelQueries({ queryKey: queryKeys.habits.logs(userId!) })
 
-			const previousMeasurements = queryClient.getQueryData<MeasurementsQueryData>(
-				queryKeys.analytics.measurements(userId!)
-			)
+			const previousMeasurements = queryClient.getQueriesData<MeasurementsQueryData>({
+				queryKey: queryKeys.analytics.measurements(userId!)
+			})
 
 			// Prepare measurement data for optimistic UI
 			const { progressPics, ...measurementData } = data
@@ -220,7 +220,8 @@ export function useAddMeasurement() {
 				measurementData.progressPicUrls = progressPics.map(p => p.uri)
 			}
 
-			queryClient.setQueryData<MeasurementsQueryData>(queryKeys.analytics.measurements(userId!), old => {
+			queryClient.setQueriesData<MeasurementsQueryData>({ queryKey: queryKeys.analytics.measurements(userId!) }, old => {
+				if (!old) return old;
 				const normalize = (d: string) => {
 					if (!d) return ''
 					const parsed = new Date(d)
@@ -289,7 +290,9 @@ export function useAddMeasurement() {
 			return { previousMeasurements }
 		},
 		onError: (err, newData, context) => {
-			queryClient.setQueryData(queryKeys.analytics.measurements(userId!), context?.previousMeasurements)
+			context?.previousMeasurements?.forEach(([queryKey, data]) => {
+				queryClient.setQueryData(queryKey, data)
+			})
 		},
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: queryKeys.analytics.measurements(userId!) })

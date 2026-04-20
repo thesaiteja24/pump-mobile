@@ -64,7 +64,8 @@ export const queryKeys = {
 		commentLikes: (commentId: string) => ['engagement', 'commentLikes', commentId] as const,
 	},
 	analytics: {
-		measurements: (userId: string, duration?: string) => ['measurements', userId, duration] as const,
+		measurements: (userId: string, duration?: string) =>
+			duration ? (['measurements', userId, duration] as const) : (['measurements', userId] as const),
 		userAnalytics: (userId: string) => ['analytics', userId] as const,
 		fitnessProfile: (userId: string) => ['fitnessProfile', userId] as const,
 		nutritionPlan: (userId: string) => ['nutritionPlan', userId] as const,

@@ -188,7 +188,7 @@ export function useLogWeight() {
 			const previousHabitLogs = queryClient.getQueryData<Record<string, HabitLogType[]>>(
 				queryKeys.habits.logs(userId!)
 			)
-			const previousMeasurements = queryClient.getQueryData(queryKeys.analytics.measurements(userId!))
+			const previousMeasurements = queryClient.getQueriesData({ queryKey: queryKeys.analytics.measurements(userId!) })
 
 			// 1. Update Habit Logs Cache (find weight habit)
 			const habits = queryClient.getQueryData<HabitType[]>(queryKeys.habits.list(userId!)) || []
@@ -220,7 +220,9 @@ export function useLogWeight() {
 		},
 		onError: (err, variables, context) => {
 			queryClient.setQueryData(queryKeys.habits.logs(userId!), context?.previousHabitLogs)
-			queryClient.setQueryData(queryKeys.analytics.measurements(userId!), context?.previousMeasurements)
+			context?.previousMeasurements?.forEach(([queryKey, data]) => {
+				queryClient.setQueryData(queryKey, data)
+			})
 		},
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: queryKeys.habits.logs(userId!) })
