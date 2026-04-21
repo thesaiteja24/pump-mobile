@@ -57,8 +57,11 @@ export const queryKeys = {
 		workoutLikes: (workoutId: string) => ['workoutLikes', workoutId] as const,
 		commentLikes: (commentId: string) => ['commentLikes', commentId] as const,
 	},
-	// Engagement keys used by useComments hooks
 	engagement: {
+		suggested: ['suggestedUsers'] as const,
+		search: (query: string) => ['searchUsers', query] as const,
+		followers: (userId: string) => ['userFollowers', userId] as const,
+		following: (userId: string) => ['userFollowing', userId] as const,
 		comments: (workoutId: string) => ['engagement', 'comments', workoutId] as const,
 		replies: (commentId: string) => ['engagement', 'replies', commentId] as const,
 		workoutLikes: (workoutId: string) => ['engagement', 'workoutLikes', workoutId] as const,
@@ -74,8 +77,5 @@ export const queryKeys = {
 	},
 	user: {
 		byId: (userId: string) => ['user', userId] as const,
-		suggested: ['suggestedUsers'] as const,
-		followers: (userId: string) => ['userFollowers', userId] as const,
-		following: (userId: string) => ['userFollowing', userId] as const,
 	},
 } as const

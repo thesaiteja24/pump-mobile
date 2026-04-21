@@ -4,13 +4,18 @@ import { PaywallModal, PaywallModalHandle } from '@/components/ui/PaywallModal'
 import ExerciseGroupModal, { ExerciseGroupModalHandle } from '@/components/workout/ExerciseGroupModal'
 import ExerciseRow from '@/components/workout/ExerciseRow'
 import { FREE_TIER_LIMITS } from '@/constants/limits'
-import { useAuth } from '@/stores/authStore'
 import { useExercises } from '@/hooks/queries/useExercises'
-import { useSubscriptionStore } from '@/stores/subscriptionStore'
-import { useCreateTemplateMutation, useTemplateByIdQuery, useTemplatesQuery, useUpdateTemplateMutation } from '@/hooks/queries/useTemplates'
-import { useTemplate } from '@/stores/templateStore'
-import { DraftTemplate, WorkoutTemplate } from '@/types/template'
+import {
+	useCreateTemplateMutation,
+	useTemplateByIdQuery,
+	useTemplatesQuery,
+	useUpdateTemplateMutation,
+} from '@/hooks/queries/useTemplates'
+import { useAuth } from '@/stores/authStore'
 import { useProgram } from '@/stores/programStore'
+import { useSubscriptionStore } from '@/stores/subscriptionStore'
+import { useTemplate } from '@/stores/templateStore'
+import { DraftTemplate } from '@/types/template'
 import { ExerciseGroupType } from '@/types/workout'
 import { Ionicons } from '@expo/vector-icons'
 import { usePreventRemove } from '@react-navigation/native'

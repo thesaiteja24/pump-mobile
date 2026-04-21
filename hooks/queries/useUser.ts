@@ -1,18 +1,11 @@
 import {
 	deleteProfilePicService,
-	followUserService,
-	getSuggestedUsersService,
 	getUserDataService,
-	getUserFollowersService,
-	getUserFollowingService,
-	searchUsersService,
-	unFollowUserService,
 	updateProfilePicService,
 	updateUserDataService,
 } from '@/services/userService'
-import { type SearchedUser } from '@/types/user'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/stores/authStore'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 // ─────────────────────────────────────────────────────
 // READ — user profile
@@ -20,55 +13,18 @@ import { useAuth } from '@/stores/authStore'
 export function useUserQuery(userId: string | undefined) {
 	return useQuery({
 		queryKey: ['user', 'profile', userId],
-		queryFn: () => getUserDataService(userId!),
+		queryFn: async () => {
+			const res = await getUserDataService(userId!)
+			return res.data
+		},
 		enabled: !!userId,
 		staleTime: 5 * 60 * 1000,
 	})
 }
 
 // ─────────────────────────────────────────────────────
-// READ — search users
-// ─────────────────────────────────────────────────────
-export function useSearchUsersQuery(query: string) {
-	return useQuery({
-		queryKey: ['user', 'search', query],
-		queryFn: () => searchUsersService(query),
-		enabled: query.trim().length > 0,
-		staleTime: 30 * 1000,
-	})
-}
-
-// ─────────────────────────────────────────────────────
-// READ — suggested users
-// ─────────────────────────────────────────────────────
-export function useSuggestedUsersQuery() {
-	return useQuery({
-		queryKey: ['user', 'suggested'],
-		queryFn: getSuggestedUsersService,
-		staleTime: 2 * 60 * 1000,
-	})
-}
-
-// ─────────────────────────────────────────────────────
 // READ — followers / following
 // ─────────────────────────────────────────────────────
-export function useUserFollowersQuery(userId: string | undefined) {
-	return useQuery({
-		queryKey: ['user', 'followers', userId],
-		queryFn: () => getUserFollowersService(userId!),
-		enabled: !!userId,
-		staleTime: 60 * 1000,
-	})
-}
-
-export function useUserFollowingQuery(userId: string | undefined) {
-	return useQuery({
-		queryKey: ['user', 'following', userId],
-		queryFn: () => getUserFollowingService(userId!),
-		enabled: !!userId,
-		staleTime: 60 * 1000,
-	})
-}
 
 // ─────────────────────────────────────────────────────
 // MUTATION — update profile picture
@@ -158,34 +114,6 @@ export function useUpdatePreferencesMutation() {
 		},
 		onSuccess: (_res, { userId }) => {
 			qc.invalidateQueries({ queryKey: ['user', 'profile', userId] })
-		},
-	})
-}
-
-// ─────────────────────────────────────────────────────
-// MUTATION — follow user (with optimistic update)
-// ─────────────────────────────────────────────────────
-export function useFollowUserMutation() {
-	const qc = useQueryClient()
-	return useMutation({
-		mutationFn: (targetUserId: string) => followUserService(targetUserId),
-		onSuccess: (_res, targetUserId) => {
-			qc.invalidateQueries({ queryKey: ['user', 'suggested'] })
-			qc.invalidateQueries({ queryKey: ['user', 'followers'] })
-		},
-	})
-}
-
-// ─────────────────────────────────────────────────────
-// MUTATION — unfollow user (with optimistic update)
-// ─────────────────────────────────────────────────────
-export function useUnfollowUserMutation() {
-	const qc = useQueryClient()
-	return useMutation({
-		mutationFn: (targetUserId: string) => unFollowUserService(targetUserId),
-		onSuccess: (_res, targetUserId) => {
-			qc.invalidateQueries({ queryKey: ['user', 'suggested'] })
-			qc.invalidateQueries({ queryKey: ['user', 'following'] })
 		},
 	})
 }

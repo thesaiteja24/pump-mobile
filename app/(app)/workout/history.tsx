@@ -2,7 +2,6 @@ import WorkoutCard from '@/components/home/WorkoutCard'
 import { useExercises } from '@/hooks/queries/useExercises'
 import { useUserWorkoutHistoryQuery } from '@/hooks/queries/useWorkoutHistory'
 import { useThemeColor } from '@/hooks/useThemeColor'
-import { useAuth } from '@/stores/authStore'
 import { ExerciseType } from '@/types/exercises'
 import { WorkoutHistoryItem } from '@/types/workout'
 import { router } from 'expo-router'
@@ -132,9 +131,6 @@ function SectionHeader() {
 
 const History = () => {
 	const colors = useThemeColor()
-
-	// Stores
-	const user = useAuth(s => s.user)
 
 	// TanStack Query — infinite pagination with offline-first pending merge
 	const {

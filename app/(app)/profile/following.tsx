@@ -1,58 +1,15 @@
-import { Button } from '@/components/ui/Button'
+import { UserItem } from '@/components/profile/UserItem'
+import { useFollowUserMutation, useUnfollowUserMutation, useUserFollowingQuery } from '@/hooks/queries/useEngagement'
 import { useThemeColor } from '@/hooks/useThemeColor'
-import { useFollowUserMutation, useUnfollowUserMutation, useUserFollowingQuery } from '@/hooks/queries/useUser'
 import { useAuth } from '@/stores/authStore'
-import { SearchedUser } from '@/types/user'
+import { SearchedUser } from '@/types/engagement'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { Image } from 'expo-image'
 import { router, useLocalSearchParams } from 'expo-router'
 import Fuse from 'fuse.js'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, BackHandler, FlatList, Platform, RefreshControl, Text, View } from 'react-native'
 import { TextInput } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-
-const UserItem = ({
-	id,
-	firstName,
-	lastName,
-	profilePicUrl,
-	isFollowing,
-	onPressFollow,
-	followLoading,
-}: SearchedUser & {
-	followLoading: boolean
-	onPressFollow: () => void
-}) => {
-	const isDark = useThemeColor().isDark
-	return (
-		<View className="w-full flex-row items-center justify-between py-3">
-			<View className="w-2/3 flex-row items-center gap-4">
-				<Image
-					source={profilePicUrl ? { uri: profilePicUrl } : require('../../../assets/images/icon.png')}
-					style={{
-						width: 48,
-						height: 48,
-						borderRadius: 100,
-						borderColor: isDark ? 'white' : '#black',
-						borderWidth: 0.25,
-					}}
-					contentFit="cover"
-				/>
-				<Text className="text-base text-black dark:text-white">
-					{firstName} {lastName}
-				</Text>
-			</View>
-			<Button
-				className="min-h-6 w-1/3 py-2"
-				variant={isFollowing ? 'secondary' : 'primary'}
-				title={isFollowing ? 'Following' : 'Follow'}
-				onPress={onPressFollow}
-				loading={followLoading}
-			/>
-		</View>
-	)
-}
 
 export default function Following() {
 	const colors = useThemeColor()
@@ -72,8 +29,7 @@ export default function Following() {
 	const followMutation = useFollowUserMutation()
 	const unfollowMutation = useUnfollowUserMutation()
 
-	const [localOverride, setLocalOverride] = useState<SearchedUser[] | null>(null)
-	const displayUsers = localOverride ?? users
+	const displayUsers = users
 
 	const onRefresh = useCallback(() => {
 		setRefreshing(true)
@@ -133,21 +89,16 @@ export default function Following() {
 						lastName={item.lastName}
 						profilePicUrl={item.profilePicUrl}
 						isFollowing={item.isFollowing}
-						followLoading={followMutation.isPending || unfollowMutation.isPending}
+						isPro={item.isPro}
+						proSubscriptionType={item.proSubscriptionType}
+						followLoading={item.followLoading}
 						onPressFollow={() => {
 							if (!currentUserId) return
 
-							const isFollowing = item.isFollowing
-
-							// Optimistic update
-							setLocalOverride(prev =>
-								(prev ?? displayUsers).map(u => (u.id === item.id ? { ...u, isFollowing: !isFollowing } : u))
-							)
-
-							if (isFollowing) {
-								unfollowMutation.mutate(item.id, { onSettled: () => setLocalOverride(null) })
+							if (item.isFollowing) {
+								unfollowMutation.mutate(item.id)
 							} else {
-								followMutation.mutate(item.id, { onSettled: () => setLocalOverride(null) })
+								followMutation.mutate(item.id)
 							}
 						}}
 					/>
