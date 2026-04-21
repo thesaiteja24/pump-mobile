@@ -2,7 +2,6 @@ import { zustandStorage } from '@/lib/storage'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { createActiveWorkoutSlice } from './workout/activeWorkoutSlice'
-import { createHistorySlice } from './workout/historySlice'
 import { createRestTimerSlice } from './workout/restTimerSlice'
 import { WorkoutState } from '@/types/workout'
 
@@ -10,9 +9,6 @@ const initialState = {
 	workoutLoading: false,
 	workoutSaving: false,
 	workout: null,
-	workoutHistory: [],
-	lastSyncedAt: null as number | null,
-
 	rest: {
 		seconds: null,
 		startedAt: null,
@@ -23,7 +19,6 @@ const initialState = {
 export const useWorkout = create<WorkoutState>()(
 	persist(
 		(...a) => ({
-			...createHistorySlice(...a),
 			...createActiveWorkoutSlice(...a),
 			...createRestTimerSlice(...a),
 
@@ -35,9 +30,10 @@ export const useWorkout = create<WorkoutState>()(
 		{
 			name: 'workout-store',
 			storage: zustandStorage,
+			// Only persist the in-progress workout so it survives app restarts/crashes.
+			// Workout history is entirely managed by TanStack Query cache.
 			partialize: state => ({
 				workout: state.workout,
-				workoutHistory: state.workoutHistory,
 			}),
 			onRehydrateStorage: () => state => {
 				// Convert ISO strings back to Date objects after rehydration
@@ -48,7 +44,6 @@ export const useWorkout = create<WorkoutState>()(
 					if (state.workout.endTime && typeof state.workout.endTime === 'string') {
 						state.workout.endTime = new Date(state.workout.endTime)
 					}
-					// Convert editedAt from ISO string to Date
 					if (state.workout.editedAt && typeof state.workout.editedAt === 'string') {
 						state.workout.editedAt = new Date(state.workout.editedAt)
 					}
