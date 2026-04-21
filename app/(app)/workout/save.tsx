@@ -3,6 +3,7 @@ import DateTimePicker from '@/components/ui/DateTimePicker'
 import VisibilitySelectionModal, { VisibilitySelectionModalHandle } from '@/components/workout/VisibilitySelectionModal'
 
 import { useExercises } from '@/hooks/queries/useExercises'
+import { useSaveWorkoutMutation, useUpdateWorkoutMutation } from '@/hooks/queries/useWorkoutHistory'
 import { useAuth } from '@/stores/authStore'
 import { ExerciseType } from '@/types/exercises'
 import { VisibilityType, WorkoutLog } from '@/types/workout'
@@ -36,8 +37,11 @@ export default function SaveWorkout() {
 	const workoutSaving = useWorkout(s => s.workoutSaving)
 	const workout = useWorkout(s => s.workout)
 	const updateWorkout = useWorkout(s => s.updateWorkout)
-	const saveWorkout = useWorkout(s => s.saveWorkout)
 	const discardWorkout = useWorkout(s => s.discardWorkout)
+
+	// TanStack Query mutations
+	const saveMutation = useSaveWorkoutMutation()
+	const updateMutation = useUpdateWorkoutMutation()
 
 	// Reference data (TanStack Query)
 	const { data: exerciseList = [] } = useExercises()
@@ -76,16 +80,19 @@ export default function SaveWorkout() {
 	}, [workout, exerciseTypeMap])
 
 	/* Handlers */
-	const commitSave = (workoutToSave: WorkoutLog) => {
-		saveWorkout(workoutToSave)
-
-		Toast.show({
-			type: 'success',
-			text1: 'Workout saved!',
-		})
-
-		discardWorkout()
-		router.replace('/(app)/(tabs)/workout')
+	const commitSave = async (workoutToSave: WorkoutLog) => {
+		try {
+			if (workoutToSave.id) {
+				await updateMutation.mutateAsync({ id: workoutToSave.id, prepared: workoutToSave })
+			} else {
+				await saveMutation.mutateAsync(workoutToSave)
+			}
+			Toast.show({ type: 'success', text1: 'Workout saved!' })
+			discardWorkout()
+			router.replace('/(app)/(tabs)/workout')
+		} catch (err: any) {
+			Toast.show({ type: 'error', text1: 'Error', text2: err?.message || 'Failed to save workout' })
+		}
 	}
 
 	const handleConfirmSave = async () => {
@@ -235,7 +242,7 @@ export default function SaveWorkout() {
 				<Button
 					title={isEditing ? 'Save Edits' : 'Save Workout'}
 					variant="primary"
-					loading={workoutSaving}
+					loading={saveMutation.isPending || updateMutation.isPending}
 					onPress={handleConfirmSave}
 				/>
 				<Button
