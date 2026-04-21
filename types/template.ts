@@ -1,4 +1,3 @@
-import type { SyncStatus } from './sync'
 import type { ExerciseGroupType, SetType } from './workout'
 
 export interface TemplateSet {
@@ -31,9 +30,8 @@ export interface TemplateExerciseGroup {
 }
 
 export interface WorkoutTemplate {
-	clientId: string | null
+	/** The server-assigned ID. Always present for synced templates. */
 	id: string
-	syncStatus: SyncStatus
 	userId: string
 	title: string
 	notes?: string
@@ -59,20 +57,12 @@ export interface DraftTemplate {
 }
 
 export interface TemplateState {
-	templates: WorkoutTemplate[]
-	sharedTemplate: WorkoutTemplate | null
-	setSharedTemplate: (template: WorkoutTemplate | null) => void
+	/** Transient draft being edited in the template editor. Not persisted. */
 	draftTemplate: DraftTemplate | null
-	createTemplate: (data: DraftTemplate) => Promise<any>
-	updateTemplate: (id: string, data: Partial<WorkoutTemplate>) => Promise<any>
-	saveSharedTemplate: (
-		template: WorkoutTemplate,
-		options?: { overwriteId?: string }
-	) => Promise<{ success: boolean; id?: string; error?: string }>
-	deleteTemplate: (id: string) => Promise<any>
+
 	startWorkoutFromTemplate: (templateId: string, template?: WorkoutTemplate) => void
 	prepareTemplateForSave: () => {
-		template: WorkoutTemplate
+		template: DraftTemplate
 		pruneReport: {
 			droppedExercises: number
 			droppedGroups: number
