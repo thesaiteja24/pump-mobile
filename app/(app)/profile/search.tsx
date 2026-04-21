@@ -1,5 +1,11 @@
 import { Button } from '@/components/ui/Button'
 import { useThemeColor } from '@/hooks/useThemeColor'
+import {
+	useFollowUserMutation,
+	useSearchUsersQuery,
+	useSuggestedUsersQuery,
+	useUnfollowUserMutation,
+} from '@/hooks/queries/useUser'
 import { useAuth } from '@/stores/authStore'
 import { useUser } from '@/stores/userStore'
 import { SearchedUser } from '@/types/user'
@@ -62,42 +68,28 @@ export default function Search() {
 	const [refreshing, setRefreshing] = useState(false)
 
 	const currentUserId = useAuth(state => state.user?.userId)
-	const getUserData = useUser(state => state.getUserData)
-	const searchUsers = useUser(state => state.searchUsers)
-	const resetSearchedUser = useUser(state => state.resetSearchedUser)
-	const getSuggestedUsers = useUser(state => state.getSuggestedUsers)
-	const unFollowUser = useUser(state => state.unFollowUser)
-	const followUser = useUser(state => state.followUser)
-	const followLoading = useUser(state => state.followLoading)
-	const searchResult = useUser(state => state.searchResult)
-	const searchLoading = useUser(state => state.searchLoading)
-	const suggestedUsers = useUser(state => state.suggestedUsers)
-	const suggestedLoading = useUser(state => state.suggestedLoading)
 
 	const isSearching = query.trim().length >= 3
 
+	const {
+		data: searchResult,
+		isFetching: searchLoading,
+		refetch: refetchSearch,
+	} = useSearchUsersQuery(isSearching ? query.trim() : '')
+
+	const {
+		data: suggestedUsers,
+		isFetching: suggestedLoading,
+		refetch: refetchSuggested,
+	} = useSuggestedUsersQuery()
+
+	const followMutation = useFollowUserMutation()
+	const unfollowMutation = useUnfollowUserMutation()
+
 	const data = useMemo(() => {
-		return isSearching ? (searchResult ?? []) : (suggestedUsers ?? [])
+		const raw = isSearching ? (searchResult ?? []) : (suggestedUsers ?? [])
+		return raw as SearchedUser[]
 	}, [isSearching, searchResult, suggestedUsers])
-
-	// 🔎 Debounced Search
-	useEffect(() => {
-		if (!isSearching) {
-			resetSearchedUser()
-			return
-		}
-
-		const timer = setTimeout(() => {
-			searchUsers(query.trim())
-		}, 500)
-
-		return () => clearTimeout(timer)
-	}, [query, searchUsers, isSearching, resetSearchedUser])
-
-	// 🔄 Initial suggestions
-	useEffect(() => {
-		getSuggestedUsers()
-	}, [getSuggestedUsers])
 
 	useEffect(() => {
 		const onBackPress = () => {
@@ -115,14 +107,14 @@ export default function Search() {
 		try {
 			setRefreshing(true)
 			if (!isSearching) {
-				await getSuggestedUsers()
+				await refetchSuggested()
 			} else {
-				await searchUsers(query.trim())
+				await refetchSearch()
 			}
 		} finally {
 			setRefreshing(false)
 		}
-	}, [isSearching, query, getSuggestedUsers, searchUsers])
+	}, [isSearching, refetchSuggested, refetchSearch])
 
 	return (
 		<View style={{ paddingBottom: safeAreaInsets.bottom }} className="flex-1 bg-white px-4 pt-4 dark:bg-black">
@@ -161,17 +153,15 @@ export default function Search() {
 						lastName={item.lastName}
 						profilePicUrl={item.profilePicUrl}
 						isFollowing={item.isFollowing}
-						followLoading={!!followLoading[item.id]}
-						onPressFollow={async () => {
+						followLoading={followMutation.isPending || unfollowMutation.isPending}
+						onPressFollow={() => {
 							if (!currentUserId) return
 
 							if (item.isFollowing) {
-								await unFollowUser(item.id)
+								unfollowMutation.mutate(item.id)
 							} else {
-								await followUser(item.id)
+								followMutation.mutate(item.id)
 							}
-
-							await getUserData(currentUserId)
 						}}
 					/>
 				)}

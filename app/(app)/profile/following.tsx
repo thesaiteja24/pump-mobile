@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/Button'
 import { useThemeColor } from '@/hooks/useThemeColor'
+import { useFollowUserMutation, useUnfollowUserMutation, useUserFollowingQuery } from '@/hooks/queries/useUser'
 import { useAuth } from '@/stores/authStore'
-import { useUser } from '@/stores/userStore'
 import { SearchedUser } from '@/types/user'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
@@ -62,52 +62,40 @@ export default function Following() {
 
 	const [query, setQuery] = useState('')
 	const [refreshing, setRefreshing] = useState(false)
-	const [users, setUsers] = useState<SearchedUser[]>([])
 	const [loading, setLoading] = useState(true)
 
 	const currentUserId = useAuth(state => state.user?.userId)
-	const getUserFollowing = useUser(state => state.getUserFollowing)
-	const unFollowUser = useUser(state => state.unFollowUser)
-	const followUser = useUser(state => state.followUser)
-	const followLoading = useUser(state => state.followLoading)
-	const getUserData = useUser(state => state.getUserData)
-
 	const targetUserId = userId || currentUserId
 
-	const fetchFollowing = useCallback(async () => {
-		if (!targetUserId) return
-		try {
-			const res = await getUserFollowing(targetUserId)
-			if (res.success) {
-				setUsers(res.data)
-			}
-		} finally {
-			setLoading(false)
-			setRefreshing(false)
-		}
-	}, [targetUserId, getUserFollowing])
+	const { data: fetchedUsers = [], isLoading, refetch } = useUserFollowingQuery(targetUserId)
+	const users: SearchedUser[] = fetchedUsers as SearchedUser[]
+	const followMutation = useFollowUserMutation()
+	const unfollowMutation = useUnfollowUserMutation()
 
-	useEffect(() => {
-		fetchFollowing()
-	}, [fetchFollowing])
+	const [localOverride, setLocalOverride] = useState<SearchedUser[] | null>(null)
+	const displayUsers = localOverride ?? users
 
 	const onRefresh = useCallback(() => {
 		setRefreshing(true)
-		fetchFollowing()
-	}, [fetchFollowing])
+		refetch().finally(() => setRefreshing(false))
+	}, [refetch])
+
+	useEffect(() => {
+		if (!isLoading) setLoading(false)
+	}, [isLoading])
 
 	// 🔍 Fuzzy Search
 	const fuse = useMemo(() => {
-		return new Fuse(users, {
+		return new Fuse(displayUsers, {
 			keys: ['firstName', 'lastName', 'username'],
 			threshold: 0.3,
 		})
-	}, [users])
+	}, [displayUsers])
 
 	const filteredUsers = useMemo(() => {
-		if (!query.trim()) return users
+		if (!query.trim()) return displayUsers
 		return fuse.search(query).map(result => result.item)
-	}, [query, users, fuse])
+	}, [query, displayUsers, fuse])
 
 	useEffect(() => {
 		const onBackPress = () => {
@@ -145,25 +133,22 @@ export default function Following() {
 						lastName={item.lastName}
 						profilePicUrl={item.profilePicUrl}
 						isFollowing={item.isFollowing}
-						followLoading={!!followLoading[item.id]}
-						onPressFollow={async () => {
+						followLoading={followMutation.isPending || unfollowMutation.isPending}
+						onPressFollow={() => {
 							if (!currentUserId) return
 
 							const isFollowing = item.isFollowing
 
 							// Optimistic update
-							setUsers(prev =>
-								prev.map(u => (u.id === item.id ? { ...u, isFollowing: !isFollowing } : u))
+							setLocalOverride(prev =>
+								(prev ?? displayUsers).map(u => (u.id === item.id ? { ...u, isFollowing: !isFollowing } : u))
 							)
 
 							if (isFollowing) {
-								await unFollowUser(item.id)
+								unfollowMutation.mutate(item.id, { onSettled: () => setLocalOverride(null) })
 							} else {
-								await followUser(item.id)
+								followMutation.mutate(item.id, { onSettled: () => setLocalOverride(null) })
 							}
-
-							// Refresh current user data to update counts
-							getUserData(currentUserId)
 						}}
 					/>
 				)}

@@ -3,7 +3,6 @@ import { useExercises } from '@/hooks/queries/useExercises'
 import { useUserWorkoutHistoryQuery } from '@/hooks/queries/useWorkoutHistory'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
-import { useUser } from '@/stores/userStore'
 import { ExerciseType } from '@/types/exercises'
 import { WorkoutHistoryItem } from '@/types/workout'
 import { router } from 'expo-router'
@@ -170,10 +169,6 @@ const History = () => {
 	}, [refetchHistory])
 
 	useEffect(() => {
-		useUser.getState().getUserData(user?.userId ?? '')
-	}, [user?.userId])
-
-	useEffect(() => {
 		const onBackPress = () => {
 			if (router.canGoBack()) {
 				router.back()
@@ -203,7 +198,7 @@ const History = () => {
 				<FlatList
 					data={listData}
 					keyExtractor={(item, index) =>
-						item.type === 'section-header' ? `section-header-${index}` : item.workout.clientId
+						item.type === 'section-header' ? `section-header-${index}` : item.workout.id
 					}
 					renderItem={({ item, index }) => {
 						if (item.type === 'section-header') return <SectionHeader />

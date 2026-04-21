@@ -1,5 +1,5 @@
 import { useUserAnalyticsQuery } from '@/hooks/queries/useAnalytics'
-import { useWorkout } from '@/stores/workoutStore'
+import { useUserWorkoutHistoryQuery } from '@/hooks/queries/useWorkoutHistory'
 import { useCallback, useMemo } from 'react'
 
 /* ────────────────────────────────────────────── */
@@ -40,7 +40,7 @@ export interface UseAnalyticsResult {
 }
 
 export function useAnalytics(): UseAnalyticsResult {
-	const workoutHistory = useWorkout(s => s.workoutHistory)
+	const { workoutHistory } = useUserWorkoutHistoryQuery()
 
 	/* ───────────── User-level analytics ───────────── */
 	const { data: tqAnalytics } = useUserAnalyticsQuery()

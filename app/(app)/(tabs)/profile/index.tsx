@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/Button'
 import { VerifiedBadge } from '@/components/ui/VerifiedBadge'
 import { useAuth } from '@/stores/authStore'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
-import { useUser } from '@/stores/userStore'
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import { router } from 'expo-router'
@@ -19,7 +18,6 @@ import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTimi
 
 export default function ProfileScreen() {
 	const { user, logout } = useAuth()
-	const { getUserData } = useUser()
 	const { isPro, activePlanId } = useSubscriptionStore()
 	const isDarkMode = useColorScheme() === 'dark'
 
@@ -51,10 +49,6 @@ export default function ProfileScreen() {
 		infoOpacity.value = withDelay(200, withTiming(1, { duration: 500 }))
 		infoTranslateY.value = withDelay(200, withTiming(0, { duration: 500, easing: Easing.out(Easing.quad) }))
 	}, [avatarOpacity, infoOpacity, infoTranslateY, nameOpacity, nameTranslateY])
-
-	useEffect(() => {
-		getUserData(user?.userId ?? '')
-	}, [getUserData, user?.userId])
 
 	const avatarStyle = useAnimatedStyle(() => ({
 		opacity: avatarOpacity.value,

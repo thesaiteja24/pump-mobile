@@ -30,9 +30,6 @@ export default function TemplateCard({ template }: { template: WorkoutTemplate }
 						<Text className="line-clamp-1 text-lg font-medium text-black dark:text-white">
 							{template.title}
 						</Text>
-						<Text className="self-end rounded-full bg-blue-200 px-2 py-1 text-right text-xs font-normal text-blue-600">
-							{template.syncStatus}
-						</Text>
 					</View>
 					<Text className="text-sm font-normal text-neutral-500 dark:text-neutral-400">
 						created by {template.authorName}

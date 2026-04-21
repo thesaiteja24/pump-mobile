@@ -87,13 +87,12 @@ export default function DiscoverScreen() {
 			) : (
 				<FlatList
 					data={discoverWorkouts}
-					keyExtractor={item => item.clientId}
+					keyExtractor={item => item.id}
 					renderItem={({ item, index }) => (
 						<WorkoutCard
 							workout={item}
 							exerciseTypeMap={exerciseTypeMap}
 							index={index}
-							showSyncStatus={false}
 						/>
 					)}
 					showsVerticalScrollIndicator={false}

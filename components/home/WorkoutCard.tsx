@@ -22,12 +22,10 @@ export default function WorkoutCard({
 	workout,
 	exerciseTypeMap,
 	index = 0,
-	showSyncStatus = true,
 }: {
 	workout: WorkoutHistoryItem
 	exerciseTypeMap: Map<string, ExerciseType>
 	index?: number
-	showSyncStatus?: boolean
 }) {
 	const duration = formatDurationFromDates(workout.startTime, workout.endTime)
 	const volume = calculateWorkoutMetrics(workout, exerciseTypeMap).tonnage
@@ -150,11 +148,6 @@ export default function WorkoutCard({
 						</Text>
 					</View>
 				</View>
-				{showSyncStatus && (
-					<Text className="self-start rounded-full bg-blue-200 px-2 py-1 text-left text-xs font-normal text-blue-600">
-						{workout.syncStatus}
-					</Text>
-				)}
 			</View>
 			{/* Header */}
 			<View className="mb-4 flex-col justify-between gap-2">

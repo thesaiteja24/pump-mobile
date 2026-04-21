@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/Button'
 import PrivacyPolicyModal, { PrivacyPolicyModalHandle } from '@/components/ui/PrivacyPolicyModal'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { updateFitnessProfileService, updateNutritionPlanService } from '@/services/analyticsService'
+import { updateUserDataService } from '@/services/userService'
 import { useAuth } from '@/stores/authStore'
 import { useOnboarding } from '@/stores/onboardingStore'
-import { useUser } from '@/stores/userStore'
 import { User } from '@/types/auth'
 import { calculateBMR, calculateDailyTargets, calculateTDEE } from '@/utils/analytics'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
@@ -49,9 +49,6 @@ export default function Login() {
 	const isLoading = useAuth((state: any) => state.isLoading)
 	const googleLogin = useAuth((state: any) => state.googleLogin)
 	const isGoogleLoading = useAuth((state: any) => state.isGoogleLoading)
-
-	const updateUserData = useUser(state => state.updateUserData)
-	const updatePreferences = useUser(state => state.updatePreferences)
 
 	const opacity = useSharedValue(0)
 	const translateY = useSharedValue(20)
@@ -154,8 +151,8 @@ export default function Login() {
 			const { setUser } = useAuth.getState()
 			setUser({ ...userData, ...preferences })
 
-			await updateUserData(user.userId!, userData)
-			await updatePreferences(user.userId!, preferences)
+			await updateUserDataService(user.userId!, userData)
+			await updateUserDataService(user.userId!, preferences)
 
 			if (onBoardingPayload.fitnessProfile) {
 				const fp = onBoardingPayload.fitnessProfile

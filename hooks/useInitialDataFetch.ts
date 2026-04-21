@@ -1,7 +1,6 @@
 import { queryClient } from '@/lib/queryClient'
 import { queryKeys } from '@/lib/queryKeys'
 import { useAuth } from '@/stores/authStore'
-import { useUser } from '@/stores/userStore'
 import { useEffect, useRef } from 'react'
 import { AppState } from 'react-native'
 import { useNetworkStatus } from './useNetworkStatus'
@@ -105,14 +104,17 @@ async function fetchPublicData() {
 }
 
 async function fetchUserData() {
-	console.log('[InitialFetch] Fetching user data...')
+	console.log('[InitialFetch] Invalidating user-specific query caches...')
 	try {
-		const user = useAuth.getState().user
-		if (!user?.userId) return
+		const userId = useAuth.getState().user?.userId
+		if (!userId) return
 
-		// Fetch user-specific data concurrently
-		await Promise.all([useUser.getState().getUserData(user.userId)])
+		// Invalidate user analytics and workout history so TQ refetches them in background
+		await Promise.all([
+			queryClient.invalidateQueries({ queryKey: queryKeys.workouts.all }),
+			queryClient.invalidateQueries({ queryKey: ['user', 'profile', userId] }),
+		])
 	} catch (error) {
-		console.error('[InitialFetch] Error fetching user data:', error)
+		console.error('[InitialFetch] Error invalidating user data:', error)
 	}
 }

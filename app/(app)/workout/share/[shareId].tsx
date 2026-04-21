@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/Button'
 import { ReadOnlyExerciseRow } from '@/components/workout/ReadOnlyExerciseRow'
-import { createWorkoutService, getWorkoutByShareIdService } from '@/services/workoutServices'
-import { useWorkout } from '@/stores/workoutStore'
+import { useSaveWorkoutMutation } from '@/hooks/queries/useWorkoutHistory'
+import { getWorkoutByShareIdService } from '@/services/workoutServices'
 import { WorkoutHistoryItem } from '@/types/workout'
 import * as Crypto from 'expo-crypto'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
@@ -19,7 +19,7 @@ export default function SharedWorkoutDetails() {
 	const [sharedWorkout, setSharedWorkout] = useState<WorkoutHistoryItem | null>(null)
 	const [saving, setSaving] = useState(false)
 
-	const getUserWorkouts = useWorkout(s => s.getUserWorkouts)
+	const saveMutation = useSaveWorkoutMutation()
 
 	useEffect(() => {
 		if (shareId) {
@@ -57,11 +57,10 @@ export default function SharedWorkoutDetails() {
 		setSaving(true)
 
 		try {
-			// Construct a generic payload to create a copy in the user's history
 			const payload = {
 				clientId: Crypto.randomUUID(),
 				title: sharedWorkout.title ? `${sharedWorkout.title} (Copy)` : 'Copied Workout',
-				startTime: new Date().toISOString(), // Use current time
+				startTime: new Date().toISOString(),
 				endTime: new Date().toISOString(),
 				visibility: 'private' as const,
 				exerciseGroups: sharedWorkout.exerciseGroups.map(g => ({
@@ -73,22 +72,21 @@ export default function SharedWorkoutDetails() {
 				exercises: sharedWorkout.exercises.map(ex => ({
 					exerciseId: ex.exerciseId,
 					exerciseIndex: ex.exerciseIndex,
-					exerciseGroupId: ex.exerciseGroupId,
+					exerciseGroupId: ex.exerciseGroupId ?? undefined,
 					sets: ex.sets.map(s => ({
 						setIndex: s.setIndex,
 						setType: s.setType,
-						weight: s.weight,
-						reps: s.reps,
-						rpe: s.rpe,
-						durationSeconds: s.durationSeconds,
-						restSeconds: s.restSeconds,
-						note: s.note,
+						weight: s.weight ?? undefined,
+						reps: s.reps ?? undefined,
+						rpe: s.rpe ?? undefined,
+						durationSeconds: s.durationSeconds ?? undefined,
+						restSeconds: s.restSeconds ?? undefined,
+						note: s.note ?? undefined,
 					})),
 				})),
 			}
 
-			await createWorkoutService(payload)
-			await getUserWorkouts() // refresh local store
+			await saveMutation.mutateAsync(payload as any)
 
 			Alert.alert('Success', 'Workout copied to your history!', [
 				{
