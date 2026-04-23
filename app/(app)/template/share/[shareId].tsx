@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/Button'
-import { useTemplateByShareIdQuery } from '@/hooks/queries/useTemplates'
-import { useTemplate } from '@/stores/templateStore'
+import { useSaveSharedTemplateMutation, useTemplateByShareIdQuery, useTemplatesQuery } from '@/hooks/queries/useTemplates'
 import { usePreventRemove } from '@react-navigation/native'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useMemo } from 'react'
@@ -17,12 +16,9 @@ export default function TemplateDetails() {
 	const safeAreaInsets = useSafeAreaInsets()
 	const [loading, setLoading] = React.useState(false)
 
-	// Stores
-	// sharedTemplate in Zustand is still used for the setSharedTemplate(null) reset on nav
-	// TODO (to be done by user only): see if we can remove this usage of setSharedTemplate so than we can move to tanstack query
-	const localTemplates = useTemplate(s => s.templates)
-	const saveSharedTemplate = useTemplate(s => s.saveSharedTemplate)
-	const setSharedTemplate = useTemplate(s => s.setSharedTemplate)
+	// Templates from TQ cache (to detect if user already has the shared template)
+	const { data: localTemplates = [] } = useTemplatesQuery()
+	const saveSharedMutation = useSaveSharedTemplateMutation()
 
 	// TanStack Query — fetch shared template by shareId
 	const { data: sharedTemplate } = useTemplateByShareIdQuery(shareId)
@@ -37,7 +33,6 @@ export default function TemplateDetails() {
 			headerLeft: () => (
 				<TouchableOpacity
 					onPress={() => {
-						setSharedTemplate(null)
 						router.replace('/(app)/(tabs)/workout')
 					}}
 					style={{ marginRight: 15 }}
@@ -46,7 +41,7 @@ export default function TemplateDetails() {
 				</TouchableOpacity>
 			),
 		})
-	}, [navigation, sharedTemplate, isDark, setSharedTemplate])
+	}, [navigation, sharedTemplate, isDark])
 
 	const groupMap = useMemo(() => {
 		const map = new Map<string, any>()
@@ -78,59 +73,51 @@ export default function TemplateDetails() {
 						{
 							text: 'Overwrite',
 							style: 'destructive',
-							onPress: async () => {
-								const res = await saveSharedTemplate(sharedTemplate, {
-									overwriteId: existingTemplate.id,
-								})
-								setLoading(false)
-								if (res.success) {
-									Alert.alert('Success', 'Template updated!', [
-										{
-											text: 'View Template',
-											onPress: () => {
-												setSharedTemplate(null)
-												router.replace(`/(app)/template/${res.id}`)
-											},
+							onPress: () => {
+								saveSharedMutation.mutate(
+									{ template: sharedTemplate, overwriteId: existingTemplate.id },
+									{
+										onSuccess: res => {
+											setLoading(false)
+											Alert.alert('Success', 'Template updated!', [
+												{ text: 'View Template', onPress: () => router.replace(`/(app)/template/${existingTemplate.id}`) },
+											])
 										},
-									])
-								}
+										onError: () => { setLoading(false); Alert.alert('Error', 'Failed to save template.') },
+									}
+								)
 							},
 						},
-						// Option to save as new copy? Maybe not needed for now based on plan.
 						{
 							text: 'Save as New',
-							onPress: async () => {
-								const res = await saveSharedTemplate(sharedTemplate) // No overwriteId = new
-								setLoading(false)
-								if (res.success) {
-									Alert.alert('Success', 'Template saved as new copy!', [
-										{
-											text: 'View Template',
-											onPress: () => {
-												setSharedTemplate(null)
-												router.replace(`/(app)/template/${res.id}`)
-											},
+							onPress: () => {
+								saveSharedMutation.mutate(
+									{ template: sharedTemplate },
+									{
+										onSuccess: res => {
+											setLoading(false)
+											Alert.alert('Success', 'Template saved as new copy!')
+											router.replace('/(app)/(tabs)/workout')
 										},
-									])
-								}
+										onError: () => { setLoading(false); Alert.alert('Error', 'Failed to save template.') },
+									}
+								)
 							},
 						},
 					]
 				)
 			} else {
-				const res = await saveSharedTemplate(sharedTemplate)
-				setLoading(false)
-				if (res.success) {
-					Alert.alert('Success', 'Template saved to your library!', [
-						{
-							text: 'View Template',
-							onPress: () => {
-								setSharedTemplate(null)
-								router.replace(`/(app)/template/${res.id}`)
-							},
+				saveSharedMutation.mutate(
+					{ template: sharedTemplate },
+					{
+						onSuccess: () => {
+							setLoading(false)
+							Alert.alert('Success', 'Template saved to your library!')
+							router.replace('/(app)/(tabs)/workout')
 						},
-					])
-				}
+						onError: () => { setLoading(false); Alert.alert('Error', 'Failed to save template.') },
+					}
+				)
 			}
 		} catch (e) {
 			console.error(e)

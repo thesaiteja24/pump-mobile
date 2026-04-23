@@ -11,7 +11,7 @@ export default ({ config }: { config: ExpoConfig }): ExpoConfig => {
 		orientation: 'portrait',
 		icon: isProd ? './assets/images/icon.png' : './assets/images/icon.png',
 		scheme: 'pump',
-		userInterfaceStyle: 'automatic',
+		userInterfaceStyle: 'dark',
 		newArchEnabled: true,
 
 		ios: {
@@ -25,7 +25,7 @@ export default ({ config }: { config: ExpoConfig }): ExpoConfig => {
 			versionCode: 1,
 			adaptiveIcon: {
 				foregroundImage: './assets/images/adaptive-icon.png',
-				backgroundColor: '#FFFFFF',
+				backgroundColor: '#000000',
 			},
 			intentFilters: [
 				{
@@ -75,14 +75,10 @@ export default ({ config }: { config: ExpoConfig }): ExpoConfig => {
 			[
 				'expo-splash-screen',
 				{
-					image: './assets/images/splash-icon-light.png',
+					image: './assets/images/splash-icon-dark.png',
 					imageWidth: 200,
 					resizeMode: 'contain',
-					backgroundColor: '#ffffff',
-					dark: {
-						image: './assets/images/splash-icon-dark.png',
-						backgroundColor: '#000000',
-					},
+					backgroundColor: '#000000',
 				},
 			],
 			'expo-font',

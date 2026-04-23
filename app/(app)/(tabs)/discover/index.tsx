@@ -4,11 +4,13 @@ import { useExercises } from '@/hooks/queries/useExercises'
 import { useDiscoverWorkoutsQuery } from '@/hooks/queries/useWorkoutHistory'
 import { useThemeColor } from '@/hooks/useThemeColor'
 
+import { queryKeys } from '@/lib/queryKeys'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native'
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function DiscoverScreen() {
@@ -18,10 +20,13 @@ export default function DiscoverScreen() {
 	const {
 		discoverWorkouts,
 		hasMore: discoverHasMore,
-		isFetching: discoverLoading,
+		isLoading: discoverLoading,
+		isFetchingNextPage: discoverLoadingNextPage,
 		fetchNextPage,
 		refetch: refetchDiscover,
 	} = useDiscoverWorkoutsQuery()
+
+	const qc = useQueryClient()
 
 	const { data: exerciseList = [] } = useExercises()
 
@@ -36,9 +41,10 @@ export default function DiscoverScreen() {
 
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true)
-		await refetchDiscover()
+		// resetQueries will clear the cache and refetch ONLY the first page
+		await qc.resetQueries({ queryKey: queryKeys.workouts.discover })
 		setRefreshing(false)
-	}, [refetchDiscover])
+	}, [qc])
 
 	const onEndReached = useCallback(() => {
 		if (!discoverLoading && discoverHasMore) {
@@ -87,30 +93,31 @@ export default function DiscoverScreen() {
 			) : (
 				<FlatList
 					data={discoverWorkouts}
-					keyExtractor={item => item.clientId}
+					keyExtractor={item => item.id}
 					renderItem={({ item, index }) => (
-						<WorkoutCard
-							workout={item}
-							exerciseTypeMap={exerciseTypeMap}
-							index={index}
-							showSyncStatus={false}
-						/>
+						<WorkoutCard workout={item} exerciseTypeMap={exerciseTypeMap} index={index} />
 					)}
 					showsVerticalScrollIndicator={false}
 					refreshControl={<RefreshControl refreshing={discoverLoading} onRefresh={onRefresh} />}
 					onEndReached={onEndReached}
-					onEndReachedThreshold={0.5}
+					onEndReachedThreshold={0.1}
 					ListEmptyComponent={
 						<View className="mt-10 items-center">
 							<Text className="text-neutral-500 dark:text-neutral-400">No workouts yet.</Text>
 						</View>
 					}
 					ListFooterComponent={
-						<View className="mb-[20%] items-center justify-center p-4 pb-12 pt-6">
-							{discoverLoading && discoverWorkouts.length > 0 && (
-								<ActivityIndicator size="small" color={colors.primary} />
-							)}
-						</View>
+						discoverHasMore ? (
+							<View className="mb-[20%] items-center justify-center p-4 pb-12 pt-6">
+								{discoverLoadingNextPage && <ActivityIndicator size="small" color={colors.primary} />}
+							</View>
+						) : (
+							<View className="mb-[20%] items-center justify-center p-4 pb-12 pt-6">
+								<Text className="text-neutral-500 dark:text-neutral-400">
+									You&apos;ve conquered all the workouts here 🏆
+								</Text>
+							</View>
+						)
 					}
 				/>
 			)}

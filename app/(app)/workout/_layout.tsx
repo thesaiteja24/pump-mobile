@@ -1,7 +1,6 @@
 import CustomHeader from '@/components/navigation/CustomHeader'
 import { router, Stack } from 'expo-router'
 import React from 'react'
-import { useColorScheme } from 'react-native'
 
 export default function WorkoutLayout() {
 	return (
@@ -9,7 +8,7 @@ export default function WorkoutLayout() {
 			screenOptions={{
 				animation: 'slide_from_right',
 				contentStyle: {
-					backgroundColor: useColorScheme() === 'dark' ? '#000000' : '#ffffff',
+					backgroundColor: '#000000',
 				},
 				header: props => {
 					const { options } = props

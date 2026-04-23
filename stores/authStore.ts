@@ -1,6 +1,5 @@
 import { queryClient } from '@/lib/queryClient'
 import { registerUnauthorizedHandler } from '@/lib/authSession'
-import { clearTemplateQueue, clearWorkoutQueue } from '@/lib/sync/queue'
 import { setAccessToken } from '@/services/api'
 import { sendOtpService, verifyOtpService } from '@/services/authService'
 import { type User } from '@/types/auth'
@@ -172,10 +171,6 @@ export const useAuth = create<AuthState>((set, get) => ({
 
 			useWorkout.getState().resetState()
 			useTemplate.getState().resetState()
-
-			// Clear offline sync queues
-			clearWorkoutQueue()
-			clearTemplateQueue()
 		}
 	},
 }))

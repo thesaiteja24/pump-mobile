@@ -1,7 +1,6 @@
 import { OtaUpdateModal } from '@/components/auth/OtaUpdateModal'
 import { CustomToast } from '@/components/ui/CustomToast'
 import { useOneSignal } from '@/hooks/notifications/useOneSignal'
-import { useSyncQueue } from '@/hooks/useSyncQueue'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { queryClient } from '@/lib/queryClient'
 import { useAuth } from '@/stores/authStore'
@@ -13,10 +12,11 @@ import { useFonts } from 'expo-font'
 import { SplashScreen, Stack } from 'expo-router'
 import * as Updates from 'expo-updates'
 import { useEffect, useState } from 'react'
-import { ActivityIndicator, StatusBar, View, useColorScheme } from 'react-native'
+import { ActivityIndicator, StatusBar, View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import Toast from 'react-native-toast-message'
 import { vexo } from 'vexo-analytics'
+import { useColorScheme } from 'nativewind'
 import './globals.css'
 
 // ─────────────────────────────────────────────
@@ -30,7 +30,11 @@ if (!__DEV__) {
 
 export default function RootLayout() {
 	const colors = useThemeColor()
-	const theme = useColorScheme()
+	const { setColorScheme } = useColorScheme()
+
+	useEffect(() => {
+		setColorScheme('dark')
+	}, [])
 
 	// ───── Fonts ─────
 	const [fontsLoaded] = useFonts({
@@ -52,9 +56,6 @@ export default function RootLayout() {
 	const loginSubscription = useSubscriptionStore(s => s.login)
 	const logoutSubscription = useSubscriptionStore(s => s.logout)
 	const { user } = useAuth()
-
-	// ───── Offline sync ─────
-	useSyncQueue()
 
 	// ───── OneSignal SDK ─────
 	const { login: loginOneSignal, logout: logoutOneSignal } = useOneSignal()
@@ -169,7 +170,7 @@ export default function RootLayout() {
 	// ─────────────────────────────────────────────
 	if (!fontsLoaded || !hasRestored) {
 		return (
-			<View className="flex-1 items-center justify-center bg-white dark:bg-black">
+			<View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
 				<ActivityIndicator color={colors.primary} />
 			</View>
 		)
@@ -196,7 +197,7 @@ export default function RootLayout() {
 						</Stack>
 
 						<StatusBar
-							barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+							barStyle="light-content"
 							backgroundColor={colors.background}
 						/>
 

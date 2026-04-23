@@ -4,7 +4,6 @@ import React from 'react'
 import { Platform, Text, TouchableOpacity, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { type CustomHeaderProps } from '@/types/navigation'
-import SyncStatus from '../ui/SyncStatus'
 
 export default function CustomHeader({ title, leftIcon, rightIcons = [], onLeftPress, iconColor }: CustomHeaderProps) {
 	const insets = useSafeAreaInsets()
@@ -44,7 +43,6 @@ export default function CustomHeader({ title, leftIcon, rightIcons = [], onLeftP
 
 			{/* Right icons */}
 			<View className="flex w-auto flex-row items-center justify-end">
-				<SyncStatus />
 				{rightIcons.map((item, index) => {
 					const color = item.disabled
 						? '#9ca3af'

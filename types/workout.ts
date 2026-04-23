@@ -1,5 +1,4 @@
 import type { ExerciseType } from './exercises'
-import type { SyncStatus } from './sync'
 import type { WorkoutTemplate } from './template'
 
 export type SetType = 'warmup' | 'working' | 'dropSet' | 'failureSet'
@@ -9,9 +8,8 @@ export type ExerciseGroupType = 'superSet' | 'giantSet'
 export type VisibilityType = 'public' | 'private'
 
 export type WorkoutLog = {
-	clientId: string
+	/** Server-assigned ID. null before first save. */
 	id: string | null
-	syncStatus: SyncStatus
 	title: string
 	startTime: Date
 	endTime: Date
@@ -91,10 +89,8 @@ export type WorkoutHistorySet = {
 }
 
 export type WorkoutHistoryItem = {
-	clientId: string
 	id: string
 	shareId?: string | null
-	syncStatus: SyncStatus
 	title: string | null
 	startTime: string
 	endTime: string
@@ -124,23 +120,9 @@ export interface RestState {
 }
 
 export interface WorkoutState {
-	workoutLoading: boolean
-	discoverLoading: boolean
-	workoutPage?: number
-	workoutHasMore?: boolean
-	discoverPage?: number
-	discoverHasMore?: boolean
 	workoutSaving: boolean
-	workoutHistory: WorkoutHistoryItem[]
-	discoverWorkouts: WorkoutHistoryItem[]
 	workout: WorkoutLog | null
 	rest: RestState
-	getUserWorkouts: (page?: number) => Promise<void>
-	getDiscoverWorkouts: (page?: number) => Promise<void>
-	getWorkoutById: (id: string) => WorkoutHistoryItem | undefined
-	upsertWorkoutHistoryItem: (item: WorkoutHistoryItem) => void
-	updateWorkoutSyncStatus: (clientId: string, syncStatus: SyncStatus) => void
-	deleteWorkout: (clientId: string, dbId: string | null) => Promise<boolean>
 	startWorkout: () => void
 	loadWorkoutHistory: (historyItem: WorkoutHistoryItem) => void
 	updateWorkout: (patch: Partial<WorkoutLog>) => void
@@ -148,7 +130,6 @@ export interface WorkoutState {
 		workout: WorkoutLog
 		pruneReport: WorkoutPruneReport
 	} | null
-	saveWorkout: (prepared: WorkoutLog) => Promise<{ success: boolean; error?: any }>
 	resetWorkout: () => void
 	discardWorkout: () => void
 	addExercise: (exerciseId: string) => void

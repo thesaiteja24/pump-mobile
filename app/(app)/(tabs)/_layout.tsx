@@ -8,12 +8,12 @@ import { BlurView } from 'expo-blur'
 import * as Haptics from 'expo-haptics'
 import { Tabs } from 'expo-router'
 import React, { useRef } from 'react'
-import { Pressable, StyleSheet, useColorScheme, View } from 'react-native'
+import { Pressable, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function TabsLayout() {
 	const colors = useThemeColor()
-	const isDark = useColorScheme() === 'dark'
+	const isDark = true
 	const insets = useSafeAreaInsets()
 
 	const barBorder = isDark ? 'rgba(255, 255, 255, 0.14)' : 'rgba(17, 24, 39, 0.08)'

@@ -4,8 +4,8 @@ import DateTimePicker from '@/components/ui/DateTimePicker'
 import { GlassBackground } from '@/components/ui/GlassBackground'
 import { SelectableCard } from '@/components/ui/SelectableCard'
 import { useThemeColor } from '@/hooks/useThemeColor'
+import { useUpdateProfilePicMutation, useDeleteProfilePicMutation, useUpdateUserMutation } from '@/hooks/queries/useUser'
 import { useAuth } from '@/stores/authStore'
-import { useUser } from '@/stores/userStore'
 import { convertLength, convertWeight, displayLength, displayWeight } from '@/utils/converter'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
@@ -32,10 +32,9 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 
 	// global state (stores)
 	const user = useAuth(s => s.user)
-	const updateProfilePic = useUser(s => s.updateProfilePic)
-	const deleteProfilePic = useUser(s => s.deleteProfilePic)
-	const updateUserData = useUser(s => s.updateUserData)
-	const isLoading = useUser(s => s.isLoading)
+	const updateProfilePicMutation = useUpdateProfilePicMutation()
+	const deleteProfilePicMutation = useDeleteProfilePicMutation()
+	const updateUserMutation = useUpdateUserMutation()
 	const [uploading, setUploading] = useState(false)
 
 	// Derived preferred units — read from store, not local state (set only via Unit Preferences sheet)
@@ -146,9 +145,8 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 			gender,
 		}
 
-		const response = await updateUserData(user.userId, payload)
-
-		if (response?.success) {
+		try {
+			await updateUserMutation.mutateAsync({ userId: user.userId, data: payload })
 			Toast.show({ type: 'success', text1: 'Profile updated successfully' })
 
 			originalRef.current = {
@@ -161,11 +159,8 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 			}
 			// @ts-ignore
 			ref?.current?.dismiss()
-		} else {
-			Toast.show({
-				type: 'error',
-				text1: 'Profile update failed, try again',
-			})
+		} catch {
+			Toast.show({ type: 'error', text1: 'Profile update failed, try again' })
 		}
 	}, [
 		firstName,
@@ -176,7 +171,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 		gender,
 		hasChanges,
 		user?.userId,
-		updateUserData,
+		updateUserMutation,
 		ref,
 		lengthUnit,
 		weightUnit,
@@ -192,13 +187,8 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 
 			const formData = new FormData()
 			formData.append('profilePic', prepared as any)
-			const res = await updateProfilePic(user.userId, formData)
-
-			if (!res?.success) {
-				Toast.show({ type: 'error', text1: res?.error || 'Profile picture upload failed' })
-			} else {
-				Toast.show({ type: 'success', text1: 'Profile picture updated' })
-			}
+			await updateProfilePicMutation.mutateAsync({ uid: user.userId, data: formData })
+			Toast.show({ type: 'success', text1: 'Profile picture updated' })
 		} catch (error: any) {
 			Toast.show({ type: 'error', text1: error?.message || 'Image processing failed' })
 		} finally {
@@ -252,25 +242,26 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 
 					<View className="mb-6 items-center">
 						<EditableAvatar
-							uri={user?.profilePicUrl ?? null}
-							size={110}
-							editable={!isLoading}
-							uploading={uploading}
-							onChange={newUri => newUri && onPick(newUri)}
-						/>
+						uri={user?.profilePicUrl ?? null}
+						size={110}
+						editable={!uploading}
+						uploading={uploading}
+						onChange={newUri => newUri && onPick(newUri)}
+					/>
 						{user?.profilePicUrl && (
 							<TouchableOpacity
 								onPress={async () => {
-									if (!user?.userId) return
-									setUploading(true)
-									const res = await deleteProfilePic(user.userId)
-									if (!res?.success) {
-										Toast.show({ type: 'error', text1: res?.error || 'Failed to remove avatar' })
-									} else {
-										Toast.show({ type: 'success', text1: 'Avatar removed successfully' })
-									}
-									setUploading(false)
-								}}
+						if (!user?.userId) return
+						setUploading(true)
+						try {
+							await deleteProfilePicMutation.mutateAsync(user.userId)
+							Toast.show({ type: 'success', text1: 'Avatar removed successfully' })
+						} catch {
+							Toast.show({ type: 'error', text1: 'Failed to remove avatar' })
+						} finally {
+							setUploading(false)
+						}
+					}}
 								className="mt-4"
 								disabled={uploading}
 							>
@@ -286,7 +277,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 							<TextInput
 								value={firstName}
 								onChangeText={setFirstName}
-								editable={!isLoading}
+								editable={!updateUserMutation.isPending}
 								placeholder="Enter Name..."
 								className="text-right text-lg text-primary"
 								placeholderTextColor={colors.neutral[500]}
@@ -300,7 +291,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 							<TextInput
 								value={lastName}
 								onChangeText={setLastName}
-								editable={!isLoading}
+								editable={!updateUserMutation.isPending}
 								placeholder="Enter Surname..."
 								className="text-right text-lg text-primary"
 								placeholderTextColor={colors.neutral[500]}
@@ -351,7 +342,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 								placeholderTextColor={colors.neutral[500]}
 								keyboardType="numeric"
 								onChangeText={setHeightDisplay}
-								editable={!isLoading}
+								editable={!updateUserMutation.isPending}
 								className="text-right text-lg text-primary"
 								style={{ lineHeight }}
 							/>
@@ -368,7 +359,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 								placeholderTextColor={colors.neutral[500]}
 								keyboardType="decimal-pad"
 								onChangeText={setWeightDisplay}
-								editable={!isLoading}
+								editable={!updateUserMutation.isPending}
 								className="text-right text-lg text-primary"
 								style={{ lineHeight }}
 							/>
@@ -378,7 +369,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 					<Button
 						title={hasChanges ? 'Save Changes' : 'Close'}
 						variant={hasChanges ? 'primary' : 'secondary'}
-						loading={isLoading}
+						loading={updateUserMutation.isPending}
 						className="mt-6"
 						onPress={handleSave}
 						liquidGlass

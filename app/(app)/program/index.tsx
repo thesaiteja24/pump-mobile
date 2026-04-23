@@ -59,10 +59,8 @@ export default function ProgramEditor() {
 			.map(d => d.templateId)
 			.filter(Boolean)
 
-		return templateIds.every(id => {
-			const t = templates.find(temp => temp.id === id || temp.clientId === id)
-			return t && t.syncStatus === 'synced'
-		})
+		// All templates from TQ have real server IDs; just verify they exist in the list
+		return templateIds.every(id => templates.some(t => t.id === id))
 	}, [draftProgram, templates])
 
 	// Init Draft
@@ -412,9 +410,7 @@ const ProgramDayItemComponent = ({
 }) => {
 	const selectedTemplateTitle = useMemo(() => {
 		if (!day.templateId) return null
-		return (
-			templates.find(t => t.id === day.templateId || t.clientId === day.templateId)?.title || 'Template Not Found'
-		)
+		return templates.find(t => t.id === day.templateId)?.title || 'Template Not Found'
 	}, [day.templateId, templates])
 
 	return (

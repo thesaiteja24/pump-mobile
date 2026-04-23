@@ -19,6 +19,7 @@ import { VerifiedBadge } from '@/components/ui/VerifiedBadge'
 import { ReadOnlyExerciseRow } from '@/components/workout/ReadOnlyExerciseRow'
 import ShimmerWorkoutScreen from '@/components/workout/ShimmerWorkoutScreen'
 import {
+	useDeleteWorkoutMutation,
 	useDiscoverWorkoutsQuery,
 	useUserWorkoutHistoryQuery,
 	useWorkoutByIdQuery,
@@ -39,9 +40,10 @@ export default function WorkoutDetails() {
 	const discardModalRef = useRef<DeleteConfirmModalHandle>(null)
 
 	/* Store Related State */
-	const { getWorkoutById, deleteWorkout } = useWorkout()
 	const { data: exerciseList = [] } = useExercises()
 	const currentUserId = useAuth(state => state.user?.userId)
+
+	const deleteMutation = useDeleteWorkoutMutation()
 
 	const { discoverWorkouts, isLoading: isDiscoverLoading } = useDiscoverWorkoutsQuery()
 	const { workoutHistory, isLoading: isHistoryLoading } = useUserWorkoutHistoryQuery()
@@ -55,12 +57,12 @@ export default function WorkoutDetails() {
 		return map
 	}, [exerciseList])
 
-	const workoutFromStore = getWorkoutById(id!)
+	const workoutFromStore = null // no longer stored in Zustand
 	const workoutFromHistory = useMemo(() => {
-		return workoutHistory.find(w => w.id === id || w.clientId === id)
+		return workoutHistory.find(w => w.id === id)
 	}, [workoutHistory, id])
 	const workoutFromDiscover = useMemo(() => {
-		return discoverWorkouts.find(w => w.id === id || w.clientId === id)
+		return discoverWorkouts.find(w => w.id === id)
 	}, [discoverWorkouts, id])
 
 	const hasLocalData = !!(workoutFromStore || workoutFromHistory || workoutFromDiscover)
@@ -109,15 +111,11 @@ export default function WorkoutDetails() {
 
 	const handleDeleteConfirm = async () => {
 		if (!workout) return
-		// Modal auto dismisses on confirm
-
-		Toast.show({
-			type: 'success',
-			text1: 'Workout deleted',
-		})
-
 		router.back()
-		await deleteWorkout(workout.clientId, workout.id)
+		deleteMutation.mutate(workout.id, {
+			onSuccess: () => Toast.show({ type: 'success', text1: 'Workout deleted' }),
+			onError: () => Toast.show({ type: 'error', text1: 'Failed to delete workout' }),
+		})
 	}
 
 	const handleSaveAsTemplate = () => {
@@ -184,7 +182,7 @@ export default function WorkoutDetails() {
 				rightIcons,
 			})
 		}
-	}, [id, isAuthrized, getWorkoutById, navigation, handleEdit, workout, discardModalRef])
+	}, [id, isAuthrized, navigation, handleEdit, workout, discardModalRef])
 
 	useEffect(() => {
 		const onBackPress = () => {

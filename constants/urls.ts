@@ -17,14 +17,15 @@ export const USER_ENDPOINT = (id: string) => `/users/${id}`
 export const UPDATE_PROFILE_PIC_ENDPOINT = (id: string) => `/users/${id}/profile-picture`
 export const UPDATE_USER_DATA_ENDPOINT = (id: string) => `/users/${id}`
 
-// Discover Endpoints
-export const SEARCH_USERS_ENDPOINT = (query: string) => `/discover/search?query=${query}`
-export const SUGGESTED_USERS_ENDPOINT = `/discover/suggestions`
-
 // Engagement Endpoints
+export const SEARCH_USERS_ENDPOINT = (query: string) => `/engagement/search?query=${query}`
+export const SUGGESTED_USERS_ENDPOINT = `/engagement/suggestions`
 export const FOLLOW_USER_ENDPOINT = (id: string) => `/engagement/${id}/follow`
 export const USER_FOLLOWERS_ENDPOINT = (id: string) => `/engagement/${id}/followers`
 export const USER_FOLLOWING_ENDPOINT = (id: string) => `/engagement/${id}/following`
+export const LIKES_ENDPOINT = (id: string, type: string) => `/engagement/${id}/likes?type=${type}`
+export const TOGGLE_LIKE_ENDPOINT = (id: string, type: string, liked: boolean) =>
+	`/engagement/${id}/like?type=${type}&liked=${liked}`
 
 export const WORKOUT_COMMENTS_ENDPOINT = (id: string) => `/engagement/${id}/comments`
 

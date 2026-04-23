@@ -1,7 +1,8 @@
-import { ExerciseType } from '@/types/exercises'
-import { useToggleWorkoutLike, useWorkoutComments, useWorkoutLikes } from '@/hooks/queries/useComments'
+import { useCommentsQuery, useLikesQuery, useToggleLikeMutation } from '@/hooks/queries/useEngagement'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
+import { ExerciseType } from '@/types/exercises'
+import { Comment as AppComment } from '@/types/engagement'
 import { WorkoutHistoryItem } from '@/types/workout'
 import { formatDurationFromDates, formatTimeAgo } from '@/utils/time'
 import { calculateWorkoutMetrics } from '@/utils/workout'
@@ -9,7 +10,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
-import { useEffect, useRef } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Alert, Pressable, Share, Text, TouchableOpacity, View } from 'react-native'
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
 import Toast from 'react-native-toast-message'
@@ -18,16 +19,14 @@ import { VerifiedBadge } from '../ui/VerifiedBadge'
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
-export default function WorkoutCard({
+function WorkoutCard({
 	workout,
 	exerciseTypeMap,
 	index = 0,
-	showSyncStatus = true,
 }: {
 	workout: WorkoutHistoryItem
 	exerciseTypeMap: Map<string, ExerciseType>
 	index?: number
-	showSyncStatus?: boolean
 }) {
 	const duration = formatDurationFromDates(workout.startTime, workout.endTime)
 	const volume = calculateWorkoutMetrics(workout, exerciseTypeMap).tonnage
@@ -43,31 +42,37 @@ export default function WorkoutCard({
 	const { user } = useAuth()
 
 	// TanStack Query hooks for engagement
-	const { data: currentLikes = [] } = useWorkoutLikes(workout.id)
-	const { data: commentsPages } = useWorkoutComments(workout.id)
-	const toggleLikeMutation = useToggleWorkoutLike(workout.id)
+	const { data: currentLikes = [] } = useLikesQuery(workout.id, 'workout')
+	const { data: commentsPages } = useCommentsQuery(workout.id)
+	const toggleLikeMutation = useToggleLikeMutation()
 
 	const isLikedByMe = user && currentLikes.some(like => like.userId === user.userId)
 
-	// Flatten first page of comments for inline preview
-	const firstPageComments = commentsPages?.pages?.[0]?.comments ?? []
-	const validComments = firstPageComments.filter((c: any) => c.user?.id)
-	const recentComments = validComments.slice(0, 2)
+	const recentComments = useMemo(() => {
+		const firstPageComments = commentsPages?.pages?.[0]?.comments ?? []
+		const validComments = firstPageComments.filter((c: any) => c.user?.id)
+		return validComments.slice(0, 2)
+	}, [commentsPages])
 
-	const handleToggleLike = () => {
+	const handleToggleLike = useCallback(() => {
 		if (!user || !user.userId) return
 		toggleLikeMutation.mutate({
-			currentUser: {
-				id: user.userId,
-				firstName: user.firstName || '',
-				lastName: user.lastName || '',
-				profilePicUrl: user.profilePicUrl || null,
-			},
-			isLiked: Boolean(isLikedByMe),
+			id: workout.id,
+			type: 'workout',
+			liked: !isLikedByMe,
+			user: user
+				? {
+						id: user.userId,
+						firstName: user.firstName || '',
+						lastName: user.lastName || '',
+						profilePicUrl: user.profilePicUrl || null,
+					}
+				: undefined,
+			workoutId: workout.id,
 		})
-	}
+	}, [user, workout.id, isLikedByMe, toggleLikeMutation])
 
-	const handleShare = async () => {
+	const handleShare = useCallback(async () => {
 		if (!workout.shareId) {
 			Toast.show({
 				type: 'error',
@@ -88,7 +93,7 @@ export default function WorkoutCard({
 			console.error('Error sharing workout:', error)
 			Alert.alert('Error', 'Failed to share the workout.')
 		}
-	}
+	}, [workout.shareId, workout.title])
 
 	// Animation values
 	const opacity = useSharedValue(0)
@@ -150,11 +155,6 @@ export default function WorkoutCard({
 						</Text>
 					</View>
 				</View>
-				{showSyncStatus && (
-					<Text className="self-start rounded-full bg-blue-200 px-2 py-1 text-left text-xs font-normal text-blue-600">
-						{workout.syncStatus}
-					</Text>
-				)}
 			</View>
 			{/* Header */}
 			<View className="mb-4 flex-col justify-between gap-2">
@@ -286,7 +286,7 @@ export default function WorkoutCard({
 				>
 					{recentComments.length > 0 && (
 						<View className="flex-col gap-2">
-							{recentComments.map(c => (
+							{recentComments.map((c: AppComment) => (
 								<View key={c.id} className="flex-row items-start gap-2 pr-4">
 									<Text className="text-[14px] font-bold text-black dark:text-white">
 										{c.user?.firstName || 'user'}
@@ -317,3 +317,5 @@ export default function WorkoutCard({
 		</AnimatedPressable>
 	)
 }
+
+export default memo(WorkoutCard)

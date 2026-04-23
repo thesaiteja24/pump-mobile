@@ -1,58 +1,15 @@
-import { Button } from '@/components/ui/Button'
+import { UserItem } from '@/components/profile/UserItem'
+import { useFollowUserMutation, useUnfollowUserMutation, useUserFollowingQuery } from '@/hooks/queries/useEngagement'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
-import { useUser } from '@/stores/userStore'
-import { SearchedUser } from '@/types/user'
+import { SearchedUser } from '@/types/engagement'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { Image } from 'expo-image'
 import { router, useLocalSearchParams } from 'expo-router'
 import Fuse from 'fuse.js'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, BackHandler, FlatList, Platform, RefreshControl, Text, View } from 'react-native'
 import { TextInput } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-
-const UserItem = ({
-	id,
-	firstName,
-	lastName,
-	profilePicUrl,
-	isFollowing,
-	onPressFollow,
-	followLoading,
-}: SearchedUser & {
-	followLoading: boolean
-	onPressFollow: () => void
-}) => {
-	const isDark = useThemeColor().isDark
-	return (
-		<View className="w-full flex-row items-center justify-between py-3">
-			<View className="w-2/3 flex-row items-center gap-4">
-				<Image
-					source={profilePicUrl ? { uri: profilePicUrl } : require('../../../assets/images/icon.png')}
-					style={{
-						width: 48,
-						height: 48,
-						borderRadius: 100,
-						borderColor: isDark ? 'white' : '#black',
-						borderWidth: 0.25,
-					}}
-					contentFit="cover"
-				/>
-				<Text className="text-base text-black dark:text-white">
-					{firstName} {lastName}
-				</Text>
-			</View>
-			<Button
-				className="min-h-6 w-1/3 py-2"
-				variant={isFollowing ? 'secondary' : 'primary'}
-				title={isFollowing ? 'Following' : 'Follow'}
-				onPress={onPressFollow}
-				loading={followLoading}
-			/>
-		</View>
-	)
-}
 
 export default function Following() {
 	const colors = useThemeColor()
@@ -62,52 +19,39 @@ export default function Following() {
 
 	const [query, setQuery] = useState('')
 	const [refreshing, setRefreshing] = useState(false)
-	const [users, setUsers] = useState<SearchedUser[]>([])
 	const [loading, setLoading] = useState(true)
 
 	const currentUserId = useAuth(state => state.user?.userId)
-	const getUserFollowing = useUser(state => state.getUserFollowing)
-	const unFollowUser = useUser(state => state.unFollowUser)
-	const followUser = useUser(state => state.followUser)
-	const followLoading = useUser(state => state.followLoading)
-	const getUserData = useUser(state => state.getUserData)
-
 	const targetUserId = userId || currentUserId
 
-	const fetchFollowing = useCallback(async () => {
-		if (!targetUserId) return
-		try {
-			const res = await getUserFollowing(targetUserId)
-			if (res.success) {
-				setUsers(res.data)
-			}
-		} finally {
-			setLoading(false)
-			setRefreshing(false)
-		}
-	}, [targetUserId, getUserFollowing])
+	const { data: fetchedUsers = [], isLoading, refetch } = useUserFollowingQuery(targetUserId)
+	const users: SearchedUser[] = fetchedUsers as SearchedUser[]
+	const followMutation = useFollowUserMutation()
+	const unfollowMutation = useUnfollowUserMutation()
 
-	useEffect(() => {
-		fetchFollowing()
-	}, [fetchFollowing])
+	const displayUsers = users
 
 	const onRefresh = useCallback(() => {
 		setRefreshing(true)
-		fetchFollowing()
-	}, [fetchFollowing])
+		refetch().finally(() => setRefreshing(false))
+	}, [refetch])
+
+	useEffect(() => {
+		if (!isLoading) setLoading(false)
+	}, [isLoading])
 
 	// 🔍 Fuzzy Search
 	const fuse = useMemo(() => {
-		return new Fuse(users, {
+		return new Fuse(displayUsers, {
 			keys: ['firstName', 'lastName', 'username'],
 			threshold: 0.3,
 		})
-	}, [users])
+	}, [displayUsers])
 
 	const filteredUsers = useMemo(() => {
-		if (!query.trim()) return users
+		if (!query.trim()) return displayUsers
 		return fuse.search(query).map(result => result.item)
-	}, [query, users, fuse])
+	}, [query, displayUsers, fuse])
 
 	useEffect(() => {
 		const onBackPress = () => {
@@ -145,25 +89,17 @@ export default function Following() {
 						lastName={item.lastName}
 						profilePicUrl={item.profilePicUrl}
 						isFollowing={item.isFollowing}
-						followLoading={!!followLoading[item.id]}
-						onPressFollow={async () => {
+						isPro={item.isPro}
+						proSubscriptionType={item.proSubscriptionType}
+						followLoading={item.followLoading}
+						onPressFollow={() => {
 							if (!currentUserId) return
 
-							const isFollowing = item.isFollowing
-
-							// Optimistic update
-							setUsers(prev =>
-								prev.map(u => (u.id === item.id ? { ...u, isFollowing: !isFollowing } : u))
-							)
-
-							if (isFollowing) {
-								await unFollowUser(item.id)
+							if (item.isFollowing) {
+								unfollowMutation.mutate(item.id)
 							} else {
-								await followUser(item.id)
+								followMutation.mutate(item.id)
 							}
-
-							// Refresh current user data to update counts
-							getUserData(currentUserId)
 						}}
 					/>
 				)}

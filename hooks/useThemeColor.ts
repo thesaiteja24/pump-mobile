@@ -1,5 +1,6 @@
 import tailwindConfig from '@/tailwind.config'
-import { useColorScheme } from 'react-native'
+import { useEffect } from 'react'
+import { Appearance } from 'react-native'
 import resolveConfig from 'tailwindcss/resolveConfig'
 
 const fullConfig = resolveConfig(tailwindConfig)
@@ -24,16 +25,16 @@ const COLORS = {
 type ColorToken = keyof typeof COLORS
 
 export function useThemeColor() {
-	const isDark = useColorScheme() === 'dark'
+	const isDark = true
 
 	const colors = {
 		...COLORS,
 		// Add semantic overrides if needed for dark mode specifically
-		scheme: isDark ? 'dark' : 'light',
-		isDark: isDark,
-		text: isDark ? COLORS.white : COLORS.black,
-		background: isDark ? COLORS.black : COLORS.white,
-		icon: isDark ? COLORS.white : COLORS.black,
+		scheme: 'dark' as const,
+		isDark: true,
+		text: COLORS.white,
+		background: COLORS.black,
+		icon: COLORS.white,
 	}
 
 	return colors

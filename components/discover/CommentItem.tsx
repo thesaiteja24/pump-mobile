@@ -1,9 +1,9 @@
-import { useCommentLikes, useCommentReplies, useToggleCommentLike } from '@/hooks/queries/useComments'
-import { Comment as EngagementComment } from '@/types/comments'
+import { useRepliesQuery, useToggleLikeMutation } from '@/hooks/queries/useEngagement'
 import { useAuth } from '@/stores/authStore'
+import { Comment } from '@/types/engagement'
 import { formatTimeAgo } from '@/utils/time'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import React, { useMemo, useState } from 'react'
+import React, { memo, useMemo, useState } from 'react'
 import { Image, Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 
 const CommentItem = ({
@@ -15,11 +15,11 @@ const CommentItem = ({
 	isThreadParent = false,
 	depth = 0,
 }: {
-	comment: EngagementComment
+	comment: Comment
 	workoutId: string
-	onReplyPress: (comment: EngagementComment) => void
-	onOptionsPress: (comment: EngagementComment) => void
-	onViewReplies?: (comment: EngagementComment) => void
+	onReplyPress: (comment: Comment) => void
+	onOptionsPress: (comment: Comment) => void
+	onViewReplies?: (comment: Comment) => void
 	isThreadParent?: boolean
 	depth?: number
 }) => {
@@ -31,8 +31,7 @@ const CommentItem = ({
 	const userId = user?.userId
 
 	// TanStack Query hooks for comment engagement
-	const { data: currentLikes = [] } = useCommentLikes(comment.id)
-	const toggleLikeMutation = useToggleCommentLike(workoutId)
+	const toggleLikeMutation = useToggleLikeMutation()
 
 	// Replies — only load when needed
 	const [expanded, setExpanded] = useState(isThreadParent || depth === 1)
@@ -41,23 +40,27 @@ const CommentItem = ({
 		fetchNextPage,
 		hasNextPage,
 		isFetchingNextPage,
-	} = useCommentReplies(expanded || isThreadParent ? comment.id : null)
+	} = useRepliesQuery(expanded || isThreadParent ? comment.id : undefined)
 
 	const replies = useMemo(() => repliesPages?.pages.flatMap(p => p.replies) ?? [], [repliesPages])
 
-	const isLikedByMe = user && currentLikes.some(like => like.userId === userId)
+	const isLikedByMe = comment.isLiked
 
 	const handleToggleLike = () => {
 		if (!user || !userId) return
 		toggleLikeMutation.mutate({
-			commentId: comment.id,
-			currentUser: {
-				id: userId,
-				firstName: user.firstName || '',
-				lastName: user.lastName || '',
-				profilePicUrl: user.profilePicUrl || null,
-			},
-			isLiked: Boolean(isLikedByMe),
+			id: comment.id,
+			type: 'comment',
+			liked: !isLikedByMe,
+			user: user
+				? {
+						id: userId,
+						firstName: user.firstName || '',
+						lastName: user.lastName || '',
+						profilePicUrl: user.profilePicUrl || null,
+					}
+				: undefined,
+			workoutId: workoutId,
 		})
 	}
 
@@ -65,18 +68,18 @@ const CommentItem = ({
 		setExpanded(!expanded)
 	}
 
-	const hasReplies = (comment._count?.replies || 0) > 0
-	const remainingRepliesCount = hasReplies ? comment._count.replies - replies.length : 0
+	const hasReplies = (comment.repliesCount || 0) > 0
+	const remainingRepliesCount = hasReplies ? comment.repliesCount - replies.length : 0
 
 	const avatarSize = 24
 
-	const paddingStyles = {
+	const paddingStyles = useMemo(() => ({
 		flexDirection: 'row' as const,
 		paddingTop: depth === 1 ? 0 : 16,
 		paddingBottom: depth === 1 ? 32 : 0,
 		paddingLeft: depth > 0 ? 0 : 16,
 		paddingRight: depth > 1 ? 0 : 16,
-	}
+	}), [depth])
 
 	const renderAvatarColumn = () => (
 		<View className="mr-2 items-center gap-4" style={{ width: avatarSize }}>
@@ -138,14 +141,14 @@ const CommentItem = ({
 			{/* Top-level View Replies Action */}
 			{hasReplies && depth === 0 && !isThreadParent && onViewReplies && (
 				<TouchableOpacity className="ml-5 flex-row items-center" onPress={() => onViewReplies(comment)}>
-					<Text className="text-sm font-semibold text-blue-500">{comment._count?.replies || 0} replies</Text>
+					<Text className="text-sm font-semibold text-blue-500">{comment.repliesCount || 0} replies</Text>
 				</TouchableOpacity>
 			)}
 
 			{/* Inline Toggle Replies Action for nested levels */}
 			{hasReplies && depth > 0 && !expanded && !isThreadParent && (
 				<TouchableOpacity className="ml-5 flex-row items-center" onPress={toggleExpand}>
-					<Text className="text-sm font-semibold text-blue-500">{comment._count?.replies || 0} replies</Text>
+					<Text className="text-sm font-semibold text-blue-500">{comment.repliesCount || 0} replies</Text>
 				</TouchableOpacity>
 			)}
 		</View>
@@ -198,4 +201,4 @@ const CommentItem = ({
 	)
 }
 
-export default CommentItem
+export default memo(CommentItem)

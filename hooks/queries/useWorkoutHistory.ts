@@ -1,41 +1,31 @@
 import { queryClient } from '@/lib/queryClient'
 import { queryKeys } from '@/lib/queryKeys'
-import { getDiscoverWorkoutsService, getUserWorkoutsService, getWorkoutByIdService } from '@/services/workoutServices'
-import { useWorkout } from '@/stores/workoutStore'
-import { SyncStatus } from '@/types/sync'
-import { WorkoutHistoryItem } from '@/types/workout'
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import {
+	createWorkoutService,
+	deleteWorkoutService,
+	getDiscoverWorkoutsService,
+	getUserWorkoutsService,
+	getWorkoutByIdService,
+	updateWorkoutService,
+} from '@/services/workoutServices'
+import { useAuth } from '@/stores/authStore'
+import { WorkoutHistoryItem, WorkoutLog } from '@/types/workout'
+import { serializeWorkoutForApi } from '@/utils/serializeForApi'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-const PAGE_LIMIT = 20
+const PAGE_LIMIT = 2
 
 // ─────────────────────────────────────────────────────
 // READ — workout history (paginated, infinite scroll)
-//
-// Strategy: useInfiniteQuery handles pagination and caching.
-// After each successful page, the Zustand store is kept in sync via
-// upsertWorkoutHistoryItem so offline-first reconcilers still work.
-// Pending (offline) workouts are merged at the top.
 // ─────────────────────────────────────────────────────
 export function useUserWorkoutHistoryQuery() {
-	const workoutHistoryStore = useWorkout(s => s.workoutHistory)
-	const pendingWorkouts = workoutHistoryStore.filter(w => w.syncStatus === 'pending')
-
 	const query = useInfiniteQuery({
 		queryKey: queryKeys.workouts.all,
 		queryFn: async ({ pageParam = 1 }) => {
 			const res = await getUserWorkoutsService(pageParam as number, PAGE_LIMIT)
 			if (!res.success || !res.data) return { workouts: [] as WorkoutHistoryItem[], meta: null }
 
-			const workouts = (res.data.workouts || []).map((w: WorkoutHistoryItem) => ({
-				...w,
-				clientId: w.clientId ?? w.id,
-				syncStatus: 'synced' as SyncStatus,
-			}))
-
-			// Keep Zustand store in sync so reconcilers can still mutate
-			const { upsertWorkoutHistoryItem } = useWorkout.getState()
-			workouts.forEach((w: WorkoutHistoryItem) => upsertWorkoutHistoryItem(w))
-
+			const workouts = (res.data.workouts || []) as WorkoutHistoryItem[]
 			return { workouts, meta: res.data.meta }
 		},
 		getNextPageParam: lastPage => {
@@ -46,15 +36,7 @@ export function useUserWorkoutHistoryQuery() {
 		staleTime: Infinity,
 	})
 
-	// Flatten all fetched pages and prepend any pending (offline-first) workouts
-	const fetchedWorkouts: WorkoutHistoryItem[] = (query.data?.pages ?? []).flatMap(p => p.workouts)
-	const fetchedClientIds = new Set(fetchedWorkouts.map(w => w.clientId ?? w.id))
-	const uniquePending = pendingWorkouts.filter(w => !fetchedClientIds.has(w.clientId))
-
-	const workoutHistory = [...uniquePending, ...fetchedWorkouts].sort(
-		(a, b) => new Date(b.startTime ?? 0).getTime() - new Date(a.startTime ?? 0).getTime()
-	)
-
+	const workoutHistory: WorkoutHistoryItem[] = (query.data?.pages ?? []).flatMap(p => p.workouts)
 	const hasMore = query.data?.pages?.at(-1)?.meta?.hasMore ?? false
 
 	return {
@@ -68,9 +50,6 @@ export function useUserWorkoutHistoryQuery() {
 // READ — discover workouts (paginated)
 // ─────────────────────────────────────────────────────
 export function useDiscoverWorkoutsQuery() {
-	const discoverWorkoutsStore = useWorkout(s => s.discoverWorkouts)
-	const pendingWorkouts = discoverWorkoutsStore.filter(w => w.syncStatus === 'pending')
-
 	const query = useInfiniteQuery({
 		queryKey: queryKeys.workouts.discover,
 		queryFn: async ({ pageParam = 1 }) => {
@@ -78,11 +57,7 @@ export function useDiscoverWorkoutsQuery() {
 			if (!res.success || !res.data) return { workouts: [] as WorkoutHistoryItem[], meta: null }
 
 			return {
-				workouts: (res.data.workouts || []).map((w: WorkoutHistoryItem) => ({
-					...w,
-					clientId: w.clientId ?? w.id,
-					syncStatus: 'synced' as SyncStatus,
-				})),
+				workouts: (res.data.workouts || []) as WorkoutHistoryItem[],
 				meta: res.data.meta,
 			}
 		},
@@ -94,14 +69,7 @@ export function useDiscoverWorkoutsQuery() {
 		staleTime: 2 * 60 * 1000,
 	})
 
-	const fetchedWorkouts: WorkoutHistoryItem[] = (query.data?.pages ?? []).flatMap(p => p.workouts)
-	const fetchedClientIds = new Set(fetchedWorkouts.map(w => w.clientId ?? w.id))
-	const uniquePending = pendingWorkouts.filter(w => !fetchedClientIds.has(w.clientId))
-
-	const discoverWorkouts = [...uniquePending, ...fetchedWorkouts].sort(
-		(a, b) => new Date(b.startTime ?? 0).getTime() - new Date(a.startTime ?? 0).getTime()
-	) as WorkoutHistoryItem[]
-
+	const discoverWorkouts: WorkoutHistoryItem[] = (query.data?.pages ?? []).flatMap(p => p.workouts)
 	const hasMore = query.data?.pages?.at(-1)?.meta?.hasMore ?? false
 
 	return {
@@ -117,10 +85,7 @@ export function useWorkoutByIdQuery(id: string, options?: { enabled?: boolean })
 		queryFn: async () => {
 			const res = await getWorkoutByIdService(id)
 			if (!res.success || !res.data) return null
-			return {
-				...res.data,
-				syncStatus: 'synced' as SyncStatus,
-			}
+			return res.data as WorkoutHistoryItem
 		},
 		staleTime: Infinity,
 		...options,
@@ -128,8 +93,107 @@ export function useWorkoutByIdQuery(id: string, options?: { enabled?: boolean })
 
 	return query
 }
+
 // ─────────────────────────────────────────────────────
-// Cache helpers — called from workoutReconciler after sync
+// MUTATION — save (create) workout
+// ─────────────────────────────────────────────────────
+export function useSaveWorkoutMutation() {
+	const userId = useAuth.getState().user?.userId
+	const qc = useQueryClient()
+
+	return useMutation({
+		mutationFn: (prepared: WorkoutLog) => {
+			const payload = {
+				...serializeWorkoutForApi(prepared),
+			}
+			return createWorkoutService(payload as any)
+		},
+		onSuccess: () => {
+			// Invalidate user history so it refetches
+			qc.invalidateQueries({ queryKey: queryKeys.workouts.all })
+			// Invalidate habit logs (frequency habits depend on workouts)
+			qc.invalidateQueries({ queryKey: ['habits', 'logs', userId] })
+			// Invalidate program progress
+			if (userId) {
+				qc.invalidateQueries({ queryKey: queryKeys.programs.user.active(userId) })
+				qc.invalidateQueries({ queryKey: queryKeys.programs.user.all(userId) })
+				qc.invalidateQueries({ queryKey: ['userPrograms', 'detail', userId] })
+				// Invalidate analytics
+				qc.invalidateQueries({ queryKey: queryKeys.analytics.userAnalytics(userId) })
+				qc.invalidateQueries({ queryKey: ['trainingAnalytics', userId] })
+			}
+		},
+	})
+}
+
+// ─────────────────────────────────────────────────────
+// MUTATION — update (edit) existing workout
+// ─────────────────────────────────────────────────────
+export function useUpdateWorkoutMutation() {
+	const userId = useAuth.getState().user?.userId
+	const qc = useQueryClient()
+
+	return useMutation({
+		mutationFn: ({ id, prepared }: { id: string; prepared: WorkoutLog }) => {
+			const payload = serializeWorkoutForApi(prepared)
+			return updateWorkoutService(id, payload as any)
+		},
+		onSuccess: (_res, { id }) => {
+			qc.invalidateQueries({ queryKey: queryKeys.workouts.byId(id) })
+			qc.invalidateQueries({ queryKey: queryKeys.workouts.all })
+			qc.invalidateQueries({ queryKey: ['habits', 'logs', userId] })
+			if (userId) {
+				qc.invalidateQueries({ queryKey: queryKeys.analytics.userAnalytics(userId) })
+				qc.invalidateQueries({ queryKey: ['trainingAnalytics', userId] })
+			}
+		},
+	})
+}
+
+// ─────────────────────────────────────────────────────
+// MUTATION — delete workout (with optimistic removal)
+// ─────────────────────────────────────────────────────
+export function useDeleteWorkoutMutation() {
+	const userId = useAuth.getState().user?.userId
+	const qc = useQueryClient()
+
+	return useMutation({
+		mutationFn: (id: string) => deleteWorkoutService(id),
+		onMutate: async (id: string) => {
+			// Optimistically remove from all pages in the infinite query
+			await qc.cancelQueries({ queryKey: queryKeys.workouts.all })
+			const previousData = qc.getQueryData(queryKeys.workouts.all)
+
+			qc.setQueryData<any>(queryKeys.workouts.all, (old: any) => {
+				if (!old) return old
+				return {
+					...old,
+					pages: old.pages.map((page: any) => ({
+						...page,
+						workouts: page.workouts.filter((w: WorkoutHistoryItem) => w.id !== id),
+					})),
+				}
+			})
+
+			return { previousData }
+		},
+		onError: (_err, _id, ctx: any) => {
+			if (ctx?.previousData) {
+				qc.setQueryData(queryKeys.workouts.all, ctx.previousData)
+			}
+		},
+		onSettled: (_res, _err, id) => {
+			qc.invalidateQueries({ queryKey: queryKeys.workouts.all })
+			if (userId) {
+				qc.invalidateQueries({ queryKey: queryKeys.analytics.userAnalytics(userId) })
+				qc.invalidateQueries({ queryKey: ['trainingAnalytics', userId] })
+			}
+		},
+	})
+}
+
+// ─────────────────────────────────────────────────────
+// Cache helpers
 // ─────────────────────────────────────────────────────
 export function invalidateWorkoutHistoryCache() {
 	queryClient.invalidateQueries({ queryKey: queryKeys.workouts.all })

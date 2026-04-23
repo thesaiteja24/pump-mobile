@@ -1,8 +1,6 @@
 import { queryClient } from '@/lib/queryClient'
 import { queryKeys } from '@/lib/queryKeys'
-import { enqueueWorkoutCreate, enqueueWorkoutUpdate } from '@/lib/sync/queue'
 import { Exercise, ExerciseType } from '@/types/exercises'
-import { SyncStatus } from '@/types/sync'
 import { WorkoutTemplate } from '@/types/template'
 import {
 	ExerciseGroupType,
@@ -13,11 +11,9 @@ import {
 	WorkoutPruneReport,
 	WorkoutState,
 } from '@/types/workout'
-import { serializeWorkoutForApi } from '@/utils/serializeForApi'
 import { finalizeSetTimer, isValidCompletedSet } from '@/utils/workout'
 import * as Crypto from 'expo-crypto'
 import { StateCreator } from 'zustand'
-import { useAuth } from '../authStore'
 
 export interface ActiveWorkoutSlice {
 	workoutSaving: boolean
@@ -32,7 +28,6 @@ export interface ActiveWorkoutSlice {
 		workout: WorkoutLog
 		pruneReport: WorkoutPruneReport
 	} | null
-	saveWorkout: (prepared: WorkoutLog) => Promise<{ success: boolean; error?: any }>
 	resetWorkout: () => void
 	discardWorkout: () => void
 
@@ -63,14 +58,9 @@ export const createActiveWorkoutSlice: StateCreator<WorkoutState, [], [], Active
 	startWorkout: () => {
 		if (get().workout) return
 
-		// Generate clientId at creation time (stable identifier)
-		const clientId = Crypto.randomUUID()
-
 		set({
 			workout: {
-				clientId,
-				id: null, // No DB ID until synced
-				syncStatus: 'pending' as SyncStatus,
+				id: null,
 				title: 'New Workout',
 				startTime: new Date(),
 				endTime: new Date(),
@@ -82,11 +72,6 @@ export const createActiveWorkoutSlice: StateCreator<WorkoutState, [], [], Active
 
 	/**
 	 * This function is used to discard the active workout
-	 * Used in index.tsx(WorkoutScreen) when the user clicks on the discard button
-	 * Used in [id].tsx(WorkoutDetails) when the user decides to edit previous workout
-	 * but an workout is already active
-	 * Used in save.tsx(SaveWorkout) to save the workout and reset the workout state
-	 * Used in start.tsx to reset the workout state when leaving from editing a workout
 	 */
 	discardWorkout: () => {
 		set({
@@ -101,9 +86,6 @@ export const createActiveWorkoutSlice: StateCreator<WorkoutState, [], [], Active
 
 	/**
 	 * This function is used to update the active workout
-	 * used in index.tsx(WorkoutScreen) when the user updates the workout
-	 * used in [id].tsx(WorkoutDetails) when user is editing the workout
-	 * used multiple times in save.tsx(SaveWorkout)
 	 */
 	updateWorkout: patch =>
 		set(state => {
@@ -188,15 +170,12 @@ export const createActiveWorkoutSlice: StateCreator<WorkoutState, [], [], Active
 	 * It is used when the user wants to edit a previous workout
 	 */
 	loadWorkoutHistory: (historyItem: WorkoutHistoryItem) => {
-		// Map history item to active workout state
 		const workoutLog: WorkoutLog = {
-			clientId: historyItem.clientId,
 			id: historyItem.id,
-			syncStatus: 'synced' as SyncStatus, // Editing a synced workout
 			title: historyItem.title || 'Untitled Workout',
 			startTime: new Date(historyItem.startTime),
 			endTime: new Date(historyItem.endTime),
-			isEdited: true, // Mark as edited since we're modifying
+			isEdited: true,
 			editedAt: new Date(),
 			exercises: historyItem.exercises.map(ex => ({
 				exerciseId: ex.exerciseId,
@@ -228,18 +207,10 @@ export const createActiveWorkoutSlice: StateCreator<WorkoutState, [], [], Active
 
 	/**
 	 * This function is used to load a workout template into the active workout state
-	 * It is used when the user wants to start a new workout from a template
-	 * It is called in StartWorkoutFromTemplate() in templateStore
 	 */
 	loadTemplate: (template: WorkoutTemplate) => {
-		// Generate clientId at creation time (stable identifier)
-		const clientId = Crypto.randomUUID()
-
-		// Map template to NEW active workout state
 		const workoutLog: WorkoutLog = {
-			clientId,
-			id: null, // No DB ID until synced
-			syncStatus: 'pending' as SyncStatus,
+			id: null,
 			title: template.title || 'New Workout',
 			startTime: new Date(),
 			endTime: new Date(),
@@ -275,16 +246,12 @@ export const createActiveWorkoutSlice: StateCreator<WorkoutState, [], [], Active
 	 * This function is used to load a program day's template snapshot into the active workout state
 	 */
 	loadProgramDay: (userProgramDayId, template) => {
-		const clientId = Crypto.randomUUID()
-
 		const workoutLog: WorkoutLog = {
-			clientId,
 			id: null,
-			syncStatus: 'pending' as SyncStatus,
 			title: template.title || 'Program Workout',
 			startTime: new Date(),
 			endTime: new Date(),
-			userProgramDayId, // Link to the program day
+			userProgramDayId,
 			exercises: (template.exercises as any[]).map((ex, index) => ({
 				exerciseId: ex.exerciseId,
 				exerciseIndex: index,
@@ -311,106 +278,6 @@ export const createActiveWorkoutSlice: StateCreator<WorkoutState, [], [], Active
 		}
 
 		set({ workout: workoutLog })
-	},
-
-	/**
-	 * Save workout with optimistic-first approach:
-	 * 1. Always update local state immediately (no network delay for user)
-	 * 2. Enqueue for background sync (useSyncQueue handles sync reactively)
-	 */
-	saveWorkout: async (prepared: WorkoutLog) => {
-		set({ workoutSaving: true })
-
-		const userId = useAuth.getState().user?.userId
-		if (!userId) {
-			set({ workoutSaving: false })
-			return { success: false, error: 'No user logged in' }
-		}
-
-		// Use the clientId from the prepared workout (set at creation time)
-		const { clientId } = prepared
-
-		// --- Helper to create optimistic history item ---
-		const createOptimisticItem = (log: WorkoutLog, syncStatus: SyncStatus): WorkoutHistoryItem => ({
-			clientId: log.clientId,
-			id: log.id || clientId, // Use DB ID if exists, else clientId temporarily
-			syncStatus,
-			title: log.title || 'Untitled Workout',
-			startTime: log.startTime.toISOString(),
-			endTime: log.endTime.toISOString(),
-			visibility: log.visibility || 'public',
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
-			isEdited: log.isEdited || false,
-			editedAt: log.editedAt?.toISOString() || null,
-			exerciseGroups: log.exerciseGroups.map(g => ({
-				id: g.id,
-				groupType: g.groupType,
-				groupIndex: g.groupIndex,
-				restSeconds: g.restSeconds ?? null,
-			})),
-			exercises: log.exercises.map(ex => ({
-				id: Crypto.randomUUID(),
-				exerciseId: ex.exerciseId,
-				exerciseIndex: ex.exerciseIndex,
-				exerciseGroupId: ex.groupId ?? null,
-				exercise: ((queryClient.getQueryData<Exercise[]>(queryKeys.exercises.all) ?? []).find(
-					e => e.id === ex.exerciseId
-				) || {
-					id: ex.exerciseId,
-					title: 'Unknown Exercise',
-					thumbnailUrl: '',
-					exerciseType: 'repsOnly' as ExerciseType,
-					description: '',
-					muscleGroups: [],
-					equipment: [],
-				}) as any,
-				sets: ex.sets.map(s => ({
-					id: s.id,
-					setIndex: s.setIndex,
-					setType: s.setType,
-					weight: s.weight ?? null,
-					reps: s.reps ?? null,
-					rpe: s.rpe ?? null,
-					durationSeconds: s.durationSeconds ?? null,
-					restSeconds: s.restSeconds ?? null,
-					note: s.note ?? null,
-				})),
-			})),
-			user: {
-				id: useAuth.getState().user?.userId || '',
-				firstName: useAuth.getState().user?.firstName || '',
-				lastName: useAuth.getState().user?.lastName || '',
-				profilePicUrl: useAuth.getState().user?.profilePicUrl || '',
-				isPro: false,
-				proSubscriptionType: null,
-			},
-		})
-
-		// Serialize for API
-		const payload = serializeWorkoutForApi(prepared)
-
-		const workoutPayload = {
-			clientId,
-			id: prepared.id,
-			...payload,
-		}
-
-		// Step 1: ALWAYS update local state immediately (optimistic-first)
-		const isEdit = prepared.id !== null
-		const optimisticItem = createOptimisticItem(prepared, 'pending')
-		get().upsertWorkoutHistoryItem(optimisticItem)
-
-		// Step 2: Enqueue for background sync
-		// useSyncQueue will automatically sync when online (reactive via queueEvents)
-		if (isEdit) {
-			enqueueWorkoutUpdate(workoutPayload, userId)
-		} else {
-			enqueueWorkoutCreate(workoutPayload, userId)
-		}
-
-		set({ workoutSaving: false })
-		return { success: true }
 	},
 
 	resetWorkout: () => {

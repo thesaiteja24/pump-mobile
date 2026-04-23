@@ -1,7 +1,6 @@
 import CustomHeader from '@/components/navigation/CustomHeader'
 import { Stack } from 'expo-router'
 import React from 'react'
-import { useColorScheme } from 'react-native'
 
 export default function HomeLayout() {
 	return (
@@ -9,7 +8,7 @@ export default function HomeLayout() {
 			screenOptions={{
 				headerShown: false,
 				contentStyle: {
-					backgroundColor: useColorScheme() === 'dark' ? '#000000' : '#ffffff',
+					backgroundColor: '#000000',
 				},
 				header: props => {
 					const { options } = props

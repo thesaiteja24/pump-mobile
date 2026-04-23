@@ -16,7 +16,6 @@ import { useMeasurementsQuery, useUserAnalyticsQuery } from '@/hooks/queries/use
 import { useHabitLogsQuery, useHabitsQuery } from '@/hooks/queries/useHabits'
 import { useStoreUpdate } from '@/hooks/useStoreUpdate'
 import { useAuth } from '@/stores/authStore'
-import { useUser } from '@/stores/userStore'
 import { calculateBMI, calculateBodyFat, calculateComposition, estimateBodyFatFromBMI } from '@/utils/analytics'
 import { convertWeight } from '@/utils/converter'
 import { getMotivationLine } from '@/utils/motivation'
@@ -27,7 +26,6 @@ import Toast from 'react-native-toast-message'
 export default function HomeScreen() {
 	// ───────────────── Stores ─────────────────
 	const user = useAuth(s => s.user)
-	const getUserData = useUser(s => s.getUserData)
 
 	// TanStack Query — analytics (auto-fetches on mount, syncs into Zustand)
 	const {
@@ -176,14 +174,13 @@ export default function HomeScreen() {
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true)
 		await Promise.all([
-			getUserData(user?.userId ?? ''),
 			refetchMeasurements(),
 			refetchUserAnalytics(),
 			refetchHabits(),
 			refetchHabitLogs(),
 		])
 		setRefreshing(false)
-	}, [getUserData, refetchMeasurements, refetchUserAnalytics, refetchHabits, refetchHabitLogs, user?.userId])
+	}, [refetchMeasurements, refetchUserAnalytics, refetchHabits, refetchHabitLogs])
 
 	// ───────────────── Header animation ─────────────────
 	const headerOpacity = useSharedValue(0)
@@ -201,10 +198,6 @@ export default function HomeScreen() {
 		opacity: headerOpacity.value,
 		transform: [{ translateY: headerTranslateY.value }],
 	}))
-
-	useEffect(() => {
-		getUserData(user?.userId ?? '')
-	}, [getUserData, user?.userId])
 
 	// ───── Store Update check ─────
 	const {

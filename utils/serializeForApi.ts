@@ -122,48 +122,6 @@ export function serializeWorkoutForApi(workout: WorkoutLog) {
 	}
 }
 
-export function serializeUserUpdateForApi(user: UserPayload): UserPayload {
-	// Build as Partial internally; we always include userId so the cast at the end is safe
-	const payload: Partial<UserPayload> = {}
-
-	if (user.userId !== undefined) {
-		payload.userId = user.userId
-	}
-
-	if (user.firstName !== undefined) {
-		payload.firstName = user.firstName
-	}
-
-	if (user.lastName !== undefined) {
-		payload.lastName = user.lastName
-	}
-
-	if (user.height !== undefined) {
-		payload.height = user.height !== null ? Number(user.height) : null
-	}
-
-	if (user.weight !== undefined) {
-		payload.weight = user.weight !== null ? Number(user.weight) : null
-	}
-
-	if (user.dateOfBirth !== undefined) {
-		payload.dateOfBirth = user.dateOfBirth ? new Date(user.dateOfBirth).toISOString() : null
-	}
-
-	if (user.gender !== undefined) {
-		payload.gender = user.gender
-	}
-
-	if (user.preferredWeightUnit !== undefined) {
-		payload.preferredWeightUnit = user.preferredWeightUnit
-	}
-
-	if (user.preferredLengthUnit !== undefined) {
-		payload.preferredLengthUnit = user.preferredLengthUnit
-	}
-
-	return payload as UserPayload
-}
 
 // Program serialization
 /**

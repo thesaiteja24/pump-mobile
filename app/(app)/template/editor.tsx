@@ -4,12 +4,18 @@ import { PaywallModal, PaywallModalHandle } from '@/components/ui/PaywallModal'
 import ExerciseGroupModal, { ExerciseGroupModalHandle } from '@/components/workout/ExerciseGroupModal'
 import ExerciseRow from '@/components/workout/ExerciseRow'
 import { FREE_TIER_LIMITS } from '@/constants/limits'
-import { useAuth } from '@/stores/authStore'
 import { useExercises } from '@/hooks/queries/useExercises'
+import {
+	useCreateTemplateMutation,
+	useTemplateByIdQuery,
+	useTemplatesQuery,
+	useUpdateTemplateMutation,
+} from '@/hooks/queries/useTemplates'
+import { useAuth } from '@/stores/authStore'
+import { useProgram } from '@/stores/programStore'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 import { useTemplate } from '@/stores/templateStore'
-import { DraftTemplate, WorkoutTemplate } from '@/types/template'
-import { useProgram } from '@/stores/programStore'
+import { DraftTemplate } from '@/types/template'
 import { ExerciseGroupType } from '@/types/workout'
 import { Ionicons } from '@expo/vector-icons'
 import { usePreventRemove } from '@react-navigation/native'
@@ -30,12 +36,16 @@ export default function TemplateEditor() {
 
 	const isEditing = params.mode === 'edit'
 
-	const templates = useTemplate(s => s.templates)
+	// TQ queries and mutations
+	const { data: templates = [] } = useTemplatesQuery()
+	const { data: templateFromQuery } = useTemplateByIdQuery(isEditing ? (params.id as string) : null)
+	const createMutation = useCreateTemplateMutation()
+	const updateMutation = useUpdateTemplateMutation()
+
+	// Draft state
 	const draftTemplate = useTemplate(s => s.draftTemplate)
 	const startDraftTemplate = useTemplate(s => s.startDraftTemplate)
 	const updateDraftTemplate = useTemplate(s => s.updateDraftTemplate)
-	const createTemplate = useTemplate(s => s.createTemplate)
-	const updateTemplate = useTemplate(s => s.updateTemplate)
 	const discardDraftTemplate = useTemplate(s => s.discardDraftTemplate)
 	const isPro = useSubscriptionStore(s => s.isPro)
 	const reorderDraftExercises = useTemplate(s => s.reorderDraftExercises)
@@ -140,19 +150,14 @@ export default function TemplateEditor() {
 		async (templateToSave: DraftTemplate) => {
 			setSaving(true)
 			try {
-				let res
+				let res: any
 				if (isEditing && templateToSave.id) {
-					// Use the existing template's id. The DraftTemplate id is nullable.
-					res = await updateTemplate(templateToSave.id, {
-						...templateToSave,
-						id: templateToSave.id,
-						clientId: templateToSave.clientId, // Ensure clientId is passed for update
-					} as unknown as Partial<WorkoutTemplate>)
+					res = await updateMutation.mutateAsync({ id: templateToSave.id, draft: templateToSave })
 				} else {
-					res = await createTemplate(templateToSave)
+					res = await createMutation.mutateAsync(templateToSave)
 				}
 
-				if (res.success) {
+				if (res?.success) {
 					Toast.show({
 						type: 'success',
 						text1: isEditing ? 'Template updated' : 'Template created',
@@ -169,8 +174,7 @@ export default function TemplateEditor() {
 							const dIndex = Number(params.dayIndex)
 							const newWeeks = [...draftProgram.weeks]
 							if (newWeeks[wIndex]?.days[dIndex]) {
-								// When creating offline first, the client ID is returned/used as the ID
-								newWeeks[wIndex].days[dIndex].templateId = res.id || templateToSave.clientId
+								newWeeks[wIndex].days[dIndex].templateId = res.data?.id || templateToSave.clientId
 								useProgram.getState().updateDraftProgram({ weeks: newWeeks })
 							}
 						}
@@ -182,7 +186,7 @@ export default function TemplateEditor() {
 					Toast.show({
 						type: 'error',
 						text1: 'Error',
-						text2: 'Failed to save template: ' + (res.error?.message || 'Unknown error'),
+						text2: 'Failed to save template',
 					})
 				}
 			} catch (error: any) {
@@ -190,7 +194,7 @@ export default function TemplateEditor() {
 				Toast.show({
 					type: 'error',
 					text1: 'Error',
-					text2: 'Unexpected error occurred',
+					text2: error?.message || 'Unexpected error occurred',
 				})
 			} finally {
 				setSaving(false)
@@ -200,8 +204,8 @@ export default function TemplateEditor() {
 		},
 		[
 			isEditing,
-			updateTemplate,
-			createTemplate,
+			updateMutation,
+			createMutation,
 			discardDraftTemplate,
 			params.context,
 			params.weekIndex,
@@ -233,24 +237,16 @@ export default function TemplateEditor() {
 	useEffect(() => {
 		if (isEditing) {
 			if (!params.id) {
-				Toast.show({
-					type: 'error',
-					text1: 'Error',
-					text2: 'No template ID provided',
-				})
+				Toast.show({ type: 'error', text1: 'Error', text2: 'No template ID provided' })
 				router.back()
 				return
 			}
-			const existing = templates.find(t => t.id === params.id)
+			// Use TQ query result (already fetched) or fall back to templates list
+			const existing = templateFromQuery ?? templates.find(t => t.id === params.id)
 			if (existing) {
-				// Deep copy to draft
 				startDraftTemplate(JSON.parse(JSON.stringify(existing)))
 			} else {
-				Toast.show({
-					type: 'error',
-					text1: 'Error',
-					text2: 'Template not found',
-				})
+				Toast.show({ type: 'error', text1: 'Error', text2: 'Template not found' })
 				router.back()
 				return
 			}
@@ -259,7 +255,7 @@ export default function TemplateEditor() {
 				startDraftTemplate()
 			}
 		}
-	}, [isEditing, params.id, templates, startDraftTemplate, draftTemplate])
+	}, [isEditing, params.id, templateFromQuery, templates, startDraftTemplate, draftTemplate])
 
 	const handleCancel = useCallback(() => {
 		if (draftTemplate && (draftTemplate.title || draftTemplate.exercises.length > 0)) {

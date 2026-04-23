@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button'
 import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
-import { useTemplateByIdQuery } from '@/hooks/queries/useTemplates'
+import { useDeleteTemplateMutation, useTemplateByIdQuery } from '@/hooks/queries/useTemplates'
 import { useTemplate } from '@/stores/templateStore'
 import * as Clipboard from 'expo-clipboard'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
@@ -18,14 +18,10 @@ export default function TemplateDetails() {
 	const isDark = useColorScheme() === 'dark'
 	const safeAreaInsets = useSafeAreaInsets()
 
-	// Local list (offline-first — includes pending items)
-	const templateFromStore = useTemplate(s => s.templates.find(t => t.id === id || t.clientId === id))
-	// Fallback to server query if not in local store yet
-	const { data: templateFromQuery, isLoading: isQueryLoading } = useTemplateByIdQuery(templateFromStore ? null : id)
-	const template = templateFromStore ?? templateFromQuery
-	const isLoading = !templateFromStore && isQueryLoading
+	// Fetch template directly from TQ cache / server
+	const { data: template, isLoading } = useTemplateByIdQuery(id)
 
-	const deleteTemplate = useTemplate(s => s.deleteTemplate)
+	const deleteMutation = useDeleteTemplateMutation()
 	const startWorkoutFromTemplate = useTemplate(s => s.startWorkoutFromTemplate)
 	const handleEdit = useCallback(() => {
 		router.push(`/(app)/template/editor?id=${id}`)
@@ -169,8 +165,9 @@ export default function TemplateDetails() {
 				title="Delete Template?"
 				description="Are you sure you want to delete this template?"
 				onConfirm={() => {
-					deleteTemplate(id)
-					router.back()
+					deleteMutation.mutate(id, {
+						onSuccess: () => router.back(),
+					})
 				}}
 				confirmText="Delete"
 				onCancel={() => {}}
