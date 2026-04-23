@@ -1,7 +1,7 @@
 import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
 import { GlassBackground } from '@/components/ui/GlassBackground'
-import { useDeleteComment, useWorkoutComments } from '@/hooks/queries/useComments'
-import { Comment as EngagementComment } from '@/types/comments'
+import { useCommentsQuery, useDeleteCommentMutation } from '@/hooks/queries/useEngagement'
+import { Comment } from '@/types/engagement'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
@@ -43,18 +43,18 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 		fetchNextPage,
 		hasNextPage,
 		isFetchingNextPage,
-	} = useWorkoutComments(workoutId)
+	} = useCommentsQuery(workoutId)
 
-	const deleteCommentMutation = useDeleteComment(workoutId)
+	const deleteCommentMutation = useDeleteCommentMutation()
 
 	// Flatten pages into a single list
 	const workoutComments = useMemo(() => commentsPages?.pages.flatMap(p => p.comments) ?? [], [commentsPages])
 
 	// UI State
 	const [viewingThreadId, setViewingThreadId] = useState<string | null>(null)
-	const [replyingTo, setReplyingTo] = useState<EngagementComment | null>(null)
-	const [selectedCommentForOptions, setSelectedCommentForOptions] = useState<EngagementComment | null>(null)
-	const [editingComment, setEditingComment] = useState<EngagementComment | null>(null)
+	const [replyingTo, setReplyingTo] = useState<Comment | null>(null)
+	const [selectedCommentForOptions, setSelectedCommentForOptions] = useState<Comment | null>(null)
+	const [editingComment, setEditingComment] = useState<Comment | null>(null)
 
 	const sliderRef = useRef<ScrollView>(null)
 	const footerRef = useRef<any>(null)
@@ -82,10 +82,10 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 		}, 300)
 	}
 
-	const handleViewReplies = (comment: EngagementComment) => {
+	const handleViewReplies = useCallback((comment: Comment) => {
 		setViewingThreadId(comment.id)
 		sliderRef.current?.scrollTo({ x: screenWidth, animated: true })
-	}
+	}, [screenWidth])
 
 	const handleBackToMain = () => {
 		sliderRef.current?.scrollTo({ x: 0, animated: true })
@@ -96,14 +96,14 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 		}, 300)
 	}
 
-	const handleReplyPress = (comment: EngagementComment) => {
+	const handleReplyPress = useCallback((comment: Comment) => {
 		setReplyingTo(comment)
-	}
+	}, [])
 
-	const handleOptionsPress = (comment: EngagementComment) => {
+	const handleOptionsPress = useCallback((comment: Comment) => {
 		setSelectedCommentForOptions(comment)
 		optionsBottomSheetRef.current?.present()
-	}
+	}, [])
 
 	const activeThreadComment = workoutComments.find(c => c.id === viewingThreadId)
 
@@ -158,8 +158,8 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 
 			<BottomSheetFlatList
 				data={workoutComments}
-				keyExtractor={(item: EngagementComment) => item.id}
-				renderItem={({ item }: { item: EngagementComment }) => (
+				keyExtractor={(item: Comment) => item.id}
+				renderItem={({ item }: { item: Comment }) => (
 					<CommentItem
 						comment={item}
 						workoutId={workoutId}
@@ -192,7 +192,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 						fetchNextPage()
 					}
 				}}
-				onEndReachedThreshold={0.5}
+				onEndReachedThreshold={1}
 				keyboardShouldPersistTaps="handled"
 			/>
 		</View>
@@ -211,8 +211,8 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 
 			<BottomSheetFlatList
 				data={activeThreadComment ? [activeThreadComment] : []}
-				keyExtractor={(item: EngagementComment) => item.id}
-				renderItem={({ item }: { item: EngagementComment }) => (
+				keyExtractor={(item: Comment) => item.id}
+				renderItem={({ item }: { item: Comment }) => (
 					<CommentItem
 						comment={item}
 						workoutId={workoutId}
@@ -296,7 +296,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
 				onConfirm={async () => {
 					if (selectedCommentForOptions) {
 						try {
-							await deleteCommentMutation.mutateAsync(selectedCommentForOptions.id)
+							await deleteCommentMutation.mutateAsync(selectedCommentForOptions)
 						} catch (error) {
 							Toast.show({ type: 'error', text1: 'Error', text2: error as string })
 						}

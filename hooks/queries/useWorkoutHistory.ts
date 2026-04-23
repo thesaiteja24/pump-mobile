@@ -8,13 +8,12 @@ import {
 	getWorkoutByIdService,
 	updateWorkoutService,
 } from '@/services/workoutServices'
+import { useAuth } from '@/stores/authStore'
 import { WorkoutHistoryItem, WorkoutLog } from '@/types/workout'
 import { serializeWorkoutForApi } from '@/utils/serializeForApi'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import * as Crypto from 'expo-crypto'
-import { useAuth } from '@/stores/authStore'
 
-const PAGE_LIMIT = 20
+const PAGE_LIMIT = 1
 
 // ─────────────────────────────────────────────────────
 // READ — workout history (paginated, infinite scroll)

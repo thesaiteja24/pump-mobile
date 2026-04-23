@@ -10,7 +10,30 @@
  *   useQuery({ queryKey: queryKeys.exercises.all, ... })
  */
 
+import { LikeType } from '@/types/engagement'
+
 export const queryKeys = {
+	engagement: {
+		root: ['engagement'] as const,
+
+		suggested: ['engagement', 'follow', 'suggestedUsers'] as const,
+		searchRoot: ['engagement', 'follow', 'searchUsers'] as const,
+		search: (query: string) => ['engagement', 'follow', 'searchUsers', query] as const,
+
+		followRoot: ['engagement', 'follow'] as const,
+		followersRoot: ['engagement', 'follow', 'userFollowers'] as const,
+		followers: (userId: string) => ['engagement', 'follow', 'userFollowers', userId] as const,
+		followingRoot: ['engagement', 'follow', 'userFollowing'] as const,
+		following: (userId: string) => ['engagement', 'follow', 'userFollowing', userId] as const,
+
+		commentsRoot: ['engagement', 'comments'] as const,
+		comments: (workoutId: string) => ['engagement', 'comments', workoutId] as const,
+		repliesRoot: ['engagement', 'replies'] as const,
+		replies: (parentId: string) => ['engagement', 'replies', parentId] as const,
+
+		likes: (id: string, type: LikeType) => ['engagement', 'likes', type, id] as const,
+	},
+
 	exercises: {
 		all: ['exercises'] as const,
 		byId: (id: string) => ['exercises', id] as const,
@@ -57,16 +80,7 @@ export const queryKeys = {
 		workoutLikes: (workoutId: string) => ['workoutLikes', workoutId] as const,
 		commentLikes: (commentId: string) => ['commentLikes', commentId] as const,
 	},
-	engagement: {
-		suggested: ['suggestedUsers'] as const,
-		search: (query: string) => ['searchUsers', query] as const,
-		followers: (userId: string) => ['userFollowers', userId] as const,
-		following: (userId: string) => ['userFollowing', userId] as const,
-		comments: (workoutId: string) => ['engagement', 'comments', workoutId] as const,
-		replies: (commentId: string) => ['engagement', 'replies', commentId] as const,
-		workoutLikes: (workoutId: string) => ['engagement', 'workoutLikes', workoutId] as const,
-		commentLikes: (commentId: string) => ['engagement', 'commentLikes', commentId] as const,
-	},
+
 	analytics: {
 		measurements: (userId: string, duration?: string) =>
 			duration ? (['measurements', userId, duration] as const) : (['measurements', userId] as const),

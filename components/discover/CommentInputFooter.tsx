@@ -1,4 +1,8 @@
-import { useAddComment, useAddReply, useEditComment } from '@/hooks/queries/useComments'
+import {
+	useCommentMutation,
+	useEditCommentMutation,
+	useReplyMutation,
+} from '@/hooks/queries/useEngagement'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetFooter, BottomSheetTextInput } from '@gorhom/bottom-sheet'
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
@@ -26,9 +30,9 @@ const CommentInputFooter = forwardRef(
 		const borderColor = isDark ? '#262626' : '#e5e5e5'
 
 		// TanStack Query mutations
-		const addCommentMutation = useAddComment(workoutId)
-		const addReplyMutation = useAddReply(workoutId, replyingTo?.id || viewingThreadId || '')
-		const editCommentMutation = useEditComment(workoutId)
+		const addCommentMutation = useCommentMutation(workoutId)
+		const addReplyMutation = useReplyMutation(workoutId, replyingTo?.id || viewingThreadId || '')
+		const editCommentMutation = useEditCommentMutation(workoutId)
 
 		const isSubmitting = addCommentMutation.isPending || addReplyMutation.isPending || editCommentMutation.isPending
 

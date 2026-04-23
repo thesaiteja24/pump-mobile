@@ -18,7 +18,8 @@ export default function DiscoverScreen() {
 	const {
 		discoverWorkouts,
 		hasMore: discoverHasMore,
-		isFetching: discoverLoading,
+		isLoading: discoverLoading,
+		isFetchingNextPage: discoverLoadingNextPage,
 		fetchNextPage,
 		refetch: refetchDiscover,
 	} = useDiscoverWorkoutsQuery()
@@ -89,27 +90,29 @@ export default function DiscoverScreen() {
 					data={discoverWorkouts}
 					keyExtractor={item => item.id}
 					renderItem={({ item, index }) => (
-						<WorkoutCard
-							workout={item}
-							exerciseTypeMap={exerciseTypeMap}
-							index={index}
-						/>
+						<WorkoutCard workout={item} exerciseTypeMap={exerciseTypeMap} index={index} />
 					)}
 					showsVerticalScrollIndicator={false}
 					refreshControl={<RefreshControl refreshing={discoverLoading} onRefresh={onRefresh} />}
 					onEndReached={onEndReached}
-					onEndReachedThreshold={0.5}
+					onEndReachedThreshold={0.1}
 					ListEmptyComponent={
 						<View className="mt-10 items-center">
 							<Text className="text-neutral-500 dark:text-neutral-400">No workouts yet.</Text>
 						</View>
 					}
 					ListFooterComponent={
-						<View className="mb-[20%] items-center justify-center p-4 pb-12 pt-6">
-							{discoverLoading && discoverWorkouts.length > 0 && (
-								<ActivityIndicator size="small" color={colors.primary} />
-							)}
-						</View>
+						discoverHasMore ? (
+							<View className="mb-[20%] items-center justify-center p-4 pb-12 pt-6">
+								{discoverLoadingNextPage && <ActivityIndicator size="small" color={colors.primary} />}
+							</View>
+						) : (
+							<View className="mb-[20%] items-center justify-center p-4 pb-12 pt-6">
+								<Text className="text-neutral-500 dark:text-neutral-400">
+									You&apos;ve conquered all the workouts here 🏆
+								</Text>
+							</View>
+						)
 					}
 				/>
 			)}

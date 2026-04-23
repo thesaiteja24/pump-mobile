@@ -1,8 +1,10 @@
 import {
 	WORKOUT_COMMENTS_ENDPOINT,
 	FOLLOW_USER_ENDPOINT as follow_user_endpoint,
+	LIKES_ENDPOINT as likes_endpoint,
 	SEARCH_USERS_ENDPOINT as search_users_endpoint,
 	SUGGESTED_USERS_ENDPOINT as suggested_users_endpoint,
+	TOGGLE_LIKE_ENDPOINT as toggle_like_endpoint,
 	USER_FOLLOWERS_ENDPOINT as user_followers_endpoint,
 	USER_FOLLOWING_ENDPOINT as user_following_endpoint,
 } from '@/constants/urls'
@@ -80,6 +82,7 @@ export async function unFollowUserService(targetUserId: string) {
 	}
 }
 
+// Refactor this
 export async function createCommentService(workoutId: string, data: WorkoutCommentPayload) {
 	try {
 		const res = await client.post(WORKOUT_COMMENTS_ENDPOINT(workoutId), data)
@@ -91,7 +94,7 @@ export async function createCommentService(workoutId: string, data: WorkoutComme
 	}
 }
 
-export async function getCommentsService(workoutId: string, limit: number = 10, cursor?: string, isReply?: boolean) {
+export async function getCommentsService(workoutId: string, limit: number, cursor?: string, isReply?: boolean) {
 	try {
 		const params = new URLSearchParams()
 		params.append('limit', limit.toString())
@@ -130,9 +133,9 @@ export async function editCommentService(commentId: string, content: string) {
 	}
 }
 
-export async function getWorkoutLikesService(workoutId: string) {
+export async function getLikesService(id: string, type: string) {
 	try {
-		const res = await client.get(`/engagement/${workoutId}/like/workout`)
+		const res = await client.get(likes_endpoint(id), { params: { type } })
 		return handleApiResponse(res)
 	} catch (error: any) {
 		const errData = error.response?.data
@@ -140,49 +143,9 @@ export async function getWorkoutLikesService(workoutId: string) {
 	}
 }
 
-export async function createWorkoutLikeService(workoutId: string) {
+export async function toggleLikeService(id: string, type: string, liked: boolean) {
 	try {
-		const res = await client.post(`/engagement/${workoutId}/like/workout`)
-		return handleApiResponse(res)
-	} catch (error: any) {
-		const errData = error.response?.data
-		throw new Error(errData?.message || error.message || 'Network error')
-	}
-}
-
-export async function deleteWorkoutLikeService(workoutId: string) {
-	try {
-		const res = await client.delete(`/engagement/${workoutId}/like/workout`)
-		return handleApiResponse(res)
-	} catch (error: any) {
-		const errData = error.response?.data
-		throw new Error(errData?.message || error.message || 'Network error')
-	}
-}
-
-export async function getCommentLikesService(commentId: string) {
-	try {
-		const res = await client.get(`/engagement/${commentId}/like/comment`)
-		return handleApiResponse(res)
-	} catch (error: any) {
-		const errData = error.response?.data
-		throw new Error(errData?.message || error.message || 'Network error')
-	}
-}
-
-export async function createCommentLikeService(commentId: string) {
-	try {
-		const res = await client.post(`/engagement/${commentId}/like/comment`)
-		return handleApiResponse(res)
-	} catch (error: any) {
-		const errData = error.response?.data
-		throw new Error(errData?.message || error.message || 'Network error')
-	}
-}
-
-export async function deleteCommentLikeService(commentId: string) {
-	try {
-		const res = await client.delete(`/engagement/${commentId}/like/comment`)
+		const res = await client.put(toggle_like_endpoint(id), { params: { type, liked } })
 		return handleApiResponse(res)
 	} catch (error: any) {
 		const errData = error.response?.data
