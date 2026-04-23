@@ -3,13 +3,15 @@ import { Button } from '@/components/ui/Button'
 import DateTimePicker from '@/components/ui/DateTimePicker'
 import { GlassBackground } from '@/components/ui/GlassBackground'
 import { SelectableCard } from '@/components/ui/SelectableCard'
-import { useThemeColor } from '@/hooks/useThemeColor'
 import {
-	useUpdateProfilePicMutation,
 	useDeleteProfilePicMutation,
-	useUpdateUserMutation,
+	useUpdateProfilePicMutation,
+	useUpdateUserDataMutation,
+	useUserQuery,
 } from '@/hooks/queries/useUser'
+import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
+import { SelfUser } from '@/types/user'
 import { convertLength, convertWeight, displayLength, displayWeight } from '@/utils/converter'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
@@ -35,10 +37,13 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	const [isOpen, setIsOpen] = useState(false)
 
 	// global state (stores)
-	const user = useAuth(s => s.user)
+	const currentUserId = useAuth(s => s.userId)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
+
 	const updateProfilePicMutation = useUpdateProfilePicMutation()
 	const deleteProfilePicMutation = useDeleteProfilePicMutation()
-	const updateUserMutation = useUpdateUserMutation()
+	const updateUserDataMutation = useUpdateUserDataMutation()
 	const [uploading, setUploading] = useState(false)
 
 	// Derived preferred units — read from store, not local state (set only via Unit Preferences sheet)
@@ -71,12 +76,12 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 
 		const hDisplay =
 			user.height != null && Number.isFinite(Number(user.height))
-				? displayLength(Number(user.height), { precision: 2 }).toString()
+				? displayLength(Number(user.height), lengthUnit, { precision: 2 }).toString()
 				: ''
 
 		const wDisplay =
 			user.weight != null && Number.isFinite(Number(user.weight))
-				? displayWeight(Number(user.weight), { precision: 2 }).toString()
+				? displayWeight(Number(user.weight), weightUnit, { precision: 2 }).toString()
 				: ''
 
 		setFirstName(user.firstName ?? '')
@@ -94,7 +99,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 			dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : undefined,
 			gender: (user.gender as any) ?? null,
 		}
-	}, [user])
+	}, [user, lengthUnit, weightUnit])
 
 	// Dirty checking
 	const hasChanges = useMemo(() => {
@@ -118,7 +123,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 
 	// Save handler — convert display-unit values back to backend canonical units (kg, cm)
 	const handleSave = useCallback(async () => {
-		if (!user?.userId || !hasChanges) {
+		if (!user?.id || !hasChanges) {
 			// @ts-ignore
 			ref?.current?.dismiss()
 			return
@@ -133,12 +138,12 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 		const heightInCm =
 			!isNaN(parsedHeight) && parsedHeight > 0
 				? convertLength(parsedHeight, { from: lengthUnit, to: 'cm' })
-				: null
+				: undefined
 
 		const weightInKg =
 			!isNaN(parsedWeight) && parsedWeight > 0
 				? convertWeight(parsedWeight, { from: weightUnit, to: 'kg' })
-				: null
+				: undefined
 
 		const payload = {
 			firstName,
@@ -146,11 +151,11 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 			height: heightInCm,
 			weight: weightInKg,
 			dateOfBirth: dateOfBirth ? dateOfBirth.toISOString() : undefined,
-			gender,
+			gender: gender ?? undefined,
 		}
 
 		try {
-			await updateUserMutation.mutateAsync({ userId: user.userId, data: payload })
+			await updateUserDataMutation.mutateAsync({ userId: user.id, data: payload })
 			Toast.show({ type: 'success', text1: 'Profile updated successfully' })
 
 			originalRef.current = {
@@ -174,8 +179,8 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 		dateOfBirth,
 		gender,
 		hasChanges,
-		user?.userId,
-		updateUserMutation,
+		user?.id,
+		updateUserDataMutation,
 		ref,
 		lengthUnit,
 		weightUnit,
@@ -183,7 +188,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 
 	// Profile pic picker
 	const onPick = async (uri: string | null) => {
-		if (!uri || !user?.userId || uploading) return
+		if (!uri || !user?.id || uploading) return
 
 		try {
 			setUploading(true)
@@ -191,7 +196,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 
 			const formData = new FormData()
 			formData.append('profilePic', prepared as any)
-			await updateProfilePicMutation.mutateAsync({ uid: user.userId, data: formData })
+			await updateProfilePicMutation.mutateAsync({ uid: user.id, data: formData })
 			Toast.show({ type: 'success', text1: 'Profile picture updated' })
 		} catch (error: any) {
 			Toast.show({ type: 'error', text1: error?.message || 'Image processing failed' })
@@ -255,10 +260,8 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 						{user?.profilePicUrl && (
 							<TouchableOpacity
 								onPress={async () => {
-									if (!user?.userId) return
-									setUploading(true)
 									try {
-										await deleteProfilePicMutation.mutateAsync(user.userId)
+										await deleteProfilePicMutation.mutateAsync(user.id)
 										Toast.show({ type: 'success', text1: 'Avatar removed successfully' })
 									} catch {
 										Toast.show({ type: 'error', text1: 'Failed to remove avatar' })
@@ -281,7 +284,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 							<TextInput
 								value={firstName}
 								onChangeText={setFirstName}
-								editable={!updateUserMutation.isPending}
+								editable={!updateUserDataMutation.isPending}
 								placeholder="Enter Name..."
 								className="text-right text-lg text-primary"
 								placeholderTextColor={colors.neutral[500]}
@@ -295,7 +298,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 							<TextInput
 								value={lastName}
 								onChangeText={setLastName}
-								editable={!updateUserMutation.isPending}
+								editable={!updateUserDataMutation.isPending}
 								placeholder="Enter Surname..."
 								className="text-right text-lg text-primary"
 								placeholderTextColor={colors.neutral[500]}
@@ -346,7 +349,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 								placeholderTextColor={colors.neutral[500]}
 								keyboardType="numeric"
 								onChangeText={setHeightDisplay}
-								editable={!updateUserMutation.isPending}
+								editable={!updateUserDataMutation.isPending}
 								className="text-right text-lg text-primary"
 								style={{ lineHeight }}
 							/>
@@ -363,7 +366,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 								placeholderTextColor={colors.neutral[500]}
 								keyboardType="decimal-pad"
 								onChangeText={setWeightDisplay}
-								editable={!updateUserMutation.isPending}
+								editable={!updateUserDataMutation.isPending}
 								className="text-right text-lg text-primary"
 								style={{ lineHeight }}
 							/>
@@ -373,7 +376,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 					<Button
 						title={hasChanges ? 'Save Changes' : 'Close'}
 						variant={hasChanges ? 'primary' : 'secondary'}
-						loading={updateUserMutation.isPending}
+						loading={updateUserDataMutation.isPending}
 						className="mt-6"
 						onPress={handleSave}
 						liquidGlass

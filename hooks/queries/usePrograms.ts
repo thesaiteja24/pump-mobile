@@ -20,7 +20,7 @@ import {
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
 
 export function usePrograms(page?: number, limit?: number) {
-	const userId = useAuth(s => s.user?.userId)
+	const userId = useAuth(s => s.userId)
 
 	return useQuery({
 		queryKey: [...queryKeys.programs.all(userId ?? ''), page ?? 'all', limit ?? 'all'],
@@ -72,7 +72,7 @@ export function useProgramById(programId: string | null | undefined) {
 }
 
 export function useUserPrograms() {
-	const userId = useAuth(s => s.user?.userId)
+	const userId = useAuth(s => s.userId)
 
 	return useQuery({
 		queryKey: queryKeys.programs.user.all(userId ?? ''),
@@ -88,7 +88,7 @@ export function useUserPrograms() {
 }
 
 export function useUserProgram(userProgramId: string | null | undefined, weekIndex?: number) {
-	const userId = useAuth(s => s.user?.userId)
+	const userId = useAuth(s => s.userId)
 	return useQuery({
 		queryKey: [...queryKeys.programs.user.detail(userId ?? '', userProgramId ?? ''), weekIndex ?? 'default'],
 		queryFn: async () => {
@@ -102,7 +102,7 @@ export function useUserProgram(userProgramId: string | null | undefined, weekInd
 }
 
 export function useActiveProgram() {
-	const userId = useAuth(s => s.user?.userId)
+	const userId = useAuth(s => s.userId)
 	return useQuery({
 		queryKey: queryKeys.programs.user.active(userId ?? ''),
 		queryFn: async () => {
@@ -127,7 +127,7 @@ export function useCreateProgram() {
 			return res.data?.program as ProgramTemplateModel
 		},
 		onSuccess: () => {
-			const userId = useAuth.getState().user?.userId
+			const userId = useAuth.getState().userId
 			if (userId) {
 				queryClient.invalidateQueries({ queryKey: queryKeys.programs.all(userId) })
 			}
@@ -145,7 +145,7 @@ export function useUpdateProgram() {
 			return res.data?.program as ProgramTemplateModel
 		},
 		onSuccess: (updatedProgram, { id }) => {
-			const userId = useAuth.getState().user?.userId
+			const userId = useAuth.getState().userId
 			if (userId) {
 				queryClient.invalidateQueries({ queryKey: queryKeys.programs.all(userId) })
 			}
@@ -168,7 +168,7 @@ export function useDeleteProgram() {
 			return id
 		},
 		onSuccess: deletedId => {
-			const userId = useAuth.getState().user?.userId
+			const userId = useAuth.getState().userId
 			if (userId) {
 				queryClient.invalidateQueries({ queryKey: queryKeys.programs.all(userId) })
 			}
@@ -198,7 +198,7 @@ export function useStartProgram() {
 			return res.data?.userProgram as UserProgram
 		},
 		onSuccess: () => {
-			const userId = useAuth.getState().user?.userId
+			const userId = useAuth.getState().userId
 			if (userId) {
 				queryClient.invalidateQueries({ queryKey: queryKeys.programs.user.all(userId) })
 				queryClient.invalidateQueries({ queryKey: queryKeys.programs.user.active(userId) })

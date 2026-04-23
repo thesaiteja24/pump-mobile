@@ -1,5 +1,6 @@
+import { useUpdateUserDataMutation, useUserQuery } from '@/hooks/queries/useUser'
 import { useAuth } from '@/stores/authStore'
-import { useUpdatePreferencesMutation } from '@/hooks/queries/useUser'
+import { SelfUser } from '@/types/user'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import React, { forwardRef, useEffect, useMemo, useState } from 'react'
 import { BackHandler, Text, TouchableOpacity, useColorScheme, View } from 'react-native'
@@ -10,8 +11,11 @@ type WeightUnit = 'kg' | 'lbs'
 type LengthUnit = 'cm' | 'inches'
 
 export const UnitPreferencesSheet = forwardRef<BottomSheetModal>((props, ref) => {
-	const { user } = useAuth()
-	const updatePreferencesMutation = useUpdatePreferencesMutation()
+	const currentUserId = useAuth(s => s.userId)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
+
+	const updateUserDataMutation = useUpdateUserDataMutation()
 	const isDarkMode = useColorScheme() === 'dark'
 	const insets = useSafeAreaInsets()
 	const [isOpen, setIsOpen] = useState(false)
@@ -34,10 +38,10 @@ export const UnitPreferencesSheet = forwardRef<BottomSheetModal>((props, ref) =>
 
 	const onDismiss = async () => {
 		setIsOpen(false)
-		if (!hasChanges || !user?.userId) return
+		if (!hasChanges || !user?.id) return
 
-		updatePreferencesMutation.mutate({
-			userId: user.userId,
+		updateUserDataMutation.mutate({
+			userId: user.id,
 			data: {
 				preferredWeightUnit: weightUnit,
 				preferredLengthUnit: lengthUnit,

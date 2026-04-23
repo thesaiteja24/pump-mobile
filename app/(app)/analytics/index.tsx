@@ -2,8 +2,10 @@ import { MuscleCompositionCard } from '@/components/analytics/MuscleCompositionC
 import { NutritionTargetsCard } from '@/components/analytics/NutritionTargetsCard'
 import ShimmerAnalyticsScreen from '@/components/analytics/ShimmerAnalyticsScreen'
 import { useFitnessProfileQuery, useMeasurementsQuery, useNutritionPlanQuery } from '@/hooks/queries/useAnalytics'
+import { useUserQuery } from '@/hooks/queries/useUser'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
+import { SelfUser } from '@/types/user'
 import {
 	calculateBMI,
 	calculateBMR,
@@ -17,7 +19,10 @@ import React, { useEffect, useMemo } from 'react'
 import { BackHandler, ScrollView, View } from 'react-native'
 
 const AnalyticsScreen = () => {
-	const user = useAuth(state => state.user)
+	const currentUserId = useAuth(state => state.userId)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
+
 	const { data: measurements, isLoading: measurementsLoading } = useMeasurementsQuery()
 	const { data: fitnessProfile, isLoading: profileLoading } = useFitnessProfileQuery()
 	const { data: nutritionPlan, isLoading: nutritionLoading } = useNutritionPlanQuery()
@@ -29,7 +34,7 @@ const AnalyticsScreen = () => {
 	// All values from store are in backend canonical units (kg / cm)
 	const weightKg = Number(latestMeasurements?.weight ?? user?.weight) // kg
 	const heightCm = Number(user?.height) // cm
-	const gender = user?.gender
+	const gender = user?.gender as any // Or Gender from types
 	const neckCm = Number(latestMeasurements?.neck) // cm
 	const waistCm = Number(latestMeasurements?.waist) // cm
 	const hipsCm = Number(latestMeasurements?.hips) // cm

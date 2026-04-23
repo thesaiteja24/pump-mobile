@@ -14,8 +14,10 @@ import { Button } from '@/components/ui/Button'
 import { useAskNotificationPermission } from '@/hooks/notifications/useAskNotificationPermission'
 import { useMeasurementsQuery, useUserAnalyticsQuery } from '@/hooks/queries/useAnalytics'
 import { useHabitLogsQuery, useHabitsQuery } from '@/hooks/queries/useHabits'
+import { useUserQuery } from '@/hooks/queries/useUser'
 import { useStoreUpdate } from '@/hooks/useStoreUpdate'
 import { useAuth } from '@/stores/authStore'
+import { SelfUser } from '@/types/user'
 import { calculateBMI, calculateBodyFat, calculateComposition, estimateBodyFatFromBMI } from '@/utils/analytics'
 import { convertWeight } from '@/utils/converter'
 import { getMotivationLine } from '@/utils/motivation'
@@ -25,7 +27,9 @@ import Toast from 'react-native-toast-message'
 
 export default function HomeScreen() {
 	// ───────────────── Stores ─────────────────
-	const user = useAuth(s => s.user)
+	const currentUserId = useAuth(s => s.userId)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
 
 	// TanStack Query — analytics (auto-fetches on mount, syncs into Zustand)
 	const {

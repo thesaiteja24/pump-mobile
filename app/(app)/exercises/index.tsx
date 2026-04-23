@@ -8,8 +8,10 @@ import { ROLES as roles } from '@/constants/roles'
 import { useEquipment } from '@/hooks/queries/useEquipment'
 import { useDeleteExercise, useExercises } from '@/hooks/queries/useExercises'
 import { useMuscleGroups } from '@/hooks/queries/useMuscleGroups'
+import { useUserQuery } from '@/hooks/queries/useUser'
 import { useAuth } from '@/stores/authStore'
 import { Exercise } from '@/types/exercises'
+import { SelfUser } from '@/types/user'
 
 import { useTemplate } from '@/stores/templateStore'
 import { useWorkout } from '@/stores/workoutStore'
@@ -50,7 +52,10 @@ export default function ExercisesScreen() {
 	const navigation = useNavigation()
 	const isDark = useColorScheme() === 'dark'
 	const lineHeight = Platform.OS === 'ios' ? 0 : 20
-	const role = useAuth(s => s.user?.role)
+	const currentUserId = useAuth(s => s.userId)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
+	const role = user?.role
 	const safeAreaInsets = useSafeAreaInsets()
 	const params = useLocalSearchParams()
 	const context = (params.context as 'workout' | 'template') || 'workout' // Default to workout

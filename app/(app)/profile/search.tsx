@@ -23,7 +23,7 @@ export default function Search() {
 	const [query, setQuery] = useState('')
 	const [refreshing, setRefreshing] = useState(false)
 
-	const currentUserId = useAuth(state => state.user?.userId)
+	const currentUserId = useAuth(state => state.userId)
 
 	const isSearching = query.trim().length >= 3
 

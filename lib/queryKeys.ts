@@ -34,6 +34,10 @@ export const queryKeys = {
 		likes: (id: string, type: LikeType) => ['engagement', 'likes', type, id] as const,
 	},
 
+	user: {
+		byId: (userId: string) => ['user', userId] as const,
+	},
+
 	exercises: {
 		all: ['exercises'] as const,
 		byId: (id: string) => ['exercises', id] as const,
@@ -88,8 +92,5 @@ export const queryKeys = {
 		fitnessProfile: (userId: string) => ['fitnessProfile', userId] as const,
 		nutritionPlan: (userId: string) => ['nutritionPlan', userId] as const,
 		trainingAnalytics: (userId: string, duration: string) => ['trainingAnalytics', userId, duration] as const,
-	},
-	user: {
-		byId: (userId: string) => ['user', userId] as const,
 	},
 } as const

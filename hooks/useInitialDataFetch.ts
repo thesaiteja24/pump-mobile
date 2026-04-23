@@ -106,13 +106,13 @@ async function fetchPublicData() {
 async function fetchUserData() {
 	console.log('[InitialFetch] Invalidating user-specific query caches...')
 	try {
-		const userId = useAuth.getState().user?.userId
+		const userId = useAuth.getState().userId
 		if (!userId) return
 
 		// Invalidate user analytics and workout history so TQ refetches them in background
 		await Promise.all([
 			queryClient.invalidateQueries({ queryKey: queryKeys.workouts.all }),
-			queryClient.invalidateQueries({ queryKey: ['user', 'profile', userId] }),
+			queryClient.invalidateQueries({ queryKey: queryKeys.user.byId(userId) }),
 		])
 	} catch (error) {
 		console.error('[InitialFetch] Error invalidating user data:', error)

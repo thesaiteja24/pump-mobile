@@ -1,6 +1,8 @@
 import { useFitnessProfileQuery, useMeasurementsQuery } from '@/hooks/queries/useAnalytics'
+import { useUserQuery } from '@/hooks/queries/useUser'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
+import { SelfUser } from '@/types/user'
 import { convertWeight } from '@/utils/converter'
 import { router } from 'expo-router'
 import React, { useMemo } from 'react'
@@ -14,7 +16,9 @@ interface WeightMetricCardProps {
 
 export function WeightMetricCard({ width }: WeightMetricCardProps) {
 	const colors = useThemeColor()
-	const user = useAuth(s => s.user)
+	const currentUserId = useAuth(s => s.userId)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
 
 	const { data: analytics } = useMeasurementsQuery()
 	const { data: fitnessProfile } = useFitnessProfileQuery()

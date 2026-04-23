@@ -7,15 +7,13 @@ export const API_BASE_URL = (() => {
 })()
 
 // Authentication Endpoints
-export const SEND_OTP_ENDPOINT = `/auth/send-otp`
-export const VERIFY_OTP_ENDPOINT = `/auth/verify-otp`
 export const REFRESH_TOKEN_ENDPOINT = `/auth/refresh-token`
 export const GOOGLE_LOGIN_ENDPOINT = `/auth/google`
 
 // User Endpoints
 export const USER_ENDPOINT = (id: string) => `/users/${id}`
-export const UPDATE_PROFILE_PIC_ENDPOINT = (id: string) => `/users/${id}/profile-picture`
-export const UPDATE_USER_DATA_ENDPOINT = (id: string) => `/users/${id}`
+export const USER_PROFILE_PIC_ENDPOINT = (id: string) => `/users/${id}/profile-picture`
+export const USER_DATA_ENDPOINT = (id: string) => `/users/${id}`
 
 // Engagement Endpoints
 export const SEARCH_USERS_ENDPOINT = (query: string) => `/engagement/search?query=${query}`

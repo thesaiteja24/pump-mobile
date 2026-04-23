@@ -6,8 +6,10 @@ import { MeasurementsSheet } from '@/components/profile/MeasurementsSheet'
 import { UnitPreferencesSheet } from '@/components/profile/UnitPreferencesSheet'
 import { Button } from '@/components/ui/Button'
 import { VerifiedBadge } from '@/components/ui/VerifiedBadge'
+import { useUserQuery } from '@/hooks/queries/useUser'
 import { useAuth } from '@/stores/authStore'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
+import { SelfUser } from '@/types/user'
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import { router } from 'expo-router'
@@ -17,7 +19,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
 
 export default function ProfileScreen() {
-	const { user, logout } = useAuth()
+	const currentUserId = useAuth(s => s.userId)
+	const logout = useAuth(s => s.logout)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
+
 	const { isPro, activePlanId } = useSubscriptionStore()
 	const isDarkMode = useColorScheme() === 'dark'
 

@@ -1,21 +1,26 @@
+import { useUserQuery } from '@/hooks/queries/useUser'
 import { useAuth } from '@/stores/authStore'
+import { SelfUser } from '@/types/user'
 import { Redirect } from 'expo-router'
 import React from 'react'
 import { ActivityIndicator, View } from 'react-native'
 
 export default function Index() {
-	const user = useAuth(s => s.user)
 	const isAuthenticated = useAuth(s => s.isAuthenticated)
+	const currentUserId = useAuth(s => s.userId)
+	const { data: user } = useUserQuery(currentUserId!)
+	const selfUser = user as SelfUser
+
 	const hasRestored = useAuth(s => s.hasRestored)
 	const hasSeenOnboarding = useAuth(s => s.hasSeenOnboarding)
 	const logout = useAuth(s => s.logout)
 
 	// Strict Privacy Policy Enforcement
 	React.useEffect(() => {
-		if (isAuthenticated && !user?.privacyPolicyAcceptedAt) {
+		if (isAuthenticated && selfUser && !selfUser.privacyPolicyAcceptedAt) {
 			logout()
 		}
-	}, [isAuthenticated, user?.privacyPolicyAcceptedAt, logout])
+	}, [isAuthenticated, selfUser, logout])
 
 	if (!hasRestored) {
 		return (
@@ -25,7 +30,7 @@ export default function Index() {
 		)
 	}
 
-	if (isAuthenticated && !user?.privacyPolicyAcceptedAt) {
+	if (isAuthenticated && selfUser && !selfUser.privacyPolicyAcceptedAt) {
 		return <Redirect href="/(auth)/login" />
 	}
 

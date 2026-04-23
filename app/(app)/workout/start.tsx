@@ -5,7 +5,9 @@ import ExerciseRow from '@/components/workout/ExerciseRow'
 import RestTimerSnack from '@/components/workout/RestTimerSnack'
 
 import { useExercises } from '@/hooks/queries/useExercises'
+import { useUserQuery } from '@/hooks/queries/useUser'
 import { useAuth } from '@/stores/authStore'
+import { SelfUser } from '@/types/user'
 import { Exercise, ExerciseType } from '@/types/exercises'
 import { ExerciseGroupType, WorkoutLogGroup } from '@/types/workout'
 import { useWorkout } from '@/stores/workoutStore'
@@ -87,7 +89,10 @@ export default function StartWorkout() {
 	const { data: exerciseList = [] } = useExercises()
 
 	// Auth Store
-	const preferredWeightUnit = useAuth(s => s.user?.preferredWeightUnit) ?? 'kg'
+	const currentUserId = useAuth(s => s.userId)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
+	const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
 
 	/* Derived State */
 	// Derived Map of exerciseId -> exerciseType

@@ -41,7 +41,7 @@ export default function WorkoutDetails() {
 
 	/* Store Related State */
 	const { data: exerciseList = [] } = useExercises()
-	const currentUserId = useAuth(state => state.user?.userId)
+	const currentUserId = useAuth(state => state.userId)
 
 	const deleteMutation = useDeleteWorkoutMutation()
 

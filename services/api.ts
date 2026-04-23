@@ -98,12 +98,10 @@ client.interceptors.response.use(
 			isRefreshing = true
 
 			try {
-				const userJson = await SecureStore.getItemAsync('user')
-				const user = userJson ? JSON.parse(userJson) : null
-				const userId = user?.userId
+				const refreshToken = await SecureStore.getItemAsync('refreshToken')
 
-				if (!userId) {
-					throw new Error('Missing userId for token refresh')
+				if (!refreshToken) {
+					throw new Error('No refresh token available')
 				}
 
 				const oldToken = inMemoryAccessToken
@@ -114,7 +112,7 @@ client.interceptors.response.use(
 						'Content-Type': 'application/json',
 						...(oldToken ? { Authorization: `Bearer ${oldToken}` } : {}),
 					},
-					body: JSON.stringify({ userId }),
+					body: JSON.stringify({ refreshToken }),
 				})
 
 				if (!refreshResponse.ok) {
@@ -123,7 +121,8 @@ client.interceptors.response.use(
 				}
 
 				const json = await refreshResponse.json()
-				const newAccessToken = json?.data?.accessToken ?? json?.accessToken ?? null
+				const newAccessToken = json?.data?.accessToken
+				const newRefreshToken = json?.data?.refreshToken
 
 				if (!newAccessToken) {
 					throw new Error('Refresh did not return accessToken')
@@ -131,6 +130,9 @@ client.interceptors.response.use(
 
 				// Persist + cache
 				await SecureStore.setItemAsync('accessToken', newAccessToken)
+				if (newRefreshToken) {
+					await SecureStore.setItemAsync('refreshToken', newRefreshToken)
+				}
 				setAccessToken(newAccessToken)
 
 				client.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`
@@ -150,6 +152,8 @@ client.interceptors.response.use(
 
 				try {
 					await SecureStore.deleteItemAsync('accessToken')
+					await SecureStore.deleteItemAsync('refreshToken')
+					await SecureStore.deleteItemAsync('userId')
 				} catch {}
 
 				// Authoritative logout

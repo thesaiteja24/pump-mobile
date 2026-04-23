@@ -13,6 +13,7 @@ import {
 	toggleLikeService,
 	unFollowUserService,
 } from '@/services/engagementService'
+import { useAuth } from '@/stores/authStore'
 import { Comment, CommentsPage, EngagementUser, Like, LikeType, RepliesPage, SearchedUser } from '@/types/engagement'
 import {
 	incrementReplyCount,
@@ -25,14 +26,7 @@ import {
 	toggleLikeInWorkouts,
 	updateCommentAcrossCaches,
 } from '@/utils/engagementCacheUtils'
-import {
-	InfiniteData,
-	QueryClient,
-	useInfiniteQuery,
-	useMutation,
-	useQuery,
-	useQueryClient,
-} from '@tanstack/react-query'
+import { QueryClient, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 /**
  * Helper function to update user data across all related queries
@@ -135,9 +129,16 @@ export function useFollowUserMutation() {
 		},
 
 		onSettled: () => {
+			const currentUserId = useAuth.getState().userId
 			qc.invalidateQueries({
 				queryKey: queryKeys.engagement.followRoot,
 			})
+
+			if (currentUserId) {
+				qc.invalidateQueries({
+					queryKey: queryKeys.user.byId(currentUserId),
+				})
+			}
 		},
 	})
 }
@@ -168,9 +169,15 @@ export function useUnfollowUserMutation() {
 		},
 
 		onSettled: () => {
+			const currentUserId = useAuth.getState().userId
 			qc.invalidateQueries({
 				queryKey: queryKeys.engagement.followRoot,
 			})
+			if (currentUserId) {
+				qc.invalidateQueries({
+					queryKey: queryKeys.user.byId(currentUserId),
+				})
+			}
 		},
 	})
 }

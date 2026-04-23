@@ -6,7 +6,7 @@ export interface SearchedUser {
 	isFollowing: boolean
 	isPro: boolean
 	proSubscriptionType: string | null
-	followLoading: boolean
+	followLoading: boolean // Frontend only
 }
 
 export interface EngagementUser {
@@ -25,7 +25,7 @@ export interface Comment {
 	content: string
 	likesCount: number
 	repliesCount: number
-	isLiked?: boolean
+	isLiked?: boolean // Frontend only
 
 	createdAt: string
 	updatedAt: string

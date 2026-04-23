@@ -27,7 +27,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 // `addMeasurement` optimistic writes merge correctly with the persisted list.
 // ─────────────────────────────────────────────────────────────────────────────
 export function useMeasurementsQuery(duration?: string) {
-	const userId = useAuth(s => s.user?.userId)
+	const userId = useAuth(s => s.userId)
 
 	return useQuery({
 		queryKey: queryKeys.analytics.measurements(userId ?? '', duration),
@@ -49,7 +49,7 @@ export function useMeasurementsQuery(duration?: string) {
 // READ — fitness profile
 // ─────────────────────────────────────────────────────────────────────────────
 export function useFitnessProfileQuery() {
-	const userId = useAuth(s => s.user?.userId)
+	const userId = useAuth(s => s.userId)
 
 	return useQuery({
 		queryKey: queryKeys.analytics.fitnessProfile(userId ?? ''),
@@ -69,7 +69,7 @@ export function useFitnessProfileQuery() {
 // READ — nutrition plan
 // ─────────────────────────────────────────────────────────────────────────────
 export function useNutritionPlanQuery() {
-	const userId = useAuth(s => s.user?.userId)
+	const userId = useAuth(s => s.userId)
 
 	return useQuery({
 		queryKey: queryKeys.analytics.nutritionPlan(userId ?? ''),
@@ -89,7 +89,7 @@ export function useNutritionPlanQuery() {
 // READ — user analytics (streak, workoutsThisWeek, weeklyVolume, etc.)
 // ─────────────────────────────────────────────────────────────────────────────
 export function useUserAnalyticsQuery() {
-	const userId = useAuth(s => s.user?.userId)
+	const userId = useAuth(s => s.userId)
 
 	return useQuery({
 		queryKey: queryKeys.analytics.userAnalytics(userId ?? ''),
@@ -108,7 +108,7 @@ export function useUserAnalyticsQuery() {
 }
 
 export function useTrainingAnalyticsQuery(duration: string = '3m') {
-	const userId = useAuth(s => s.user?.userId)
+	const userId = useAuth(s => s.userId)
 
 	return useQuery({
 		queryKey: queryKeys.analytics.trainingAnalytics(userId ?? '', duration),
@@ -128,7 +128,7 @@ export function useTrainingAnalyticsQuery(duration: string = '3m') {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function useUpdateFitnessProfile() {
-	const userId = useAuth(s => s.user?.userId)
+	const userId = useAuth(s => s.userId)
 
 	return useMutation({
 		mutationFn: async (data: any) => {
@@ -155,7 +155,7 @@ export function useUpdateFitnessProfile() {
 }
 
 export function useUpdateNutritionPlan() {
-	const userId = useAuth(s => s.user?.userId)
+	const userId = useAuth(s => s.userId)
 
 	return useMutation({
 		mutationFn: async (data: any) => {
@@ -182,8 +182,7 @@ export function useUpdateNutritionPlan() {
 }
 
 export function useAddMeasurement() {
-	const userId = useAuth(s => s.user?.userId)
-	const setUser = useAuth(s => s.setUser)
+	const userId = useAuth(s => s.userId)
 
 	return useMutation({
 		mutationFn: async (data: MeasurementType & { progressPics?: any[] }) => {
@@ -280,9 +279,12 @@ export function useAddMeasurement() {
 				}
 			)
 
-			// Optimistically update authStore user weight
+			// Optimistically update User query weight
 			if (measurementData.weight != null) {
-				setUser({ weight: measurementData.weight })
+				queryClient.setQueryData(queryKeys.user.byId(userId!), (old: any) => {
+					if (!old) return old
+					return { ...old, weight: measurementData.weight }
+				})
 			}
 
 			// Invalidate habit logs if internal metrics are updated

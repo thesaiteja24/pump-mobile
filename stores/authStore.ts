@@ -1,40 +1,30 @@
-import { queryClient } from '@/lib/queryClient'
 import { registerUnauthorizedHandler } from '@/lib/authSession'
+import { queryClient } from '@/lib/queryClient'
 import { setAccessToken } from '@/services/api'
-import { sendOtpService, verifyOtpService } from '@/services/authService'
-import { type User } from '@/types/auth'
 import * as SecureStore from 'expo-secure-store'
 import { create } from 'zustand'
 
 type AuthState = {
-	user: User | null
+	userId: string | null
 	accessToken: string | null
 	isAuthenticated: boolean
 
 	// Boot invariant
 	hasRestored: boolean
 
-	// UI state
-	isLoading: boolean
-	isGoogleLoading: boolean
-
 	hasSeenOnboarding: boolean
 	completeOnboarding: () => Promise<void>
 
-	sendOtp: (payload: any) => Promise<any>
-	verifyOtp: (payload: any) => Promise<any>
-	googleLogin: (idToken: string, privacyAccepted?: boolean, privacyPolicyVersion?: string | null) => Promise<any>
+	setSession: (session: { userId: string; accessToken: string; refreshToken: string }) => Promise<void>
+
 	restoreFromStorage: () => Promise<void>
-	setUser: (user: Partial<User>) => void
 	logout: () => Promise<void>
 }
 
 export const useAuth = create<AuthState>((set, get) => ({
-	user: null,
+	userId: null,
 	accessToken: null,
 	isAuthenticated: false,
-	isLoading: false,
-	isGoogleLoading: false,
 	hasRestored: false,
 	hasSeenOnboarding: false,
 
@@ -43,69 +33,16 @@ export const useAuth = create<AuthState>((set, get) => ({
 		await SecureStore.setItemAsync('hasSeenOnboarding', 'true')
 	},
 
-	googleLogin: async (idToken, privacyAccepted, privacyPolicyVersion) => {
-		set({ isGoogleLoading: true })
-		try {
-			const { googleLoginService } = require('@/services/authService') // Lazy import to avoid cycle if any
-			const res = await googleLoginService(idToken, privacyAccepted, privacyPolicyVersion)
-
-			if (res.success) {
-				const { accessToken, user } = res.data
-				if (accessToken) {
-					await SecureStore.setItemAsync('accessToken', accessToken)
-					setAccessToken(accessToken)
-				}
-				if (user) {
-					await SecureStore.setItemAsync('user', JSON.stringify(user))
-				}
-				set({
-					user,
-					accessToken,
-					isAuthenticated: true,
-				})
-			}
-			return res
-		} finally {
-			set({ isLoading: false, isGoogleLoading: false })
-		}
-	},
-
-	sendOtp: async payload => {
-		set({ isLoading: true })
-		try {
-			return await sendOtpService(payload)
-		} finally {
-			set({ isLoading: false })
-		}
-	},
-
-	verifyOtp: async payload => {
-		set({ isLoading: true })
-		try {
-			const res = await verifyOtpService(payload)
-
-			if (res.success) {
-				const { accessToken, user } = res.data
-
-				if (accessToken) {
-					await SecureStore.setItemAsync('accessToken', accessToken)
-					setAccessToken(accessToken)
-				}
-				if (user) {
-					await SecureStore.setItemAsync('user', JSON.stringify(user))
-				}
-
-				set({
-					user,
-					accessToken,
-					isAuthenticated: true,
-				})
-			}
-
-			return res
-		} finally {
-			set({ isLoading: false })
-		}
+	setSession: async ({ userId, accessToken, refreshToken }) => {
+		await SecureStore.setItemAsync('accessToken', accessToken)
+		await SecureStore.setItemAsync('refreshToken', refreshToken)
+		await SecureStore.setItemAsync('userId', userId)
+		setAccessToken(accessToken)
+		set({
+			userId,
+			accessToken,
+			isAuthenticated: true,
+		})
 	},
 
 	restoreFromStorage: async () => {
@@ -113,23 +50,23 @@ export const useAuth = create<AuthState>((set, get) => ({
 
 		try {
 			const token = await SecureStore.getItemAsync('accessToken')
-			const userJson = await SecureStore.getItemAsync('user')
+			const userId = await SecureStore.getItemAsync('userId')
 			const hasSeenOnboarding = await SecureStore.getItemAsync('hasSeenOnboarding')
 
 			set({ hasSeenOnboarding: hasSeenOnboarding === 'true' })
 
-			if (token) {
+			if (token && userId) {
 				setAccessToken(token)
 				set({
 					accessToken: token,
-					user: userJson ? JSON.parse(userJson) : null,
+					userId: userId,
 					isAuthenticated: true,
 				})
 			}
 		} catch {
 			set({
 				accessToken: null,
-				user: null,
+				userId: null,
 				isAuthenticated: false,
 			})
 		} finally {
@@ -137,35 +74,22 @@ export const useAuth = create<AuthState>((set, get) => ({
 		}
 	},
 
-	setUser: partial => {
-		const merged = { ...get().user, ...partial }
-		set({ user: merged })
-		SecureStore.setItemAsync('user', JSON.stringify(merged)).catch(() => {})
-	},
-
 	logout: async () => {
-		set({ isLoading: true })
-
 		try {
 			// Clear TanStack Query cache
 			queryClient.clear()
 
 			await SecureStore.deleteItemAsync('accessToken')
-			await SecureStore.deleteItemAsync('user')
+			await SecureStore.deleteItemAsync('refreshToken')
+			await SecureStore.deleteItemAsync('userId')
 		} finally {
 			set({
-				user: null,
+				userId: null,
 				accessToken: null,
 				isAuthenticated: false,
-				isLoading: false,
 			})
 
 			// Reset all related stores
-			// useEquipment.getState().resetState();
-			// useMuscleGroup.getState().resetState();
-			// useExercise.getState().resetState();
-
-			// Use require to avoid circular dependencies
 			const { useWorkout } = require('./workoutStore')
 			const { useTemplate } = require('./templateStore')
 

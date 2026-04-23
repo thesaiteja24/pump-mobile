@@ -1,6 +1,8 @@
 import { useFitnessProfileQuery, useMeasurementsQuery } from '@/hooks/queries/useAnalytics'
+import { useUserQuery } from '@/hooks/queries/useUser'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
+import { SelfUser } from '@/types/user'
 import { convertWeight } from '@/utils/converter'
 import { Ionicons } from '@expo/vector-icons'
 import { format } from 'date-fns'
@@ -14,7 +16,9 @@ type TimeRange = '1W' | '1M' | '3M' | '6M' | '1Y' | 'All'
 
 const WeightChart = () => {
 	const colors = useThemeColor()
-	const user = useAuth(s => s.user)
+	const currentUserId = useAuth(s => s.userId)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
 
 	const [selectedRange, setSelectedRange] = useState<TimeRange>('1W')
 	const { data: measurementsData } = useMeasurementsQuery(selectedRange.toLowerCase())

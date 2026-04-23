@@ -98,7 +98,7 @@ export function useWorkoutByIdQuery(id: string, options?: { enabled?: boolean })
 // MUTATION — save (create) workout
 // ─────────────────────────────────────────────────────
 export function useSaveWorkoutMutation() {
-	const userId = useAuth.getState().user?.userId
+	const userId = useAuth(s => s.userId)
 	const qc = useQueryClient()
 
 	return useMutation({
@@ -111,10 +111,11 @@ export function useSaveWorkoutMutation() {
 		onSuccess: () => {
 			// Invalidate user history so it refetches
 			qc.invalidateQueries({ queryKey: queryKeys.workouts.all })
-			// Invalidate habit logs (frequency habits depend on workouts)
-			qc.invalidateQueries({ queryKey: ['habits', 'logs', userId] })
-			// Invalidate program progress
+
 			if (userId) {
+				// Invalidate habit logs (frequency habits depend on workouts)
+				qc.invalidateQueries({ queryKey: queryKeys.habits.logs(userId) })
+				// Invalidate program progress
 				qc.invalidateQueries({ queryKey: queryKeys.programs.user.active(userId) })
 				qc.invalidateQueries({ queryKey: queryKeys.programs.user.all(userId) })
 				qc.invalidateQueries({ queryKey: ['userPrograms', 'detail', userId] })
@@ -130,7 +131,7 @@ export function useSaveWorkoutMutation() {
 // MUTATION — update (edit) existing workout
 // ─────────────────────────────────────────────────────
 export function useUpdateWorkoutMutation() {
-	const userId = useAuth.getState().user?.userId
+	const userId = useAuth(s => s.userId)
 	const qc = useQueryClient()
 
 	return useMutation({
@@ -141,8 +142,8 @@ export function useUpdateWorkoutMutation() {
 		onSuccess: (_res, { id }) => {
 			qc.invalidateQueries({ queryKey: queryKeys.workouts.byId(id) })
 			qc.invalidateQueries({ queryKey: queryKeys.workouts.all })
-			qc.invalidateQueries({ queryKey: ['habits', 'logs', userId] })
 			if (userId) {
+				qc.invalidateQueries({ queryKey: queryKeys.habits.logs(userId) })
 				qc.invalidateQueries({ queryKey: queryKeys.analytics.userAnalytics(userId) })
 				qc.invalidateQueries({ queryKey: ['trainingAnalytics', userId] })
 			}
@@ -154,7 +155,7 @@ export function useUpdateWorkoutMutation() {
 // MUTATION — delete workout (with optimistic removal)
 // ─────────────────────────────────────────────────────
 export function useDeleteWorkoutMutation() {
-	const userId = useAuth.getState().user?.userId
+	const userId = useAuth(s => s.userId)
 	const qc = useQueryClient()
 
 	return useMutation({

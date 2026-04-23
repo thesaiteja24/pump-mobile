@@ -8,8 +8,9 @@ import {
 	useUpdateFitnessProfile,
 	useUpdateNutritionPlan,
 } from '@/hooks/queries/useAnalytics'
+import { useUserQuery } from '@/hooks/queries/useUser'
 import { useAuth } from '@/stores/authStore'
-import { FitnessGoal } from '@/types/auth'
+import { FitnessGoal, SelfUser } from '@/types/user'
 import { FitnessLevel } from '@/types/program'
 
 import { calculateBMR, calculateBodyFat, calculateDailyTargets, calculateTDEE } from '@/utils/analytics'
@@ -27,7 +28,10 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	const isDarkMode = useColorScheme() === 'dark'
 	const insets = useSafeAreaInsets()
 
-	const user = useAuth(s => s.user)
+	const currentUserId = useAuth(s => s.userId)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
+
 	const { data: measurements } = useMeasurementsQuery()
 	const { data: fitnessProfile } = useFitnessProfileQuery()
 	const latestMeasurements = measurements?.latestValues
@@ -117,7 +121,7 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 
 	// Final Goals Logic
 	const computedTargets = useMemo(() => {
-		if (!currentWeight || !height || !gender || !user.dateOfBirth || !goalType || !finalRate) return null
+		if (!currentWeight || !height || !gender || !user?.dateOfBirth || !goalType || !finalRate) return null
 
 		const age = new Date().getFullYear() - new Date(user.dateOfBirth).getFullYear()
 		const bmr = calculateBMR(Number(currentWeight), Number(height), age, gender as any)
@@ -144,7 +148,7 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	const handleSave = async () => {
 		Keyboard.dismiss()
 
-		if (!user?.userId) return
+		if (!user?.id) return
 
 		setIsLoading(true)
 

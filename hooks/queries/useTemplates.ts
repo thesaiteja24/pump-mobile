@@ -10,6 +10,7 @@ import {
 } from '@/services/templateService'
 import { useAuth } from '@/stores/authStore'
 import { DraftTemplate, WorkoutTemplate } from '@/types/template'
+import { SelfUser } from '@/types/user'
 import { serializeTemplateForApi } from '@/utils/serializeForApi'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -17,7 +18,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 // READ — templates list
 // ─────────────────────────────────────────────────────
 export function useTemplatesQuery() {
-	const userId = useAuth(s => s.user?.userId)
+	const userId = useAuth(s => s.userId)
 
 	return useQuery({
 		queryKey: queryKeys.templates.all(userId ?? ''),
@@ -69,17 +70,17 @@ export function useTemplateByShareIdQuery(shareId: string | null | undefined) {
 // MUTATION — create template
 // ─────────────────────────────────────────────────────
 export function useCreateTemplateMutation() {
-	const userId = useAuth.getState().user?.userId
+	const userId = useAuth(s => s.userId)
 	const qc = useQueryClient()
 
 	return useMutation({
 		mutationFn: (draft: DraftTemplate) => {
-			const uid = useAuth.getState().user?.userId || ''
+			const uid = userId || ''
+			const user = qc.getQueryData<SelfUser>(queryKeys.user.byId(uid))
+
 			const payload = serializeTemplateForApi({
 				...draft,
-				authorName:
-					draft.authorName ||
-					`${useAuth.getState().user?.firstName ?? ''} ${useAuth.getState().user?.lastName ?? ''}`.trim(),
+				authorName: draft.authorName || `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim(),
 				userId: uid,
 			})
 			return createTemplateService(payload)
@@ -96,7 +97,7 @@ export function useCreateTemplateMutation() {
 // MUTATION — update template
 // ─────────────────────────────────────────────────────
 export function useUpdateTemplateMutation() {
-	const userId = useAuth.getState().user?.userId
+	const userId = useAuth(s => s.userId)
 	const qc = useQueryClient()
 
 	return useMutation({
@@ -117,7 +118,7 @@ export function useUpdateTemplateMutation() {
 // MUTATION — delete template
 // ─────────────────────────────────────────────────────
 export function useDeleteTemplateMutation() {
-	const userId = useAuth.getState().user?.userId
+	const userId = useAuth(s => s.userId)
 	const qc = useQueryClient()
 
 	return useMutation({
@@ -150,12 +151,12 @@ export function useDeleteTemplateMutation() {
 // MUTATION — save shared template to user's library
 // ─────────────────────────────────────────────────────
 export function useSaveSharedTemplateMutation() {
-	const userId = useAuth.getState().user?.userId
+	const userId = useAuth(s => s.userId)
 	const qc = useQueryClient()
 
 	return useMutation({
 		mutationFn: ({ template, overwriteId }: { template: WorkoutTemplate; overwriteId?: string }) => {
-			const uid = useAuth.getState().user?.userId || ''
+			const uid = userId || ''
 			const payload = serializeTemplateForApi({
 				...template,
 				clientId: overwriteId ?? '',

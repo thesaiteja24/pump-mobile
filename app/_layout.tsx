@@ -55,9 +55,7 @@ export default function RootLayout() {
 	const initializeSubscription = useSubscriptionStore(s => s.initialize)
 	const loginSubscription = useSubscriptionStore(s => s.login)
 	const logoutSubscription = useSubscriptionStore(s => s.logout)
-	const { user } = useAuth()
-
-	// ───── OneSignal SDK ─────
+	const userId = useAuth(s => s.userId)
 	const { login: loginOneSignal, logout: logoutOneSignal } = useOneSignal()
 
 	// ───── Initial Data Fetch ─────
@@ -84,23 +82,15 @@ export default function RootLayout() {
 	// ─────────────────────────────────────────────
 	useEffect(() => {
 		if (hasRestored) {
-			if (isAuthenticated && user?.userId) {
-				loginSubscription(user.userId)
-				loginOneSignal(user.userId)
+			if (isAuthenticated && userId) {
+				loginSubscription(userId)
+				loginOneSignal(userId)
 			} else if (!isAuthenticated) {
 				logoutSubscription()
 				logoutOneSignal()
 			}
 		}
-	}, [
-		hasRestored,
-		isAuthenticated,
-		user?.userId,
-		loginSubscription,
-		logoutSubscription,
-		loginOneSignal,
-		logoutOneSignal,
-	])
+	}, [hasRestored, isAuthenticated, userId, loginSubscription, logoutSubscription, loginOneSignal, logoutOneSignal])
 
 	// ─────────────────────────────────────────────
 	// 2️⃣ Silent OTA check (NO UI, NO splash blocking)

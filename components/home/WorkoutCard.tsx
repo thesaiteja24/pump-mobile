@@ -1,6 +1,8 @@
 import { useCommentsQuery, useLikesQuery, useToggleLikeMutation } from '@/hooks/queries/useEngagement'
+import { useUserQuery } from '@/hooks/queries/useUser'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
+import { SelfUser } from '@/types/user'
 import { ExerciseType } from '@/types/exercises'
 import { Comment as AppComment } from '@/types/engagement'
 import { WorkoutHistoryItem } from '@/types/workout'
@@ -39,14 +41,16 @@ function WorkoutCard({
 
 	const commentsModalRef = useRef<CommentsModalHandle>(null)
 
-	const { user } = useAuth()
+	const currentUserId = useAuth(state => state.userId)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
 
 	// TanStack Query hooks for engagement
 	const { data: currentLikes = [] } = useLikesQuery(workout.id, 'workout')
 	const { data: commentsPages } = useCommentsQuery(workout.id)
 	const toggleLikeMutation = useToggleLikeMutation()
 
-	const isLikedByMe = user && currentLikes.some(like => like.userId === user.userId)
+	const isLikedByMe = user && currentLikes.some(like => like.userId === user.id)
 
 	const recentComments = useMemo(() => {
 		const firstPageComments = commentsPages?.pages?.[0]?.comments ?? []
@@ -55,14 +59,14 @@ function WorkoutCard({
 	}, [commentsPages])
 
 	const handleToggleLike = useCallback(() => {
-		if (!user || !user.userId) return
+		if (!user || !user.id) return
 		toggleLikeMutation.mutate({
 			id: workout.id,
 			type: 'workout',
 			liked: !isLikedByMe,
 			user: user
 				? {
-						id: user.userId,
+						id: user.id,
 						firstName: user.firstName || '',
 						lastName: user.lastName || '',
 						profilePicUrl: user.profilePicUrl || null,

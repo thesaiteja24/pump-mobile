@@ -11,7 +11,9 @@ import {
 	useTemplatesQuery,
 	useUpdateTemplateMutation,
 } from '@/hooks/queries/useTemplates'
+import { useUserQuery } from '@/hooks/queries/useUser'
 import { useAuth } from '@/stores/authStore'
+import { SelfUser } from '@/types/user'
 import { useProgram } from '@/stores/programStore'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 import { useTemplate } from '@/stores/templateStore'
@@ -31,7 +33,10 @@ export default function TemplateEditor() {
 	const safeAreaInsets = useSafeAreaInsets()
 	const navigation = useNavigation()
 	const params = useLocalSearchParams()
-	const preferredWeightUnit = useAuth(s => s.user?.preferredWeightUnit) ?? 'kg'
+	const currentUserId = useAuth(s => s.userId)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
+	const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
 	const { data: exerciseList = [] } = useExercises()
 
 	const isEditing = params.mode === 'edit'

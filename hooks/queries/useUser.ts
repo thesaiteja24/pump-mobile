@@ -1,119 +1,110 @@
+import { queryKeys } from '@/lib/queryKeys'
 import {
 	deleteProfilePicService,
 	getUserDataService,
 	updateProfilePicService,
 	updateUserDataService,
 } from '@/services/userService'
-import { useAuth } from '@/stores/authStore'
+import { UpdateUserBody, User } from '@/types/user'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-// ─────────────────────────────────────────────────────
-// READ — user profile
-// ─────────────────────────────────────────────────────
-export function useUserQuery(userId: string | undefined) {
+/**
+ * Hook to fetch any user's data (Self or Public)
+ * @param userId
+ */
+export function useUserQuery(userId: string) {
 	return useQuery({
-		queryKey: ['user', 'profile', userId],
+		queryKey: queryKeys.user.byId(userId),
 		queryFn: async () => {
 			const res = await getUserDataService(userId!)
-			return res.data
+			return res.data as User
 		},
 		enabled: !!userId,
 		staleTime: 5 * 60 * 1000,
 	})
 }
 
-// ─────────────────────────────────────────────────────
-// READ — followers / following
-// ─────────────────────────────────────────────────────
-
-// ─────────────────────────────────────────────────────
-// MUTATION — update profile picture
-// ─────────────────────────────────────────────────────
-export function useUpdateProfilePicMutation() {
-	const userId = useAuth.getState().user?.userId
+/**
+ * Hook to update user details with optimistic updates and rollbacks
+ */
+export function useUpdateUserDataMutation() {
 	const qc = useQueryClient()
+
+	return useMutation({
+		mutationFn: ({ userId, data }: { userId: string; data: UpdateUserBody }) => updateUserDataService(userId, data),
+
+		onMutate: async ({ userId, data }) => {
+			// Cancel outgoing refetches
+			await qc.cancelQueries({ queryKey: queryKeys.user.byId(userId) })
+
+			// Snapshot the previous value
+			const previousUser = qc.getQueryData(queryKeys.user.byId(userId))
+
+			// Optimistically update to the new value
+			if (previousUser) {
+				qc.setQueryData(queryKeys.user.byId(userId), {
+					...(previousUser as User),
+					...data,
+					updatedAt: new Date().toISOString(),
+				})
+			}
+
+			return { previousUser }
+		},
+
+		onError: (_err, { userId }, context) => {
+			// Rollback to the previous value if mutation fails
+			if (context?.previousUser) {
+				qc.setQueryData(queryKeys.user.byId(userId), context.previousUser)
+			}
+		},
+
+		onSuccess: (res, { userId }) => {
+			// Update cache with real server data
+			if (res.success) {
+				qc.setQueryData(queryKeys.user.byId(userId), res.data)
+			}
+		},
+
+		onSettled: (_res, _err, { userId }) => {
+			// Invalidate to ensure sync
+			qc.invalidateQueries({ queryKey: queryKeys.user.byId(userId) })
+		},
+	})
+}
+
+/**
+ * Hook to update profile picture
+ */
+export function useUpdateProfilePicMutation() {
+	const qc = useQueryClient()
+
 	return useMutation({
 		mutationFn: ({ uid, data }: { uid: string; data: FormData }) => updateProfilePicService(uid, data),
-		onSuccess: res => {
+
+		onSuccess: (res, { uid }) => {
 			if (res.success) {
-				useAuth.getState().setUser({
-					...useAuth.getState().user,
-					profilePicUrl: res.data.profilePicUrl,
-					updatedAt: res.data.updatedAt,
-				})
-				qc.invalidateQueries({ queryKey: ['user', 'profile', userId] })
+				qc.setQueryData(queryKeys.user.byId(uid), res.data)
+				qc.invalidateQueries({ queryKey: queryKeys.user.byId(uid) })
 			}
 		},
 	})
 }
 
-// ─────────────────────────────────────────────────────
-// MUTATION — delete profile picture
-// ─────────────────────────────────────────────────────
+/**
+ * Hook to delete profile picture
+ */
 export function useDeleteProfilePicMutation() {
-	const userId = useAuth.getState().user?.userId
 	const qc = useQueryClient()
+
 	return useMutation({
 		mutationFn: (uid: string) => deleteProfilePicService(uid),
-		onSuccess: res => {
+
+		onSuccess: (res, uid) => {
 			if (res.success) {
-				useAuth.getState().setUser({
-					...useAuth.getState().user,
-					profilePicUrl: null,
-					updatedAt: res.data?.updatedAt,
-				})
-				qc.invalidateQueries({ queryKey: ['user', 'profile', userId] })
+				qc.setQueryData(queryKeys.user.byId(uid), res.data)
+				qc.invalidateQueries({ queryKey: queryKeys.user.byId(uid) })
 			}
-		},
-	})
-}
-
-// ─────────────────────────────────────────────────────
-// MUTATION — update user data
-// ─────────────────────────────────────────────────────
-export function useUpdateUserMutation() {
-	const qc = useQueryClient()
-	return useMutation({
-		mutationFn: ({ userId, data }: { userId: string; data: Record<string, any> }) =>
-			updateUserDataService(userId, data),
-		onMutate: ({ data }) => {
-			// Optimistic update so the UI reflects change immediately
-			useAuth.getState().setUser({
-				...useAuth.getState().user,
-				...data,
-				updatedAt: new Date().toISOString(),
-			})
-		},
-		onSuccess: (_res, { userId }) => {
-			qc.invalidateQueries({ queryKey: ['user', 'profile', userId] })
-		},
-		onError: (_err, { data }) => {
-			// rollback on failure
-			const currentUser = useAuth.getState().user
-			if (currentUser) {
-				const rollback: Record<string, any> = {}
-				Object.keys(data).forEach(k => {
-					rollback[k] = (currentUser as any)[k]
-				})
-				useAuth.getState().setUser(rollback)
-			}
-		},
-	})
-}
-
-// ─────────────────────────────────────────────────────
-// MUTATION — update preferences
-// ─────────────────────────────────────────────────────
-export function useUpdatePreferencesMutation() {
-	const qc = useQueryClient()
-	return useMutation({
-		mutationFn: ({ userId, data }: { userId: string; data: Record<string, any> }) =>
-			updateUserDataService(userId, data),
-		onMutate: ({ data }) => {
-			useAuth.getState().setUser({ ...useAuth.getState().user, ...data })
-		},
-		onSuccess: (_res, { userId }) => {
-			qc.invalidateQueries({ queryKey: ['user', 'profile', userId] })
 		},
 	})
 }

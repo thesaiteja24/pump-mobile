@@ -1,26 +1,17 @@
 import GoogleIcon from '@/assets/components/icons/Google'
-import PhoneInputField from '@/components/auth/PhoneInputField'
 import { Button } from '@/components/ui/Button'
 import PrivacyPolicyModal, { PrivacyPolicyModalHandle } from '@/components/ui/PrivacyPolicyModal'
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { useGoogleLoginMutation } from '@/hooks/queries/useAuthHooks'
 import { updateFitnessProfileService, updateNutritionPlanService } from '@/services/analyticsService'
 import { updateUserDataService } from '@/services/userService'
 import { useAuth } from '@/stores/authStore'
 import { useOnboarding } from '@/stores/onboardingStore'
-import { User } from '@/types/auth'
+import { SelfUser } from '@/types/user'
 import { calculateBMR, calculateDailyTargets, calculateTDEE } from '@/utils/analytics'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { router } from 'expo-router'
 import React, { useEffect, useRef, useState } from 'react'
-import {
-	ActivityIndicator,
-	Keyboard,
-	KeyboardAvoidingView,
-	Pressable,
-	Text,
-	TouchableOpacity,
-	View,
-} from 'react-native'
+import { KeyboardAvoidingView, Pressable, Text, View } from 'react-native'
 import Animated, {
 	Easing,
 	useAnimatedStyle,
@@ -33,22 +24,12 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
 export default function Login() {
-	const colors = useThemeColor()
-	const [phone, setPhone] = useState('')
-	const [country, setCountry] = useState({
-		name: 'India',
-		dial_code: '+91',
-		code: 'IN',
-	})
 	const [privacyAccepted, setPrivacyAccepted] = useState(false)
 	const [privacyPolicyVersion, setPrivacyPolicyVersion] = useState<string | null>(null)
 	const privacyModalRef = useRef<PrivacyPolicyModalHandle>(null)
 	const isGooglePending = useRef(false)
 
-	const sendOtp = useAuth((state: any) => state.sendOtp)
-	const isLoading = useAuth((state: any) => state.isLoading)
-	const googleLogin = useAuth((state: any) => state.googleLogin)
-	const isGoogleLoading = useAuth((state: any) => state.isGoogleLoading)
+	const { mutate: googleLogin, isPending: isGoogleLoading } = useGoogleLoginMutation()
 
 	const opacity = useSharedValue(0)
 	const translateY = useSharedValue(20)
@@ -73,67 +54,31 @@ export default function Login() {
 			const idToken = userInfo.data?.idToken
 
 			if (idToken) {
-				googleLogin(idToken, true, version).then((res: any) => {
-					if (res.success) {
-						handlePostLogin(res.data?.user)
-					} else {
-						Toast.show({
-							type: 'error',
-							text1: res.error?.message || 'Google Login Failed',
-						})
+				googleLogin(
+					{ idToken, privacyAccepted: true, privacyPolicyVersion: version },
+					{
+						onSuccess: data => {
+							handlePostLogin(data.user)
+						},
+						onError: (err: any) => {
+							Toast.show({
+								type: 'error',
+								text1: err?.message || 'Google Login Failed',
+							})
+						},
 					}
-				})
+				)
 			}
 		} catch (error: any) {
 			console.error(error)
 		}
 	}
 
-	const PHONE_ENABLED = false
-
 	// Onboarding Store
 	const { hasData, getPayload, reset: resetOnboarding } = useOnboarding.getState()
 	const completeOnboarding = useAuth(s => s.completeOnboarding)
 
-	const onContinue = async () => {
-		Keyboard.dismiss()
-
-		try {
-			const payload = { countryCode: country.dial_code, phone, resend: false }
-			const response = await sendOtp(payload)
-
-			if (response.success) {
-				// Navigate to OTP verification screen
-				router.push({
-					pathname: '/(auth)/verify-otp',
-					params: {
-						data: JSON.stringify({
-							countryCode: payload.countryCode,
-							phone: payload.phone,
-							privacyAccepted: true, // Phone login implies acceptance if checkbox is checked
-							privacyPolicyVersion: privacyPolicyVersion,
-						}),
-					},
-				})
-				Toast.show({
-					type: 'success',
-					text1: response.message || 'OTP sent successfully',
-				})
-			} else {
-				Toast.show({
-					type: 'error',
-					text1: response.error?.message || 'Failed to send OTP',
-				})
-			}
-		} catch (error: any) {
-			Toast.show({
-				type: 'error',
-				text1: error?.message || 'Failed to send OTP',
-			})
-		}
-	}
-
-	const handlePostLogin = async (user: User) => {
+	const handlePostLogin = async (user: SelfUser) => {
 		// 1. Sync Onboarding Data if exists
 		if (hasData()) {
 			const onBoardingPayload = getPayload()
@@ -148,11 +93,9 @@ export default function Login() {
 				preferredWeightUnit: onBoardingPayload.weightUnit as any,
 				preferredLengthUnit: onBoardingPayload.heightUnit as any,
 			}
-			const { setUser } = useAuth.getState()
-			setUser({ ...userData, ...preferences })
 
-			await updateUserDataService(user.userId!, userData)
-			await updateUserDataService(user.userId!, preferences)
+			await updateUserDataService(user.id, userData)
+			await updateUserDataService(user.id, preferences)
 
 			if (onBoardingPayload.fitnessProfile) {
 				const fp = onBoardingPayload.fitnessProfile
@@ -189,8 +132,8 @@ export default function Login() {
 				}
 
 				await Promise.all([
-					updateFitnessProfileService(user.userId!, fitnessPayload),
-					updateNutritionPlanService(user.userId!, nutritionPayload),
+					updateFitnessProfileService(user.id, fitnessPayload),
+					updateNutritionPlanService(user.id, nutritionPayload),
 				])
 			}
 
@@ -230,28 +173,7 @@ export default function Login() {
 
 	return (
 		<SafeAreaView className="flex-1 bg-white dark:bg-black">
-			<View className="flex-[2] justify-center px-6">
-				{/* <View className="flex flex-row items-center gap-2">
-          <Text className="mb-2 text-3xl font-extrabold text-black dark:text-white">
-            Welcome to
-          </Text>
-          <Text
-            className="text-3xl text-black dark:text-white"
-            style={{
-              fontFamily: "Monoton",
-              includeFontPadding: false,
-            }}
-          >
-            PUMP
-          </Text>
-        </View> */}
-
-				{PHONE_ENABLED && (
-					<Text className="text-base text-gray-500 dark:text-gray-400">
-						Lock in today’s pump. Earn a bigger one tomorrow.
-					</Text>
-				)}
-			</View>
+			<View className="flex-[2] justify-center px-6" />
 
 			<Animated.View style={[animatedContainerStyle]} className="justify-center px-6">
 				<Text className="text-5xl text-gray-500 dark:text-gray-400">
@@ -263,44 +185,7 @@ export default function Login() {
 				</Text>
 			</Animated.View>
 
-			{PHONE_ENABLED && (
-				<View className="flex-[2] justify-center px-6">
-					<Text className="mb-4 text-sm text-gray-400 dark:text-gray-500">
-						Enter your mobile number to continue.
-					</Text>
-
-					<PhoneInputField
-						value={phone}
-						onChangeText={setPhone}
-						initialCountry={country.code}
-						onCountryChange={(c: any) => setCountry(c)}
-					/>
-				</View>
-			)}
-
 			<KeyboardAvoidingView behavior="position" className="flex-[4] justify-center gap-4 px-6">
-				{PHONE_ENABLED && (
-					<TouchableOpacity
-						className={`w-full items-center rounded-full py-2 ${
-							!privacyAccepted ? 'bg-gray-400' : 'bg-primary'
-						}`}
-						onPress={onContinue}
-						disabled={!privacyAccepted}
-					>
-						{isLoading ? (
-							<ActivityIndicator color={colors.white} />
-						) : (
-							<Text className="text-lg font-semibold text-white">Continue</Text>
-						)}
-					</TouchableOpacity>
-				)}
-
-				{PHONE_ENABLED && (
-					<View className="mt-4 flex-row justify-center">
-						<Text className="text-gray-500 dark:text-gray-400">Or</Text>
-					</View>
-				)}
-
 				<View className="mb-4 flex-row items-center justify-center gap-4 px-6">
 					<View className="w-full border-t-[0.25px] border-gray-500 dark:border-gray-400"></View>
 					<Text className="text-sm text-gray-500 dark:text-gray-400">

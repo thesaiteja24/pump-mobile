@@ -18,7 +18,7 @@ import client from './api'
 export const createProgramService = async (
 	data: ProgramCreatePayload
 ): Promise<ApiResponse<ProgramMutationResponse>> => {
-	const userId = useAuth.getState().user?.userId
+	const userId = useAuth.getState().userId
 	if (!userId) return { success: false, error: 'User not authenticated' } as any
 
 	try {
@@ -34,7 +34,7 @@ export const getAllProgramsService = async (
 	page: number = 1,
 	limit: number = 20
 ): Promise<ApiResponse<ProgramListResponse>> => {
-	const userId = useAuth.getState().user?.userId
+	const userId = useAuth.getState().userId
 	if (!userId) {
 		throw new ApiError('User not authenticated', 401)
 	}
@@ -54,7 +54,7 @@ export const getAllProgramsService = async (
 }
 
 export const getProgramByIdService = async (programId: string): Promise<ApiResponse<ProgramDetailResponse>> => {
-	const userId = useAuth.getState().user?.userId
+	const userId = useAuth.getState().userId
 	if (!userId) return { success: false, error: 'User not authenticated' } as any
 
 	try {
@@ -70,7 +70,7 @@ export const updateProgramService = async (
 	programId: string,
 	data: ProgramUpdatePayload
 ): Promise<ApiResponse<ProgramMutationResponse>> => {
-	const userId = useAuth.getState().user?.userId
+	const userId = useAuth.getState().userId
 	if (!userId) return { success: false, error: 'User not authenticated' } as any
 
 	try {
@@ -83,7 +83,7 @@ export const updateProgramService = async (
 }
 
 export const deleteProgramService = async (programId: string): Promise<ApiResponse<void>> => {
-	const userId = useAuth.getState().user?.userId
+	const userId = useAuth.getState().userId
 	if (!userId) return { success: false, error: 'User not authenticated' } as any
 
 	try {
@@ -99,7 +99,7 @@ export const getUserProgramService = async (
 	userProgramId: string,
 	weekIndex?: number
 ): Promise<ApiResponse<UserProgramDetailResponse>> => {
-	const userId = useAuth.getState().user?.userId
+	const userId = useAuth.getState().userId
 	if (!userId) {
 		throw new ApiError('User not authenticated', 401)
 	}
@@ -116,7 +116,7 @@ export const getUserProgramService = async (
 }
 
 export const getActiveUserProgramService = async (): Promise<ApiResponse<ActiveUserProgramResponse>> => {
-	const userId = useAuth.getState().user?.userId
+	const userId = useAuth.getState().userId
 	if (!userId) {
 		throw new ApiError('User not authenticated', 401)
 	}
@@ -134,7 +134,7 @@ export const startProgramService = async (
 	programId: string,
 	payload: UserProgramStartPayload
 ): Promise<ApiResponse<UserProgramStartResponse>> => {
-	const userId = useAuth.getState().user?.userId
+	const userId = useAuth.getState().userId
 	if (!userId) {
 		throw new ApiError('User not authenticated', 401)
 	}
@@ -149,7 +149,7 @@ export const startProgramService = async (
 }
 
 export const listUserProgramsService = async (): Promise<ApiResponse<UserProgramsListResponse>> => {
-	const userId = useAuth.getState().user?.userId
+	const userId = useAuth.getState().userId
 	if (!userId) {
 		throw new ApiError('User not authenticated', 401)
 	}

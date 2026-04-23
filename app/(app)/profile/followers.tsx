@@ -21,11 +21,11 @@ export default function Followers() {
 	const [refreshing, setRefreshing] = useState(false)
 	const [loading, setLoading] = useState(true)
 
-	const currentUserId = useAuth(state => state.user?.userId)
+	const currentUserId = useAuth(state => state.userId)
 
 	const targetUserId = userId || currentUserId
 
-	const { data: fetchedUsers = [], isLoading, refetch } = useUserFollowersQuery(targetUserId)
+	const { data: fetchedUsers = [], isLoading, refetch } = useUserFollowersQuery(targetUserId!)
 	const users: SearchedUser[] = fetchedUsers as SearchedUser[]
 	const followMutation = useFollowUserMutation()
 	const unfollowMutation = useUnfollowUserMutation()

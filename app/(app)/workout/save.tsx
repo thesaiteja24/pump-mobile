@@ -4,7 +4,9 @@ import VisibilitySelectionModal, { VisibilitySelectionModalHandle } from '@/comp
 
 import { useExercises } from '@/hooks/queries/useExercises'
 import { useSaveWorkoutMutation, useUpdateWorkoutMutation } from '@/hooks/queries/useWorkoutHistory'
+import { useUserQuery } from '@/hooks/queries/useUser'
 import { useAuth } from '@/stores/authStore'
+import { SelfUser } from '@/types/user'
 import { ExerciseType } from '@/types/exercises'
 import { VisibilityType, WorkoutLog } from '@/types/workout'
 import { useWorkout } from '@/stores/workoutStore'
@@ -46,7 +48,10 @@ export default function SaveWorkout() {
 	// Reference data (TanStack Query)
 	const { data: exerciseList = [] } = useExercises()
 
-	const preferredWeightUnit = useAuth(s => s.user?.preferredWeightUnit) ?? 'kg'
+	const currentUserId = useAuth(s => s.userId)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
+	const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
 
 	/* Derived State */
 	// Derived Map of exerciseId -> exerciseType

@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/Button'
 import { GlassBackground } from '@/components/ui/GlassBackground'
 import { useAddMeasurement } from '@/hooks/queries/useAnalytics'
+import { useUserQuery } from '@/hooks/queries/useUser'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
-import { User } from '@/types/auth'
+import { SelfUser } from '@/types/user'
 import { calculateBodyFat, calculateComposition } from '@/utils/analytics'
 import { convertLength, convertWeight } from '@/utils/converter'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
@@ -36,11 +37,13 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	const isDarkMode = useColorScheme() === 'dark'
 	const insets = useSafeAreaInsets()
 	const [isOpen, setIsOpen] = useState(false)
-	const gender = useAuth(s => s.user?.gender)
-	// height from store is always in cm (backend canonical)
-	const heightCm = useAuth(s => s.user?.height)
+	const currentUserId = useAuth(s => s.userId)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
 
-	const user = useAuth(s => s.user) as User | null
+	const gender = user?.gender
+	// height from store is always in cm (backend canonical)
+	const heightCm = user?.height
 	const addMeasurementMutation = useAddMeasurement()
 	const isLoading = addMeasurementMutation.isPending
 
@@ -179,7 +182,7 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	}
 
 	const handleSave = useCallback(async () => {
-		if (!user?.userId) return
+		if (!user?.id) return
 
 		// Validate that at least weight or one measurement is provided
 		const hasAnyInput = [
@@ -310,7 +313,7 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 		rightCalf,
 		notes,
 		progressPics,
-		user?.userId,
+		user?.id,
 		addMeasurementMutation,
 		ref,
 		weightUnit,

@@ -11,7 +11,9 @@ import ShimmerProgramDetails from '@/components/program/ShimmerProgramDetails'
 import { StartProgramSheet, StartProgramSheetHandle } from '@/components/program/StartProgramSheet'
 import { WorkoutDetailsModal, WorkoutDetailsModalHandle } from '@/components/program/WorkoutDetailsModal'
 import { ROLES } from '@/constants/roles'
+import { useUserQuery } from '@/hooks/queries/useUser'
 import { useAuth } from '@/stores/authStore'
+import { SelfUser } from '@/types/user'
 
 export default function ProgramTemplateDetails() {
 	const params = useLocalSearchParams()
@@ -56,8 +58,11 @@ export default function ProgramTemplateDetails() {
 		}
 	}
 
-	const userId = useAuth().user?.userId
-	const role = useAuth().user?.role
+	const currentUserId = useAuth(s => s.userId)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
+	const userId = currentUserId
+	const role = user?.role
 
 	const rightIcons = useMemo(
 		() =>

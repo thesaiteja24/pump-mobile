@@ -1,6 +1,8 @@
 import { useRepliesQuery, useToggleLikeMutation } from '@/hooks/queries/useEngagement'
+import { useUserQuery } from '@/hooks/queries/useUser'
 import { useAuth } from '@/stores/authStore'
 import { Comment } from '@/types/engagement'
+import { SelfUser } from '@/types/user'
 import { formatTimeAgo } from '@/utils/time'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import React, { memo, useMemo, useState } from 'react'
@@ -27,8 +29,10 @@ const CommentItem = ({
 	const textColor = isDark ? 'white' : 'black'
 	const subTextColor = isDark ? '#a3a3a3' : '#525252'
 
-	const user = useAuth(state => state.user)
-	const userId = user?.userId
+	const currentUserId = useAuth(state => state.userId)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
+	const userId = user?.id
 
 	// TanStack Query hooks for comment engagement
 	const toggleLikeMutation = useToggleLikeMutation()
@@ -54,7 +58,7 @@ const CommentItem = ({
 			liked: !isLikedByMe,
 			user: user
 				? {
-						id: userId,
+						id: userId!,
 						firstName: user.firstName || '',
 						lastName: user.lastName || '',
 						profilePicUrl: user.profilePicUrl || null,

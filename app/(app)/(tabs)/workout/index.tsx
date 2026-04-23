@@ -11,8 +11,10 @@ import { ROLES } from '@/constants/roles'
 import { useExercises } from '@/hooks/queries/useExercises'
 import { useActiveProgram, usePrograms, useUserPrograms } from '@/hooks/queries/usePrograms'
 import { useTemplatesQuery } from '@/hooks/queries/useTemplates'
+import { useUserQuery } from '@/hooks/queries/useUser'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useAuth } from '@/stores/authStore'
+import { SelfUser } from '@/types/user'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 import { useWorkout } from '@/stores/workoutStore'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
@@ -41,7 +43,10 @@ export default function WorkoutScreen() {
 	const discardWorkout = useWorkout(s => s.discardWorkout)
 	const startWorkout = useWorkout(s => s.startWorkout)
 	const loadProgramDay = useWorkout(s => s.loadProgramDay)
-	const userRole = useAuth(s => s.user?.role)
+	const currentUserId = useAuth(s => s.userId)
+	const { data: userData } = useUserQuery(currentUserId!)
+	const user = userData as SelfUser | null
+	const userRole = user?.role
 
 	// Template Store — draft/write actions only
 	// Templates list and loading state come from TanStack Query

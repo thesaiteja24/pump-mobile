@@ -1,8 +1,9 @@
 import {
-	UPDATE_PROFILE_PIC_ENDPOINT as update_profile_pic_endpoint,
-	UPDATE_USER_DATA_ENDPOINT as update_user_data_endpoint,
+	USER_DATA_ENDPOINT as update_user_data_endpoint,
 	USER_ENDPOINT as user_endpoint,
+	USER_PROFILE_PIC_ENDPOINT as user_profile_pic_endpoint,
 } from '@/constants/urls'
+import { UpdateUserBody } from '@/types/user'
 import { handleApiResponse } from '@/utils/handleApiResponse'
 import client from './api'
 
@@ -19,7 +20,7 @@ export async function getUserDataService(userId: string) {
 
 export async function deleteProfilePicService(userId: string) {
 	try {
-		const res = await client.delete(update_profile_pic_endpoint(userId))
+		const res = await client.delete(user_profile_pic_endpoint(userId))
 
 		return handleApiResponse(res)
 	} catch (error: any) {
@@ -30,7 +31,7 @@ export async function deleteProfilePicService(userId: string) {
 
 export async function updateProfilePicService(userId: string, data: FormData) {
 	try {
-		const res = await client.patch(update_profile_pic_endpoint(userId), data, {
+		const res = await client.patch(user_profile_pic_endpoint(userId), data, {
 			headers: { 'Content-Type': 'multipart/form-data' },
 		})
 
@@ -41,7 +42,7 @@ export async function updateProfilePicService(userId: string, data: FormData) {
 	}
 }
 
-export async function updateUserDataService(userId: string, data: Record<string, any>) {
+export async function updateUserDataService(userId: string, data: UpdateUserBody) {
 	try {
 		const res = await client.patch(update_user_data_endpoint(userId), data)
 
