@@ -3,13 +3,12 @@ import DateTimePicker from '@/components/ui/DateTimePicker'
 import VisibilitySelectionModal, { VisibilitySelectionModalHandle } from '@/components/workout/VisibilitySelectionModal'
 
 import { useExercises } from '@/hooks/queries/useExercises'
+import { useMyProfileQuery } from '@/hooks/queries/useMe'
 import { useSaveWorkoutMutation, useUpdateWorkoutMutation } from '@/hooks/queries/useWorkoutHistory'
-import { useUserQuery } from '@/hooks/queries/useUser'
-import { useAuth } from '@/stores/authStore'
-import { SelfUser } from '@/types/user'
-import { ExerciseType } from '@/types/exercises'
-import { VisibilityType, WorkoutLog } from '@/types/workout'
 import { useWorkout } from '@/stores/workoutStore'
+import { ExerciseType } from '@/types/exercises'
+import { SelfUser } from '@/types/user'
+import { VisibilityType, WorkoutLog } from '@/types/workout'
 
 import { convertWeight } from '@/utils/converter'
 import { buildPruneMessage, calculateWorkoutMetrics } from '@/utils/workout'
@@ -48,8 +47,7 @@ export default function SaveWorkout() {
 	// Reference data (TanStack Query)
 	const { data: exerciseList = [] } = useExercises()
 
-	const currentUserId = useAuth(s => s.userId)
-	const { data: userData } = useUserQuery(currentUserId!)
+	const { data: userData } = useMyProfileQuery()
 	const user = userData as SelfUser | null
 	const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
 

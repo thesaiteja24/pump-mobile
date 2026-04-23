@@ -4,13 +4,12 @@ import DateTimePicker from '@/components/ui/DateTimePicker'
 import { GlassBackground } from '@/components/ui/GlassBackground'
 import { SelectableCard } from '@/components/ui/SelectableCard'
 import {
-	useDeleteProfilePicMutation,
-	useUpdateProfilePicMutation,
-	useUpdateUserDataMutation,
-	useUserQuery,
-} from '@/hooks/queries/useUser'
+	useDeleteMyProfilePicMutation,
+	useMyProfileQuery,
+	useUpdateMyProfileMutation,
+	useUpdateMyProfilePicMutation,
+} from '@/hooks/queries/useMe'
 import { useThemeColor } from '@/hooks/useThemeColor'
-import { useAuth } from '@/stores/authStore'
 import { SelfUser } from '@/types/user'
 import { convertLength, convertWeight, displayLength, displayWeight } from '@/utils/converter'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
@@ -36,14 +35,12 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	const insets = useSafeAreaInsets()
 	const [isOpen, setIsOpen] = useState(false)
 
-	// global state (stores)
-	const currentUserId = useAuth(s => s.userId)
-	const { data: userData } = useUserQuery(currentUserId!)
+	const { data: userData } = useMyProfileQuery()
 	const user = userData as SelfUser | null
 
-	const updateProfilePicMutation = useUpdateProfilePicMutation()
-	const deleteProfilePicMutation = useDeleteProfilePicMutation()
-	const updateUserDataMutation = useUpdateUserDataMutation()
+	const updateProfilePicMutation = useUpdateMyProfilePicMutation()
+	const deleteProfilePicMutation = useDeleteMyProfilePicMutation()
+	const updateUserDataMutation = useUpdateMyProfileMutation()
 	const [uploading, setUploading] = useState(false)
 
 	// Derived preferred units — read from store, not local state (set only via Unit Preferences sheet)
@@ -155,7 +152,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 		}
 
 		try {
-			await updateUserDataMutation.mutateAsync({ userId: user.id, data: payload })
+			await updateUserDataMutation.mutateAsync(payload)
 			Toast.show({ type: 'success', text1: 'Profile updated successfully' })
 
 			originalRef.current = {
@@ -196,7 +193,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 
 			const formData = new FormData()
 			formData.append('profilePic', prepared as any)
-			await updateProfilePicMutation.mutateAsync({ uid: user.id, data: formData })
+			await updateProfilePicMutation.mutateAsync(formData)
 			Toast.show({ type: 'success', text1: 'Profile picture updated' })
 		} catch (error: any) {
 			Toast.show({ type: 'error', text1: error?.message || 'Image processing failed' })
@@ -261,7 +258,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 							<TouchableOpacity
 								onPress={async () => {
 									try {
-										await deleteProfilePicMutation.mutateAsync(user.id)
+										await deleteProfilePicMutation.mutateAsync()
 										Toast.show({ type: 'success', text1: 'Avatar removed successfully' })
 									} catch {
 										Toast.show({ type: 'error', text1: 'Failed to remove avatar' })

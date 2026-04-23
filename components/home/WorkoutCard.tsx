@@ -1,10 +1,9 @@
 import { useCommentsQuery, useLikesQuery, useToggleLikeMutation } from '@/hooks/queries/useEngagement'
-import { useUserQuery } from '@/hooks/queries/useUser'
+import { useMyProfileQuery } from '@/hooks/queries/useMe'
 import { useThemeColor } from '@/hooks/useThemeColor'
-import { useAuth } from '@/stores/authStore'
-import { SelfUser } from '@/types/user'
-import { ExerciseType } from '@/types/exercises'
 import { Comment as AppComment } from '@/types/engagement'
+import { ExerciseType } from '@/types/exercises'
+import { SelfUser } from '@/types/user'
 import { WorkoutHistoryItem } from '@/types/workout'
 import { formatDurationFromDates, formatTimeAgo } from '@/utils/time'
 import { calculateWorkoutMetrics } from '@/utils/workout'
@@ -41,8 +40,7 @@ function WorkoutCard({
 
 	const commentsModalRef = useRef<CommentsModalHandle>(null)
 
-	const currentUserId = useAuth(state => state.userId)
-	const { data: userData } = useUserQuery(currentUserId!)
+	const { data: userData } = useMyProfileQuery()
 	const user = userData as SelfUser | null
 
 	// TanStack Query hooks for engagement

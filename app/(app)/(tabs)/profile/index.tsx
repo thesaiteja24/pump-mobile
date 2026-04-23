@@ -6,7 +6,7 @@ import { MeasurementsSheet } from '@/components/profile/MeasurementsSheet'
 import { UnitPreferencesSheet } from '@/components/profile/UnitPreferencesSheet'
 import { Button } from '@/components/ui/Button'
 import { VerifiedBadge } from '@/components/ui/VerifiedBadge'
-import { useUserQuery } from '@/hooks/queries/useUser'
+import { useMyProfileQuery } from '@/hooks/queries/useMe'
 import { useAuth } from '@/stores/authStore'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 import { SelfUser } from '@/types/user'
@@ -15,13 +15,12 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import { router } from 'expo-router'
 import React, { useEffect, useRef } from 'react'
 import { BackHandler, Pressable, Text, useColorScheme, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function ProfileScreen() {
-	const currentUserId = useAuth(s => s.userId)
 	const logout = useAuth(s => s.logout)
-	const { data: userData } = useUserQuery(currentUserId!)
+	const { data: userData } = useMyProfileQuery()
 	const user = userData as SelfUser | null
 
 	const { isPro, activePlanId } = useSubscriptionStore()

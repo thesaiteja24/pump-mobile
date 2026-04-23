@@ -7,9 +7,8 @@ import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/De
 import { ROLES as roles } from '@/constants/roles'
 import { useEquipment } from '@/hooks/queries/useEquipment'
 import { useDeleteExercise, useExercises } from '@/hooks/queries/useExercises'
+import { useMyProfileQuery } from '@/hooks/queries/useMe'
 import { useMuscleGroups } from '@/hooks/queries/useMuscleGroups'
-import { useUserQuery } from '@/hooks/queries/useUser'
-import { useAuth } from '@/stores/authStore'
 import { Exercise } from '@/types/exercises'
 import { SelfUser } from '@/types/user'
 
@@ -52,8 +51,8 @@ export default function ExercisesScreen() {
 	const navigation = useNavigation()
 	const isDark = useColorScheme() === 'dark'
 	const lineHeight = Platform.OS === 'ios' ? 0 : 20
-	const currentUserId = useAuth(s => s.userId)
-	const { data: userData } = useUserQuery(currentUserId!)
+
+	const { data: userData } = useMyProfileQuery()
 	const user = userData as SelfUser | null
 	const role = user?.role
 	const safeAreaInsets = useSafeAreaInsets()

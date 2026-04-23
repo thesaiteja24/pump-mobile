@@ -1,6 +1,5 @@
 import { useRepliesQuery, useToggleLikeMutation } from '@/hooks/queries/useEngagement'
-import { useUserQuery } from '@/hooks/queries/useUser'
-import { useAuth } from '@/stores/authStore'
+import { useMyProfileQuery } from '@/hooks/queries/useMe'
 import { Comment } from '@/types/engagement'
 import { SelfUser } from '@/types/user'
 import { formatTimeAgo } from '@/utils/time'
@@ -29,8 +28,7 @@ const CommentItem = ({
 	const textColor = isDark ? 'white' : 'black'
 	const subTextColor = isDark ? '#a3a3a3' : '#525252'
 
-	const currentUserId = useAuth(state => state.userId)
-	const { data: userData } = useUserQuery(currentUserId!)
+	const { data: userData } = useMyProfileQuery()
 	const user = userData as SelfUser | null
 	const userId = user?.id
 

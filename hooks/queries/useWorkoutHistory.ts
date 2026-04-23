@@ -120,7 +120,7 @@ export function useSaveWorkoutMutation() {
 				qc.invalidateQueries({ queryKey: queryKeys.programs.user.all(userId) })
 				qc.invalidateQueries({ queryKey: ['userPrograms', 'detail', userId] })
 				// Invalidate analytics
-				qc.invalidateQueries({ queryKey: queryKeys.analytics.userAnalytics(userId) })
+				qc.invalidateQueries({ queryKey: queryKeys.me.userAnalytics })
 				qc.invalidateQueries({ queryKey: ['trainingAnalytics', userId] })
 			}
 		},
@@ -144,7 +144,7 @@ export function useUpdateWorkoutMutation() {
 			qc.invalidateQueries({ queryKey: queryKeys.workouts.all })
 			if (userId) {
 				qc.invalidateQueries({ queryKey: queryKeys.habits.logs(userId) })
-				qc.invalidateQueries({ queryKey: queryKeys.analytics.userAnalytics(userId) })
+				qc.invalidateQueries({ queryKey: queryKeys.me.userAnalytics })
 				qc.invalidateQueries({ queryKey: ['trainingAnalytics', userId] })
 			}
 		},
@@ -186,7 +186,7 @@ export function useDeleteWorkoutMutation() {
 		onSettled: (_res, _err, id) => {
 			qc.invalidateQueries({ queryKey: queryKeys.workouts.all })
 			if (userId) {
-				qc.invalidateQueries({ queryKey: queryKeys.analytics.userAnalytics(userId) })
+				qc.invalidateQueries({ queryKey: queryKeys.me.userAnalytics })
 				qc.invalidateQueries({ queryKey: ['trainingAnalytics', userId] })
 			}
 		},

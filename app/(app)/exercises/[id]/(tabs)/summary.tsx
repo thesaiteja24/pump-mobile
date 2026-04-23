@@ -1,10 +1,9 @@
 import ExerciseCharts from '@/components/exercises/ExerciseCharts'
 import { CustomModal, ModalHandle } from '@/components/ui/CustomModal'
+import { useExercises } from '@/hooks/queries/useExercises'
+import { useMyProfileQuery } from '@/hooks/queries/useMe'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { useThemeColor } from '@/hooks/useThemeColor'
-import { useExercises } from '@/hooks/queries/useExercises'
-import { useUserQuery } from '@/hooks/queries/useUser'
-import { useAuth } from '@/stores/authStore'
 import { SelfUser } from '@/types/user'
 import { convertWeight } from '@/utils/converter'
 import { EvilIcons, MaterialCommunityIcons } from '@expo/vector-icons'
@@ -28,8 +27,7 @@ export default function ViewExerciseScreen() {
 	const color = useThemeColor()
 
 	const { data: exerciseList = [] } = useExercises()
-	const currentUserId = useAuth(state => state.userId)
-	const { data: userData } = useUserQuery(currentUserId!)
+	const { data: userData } = useMyProfileQuery()
 	const user = userData as SelfUser | null
 	const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
 	const { getExerciseAnalytics } = useAnalytics()

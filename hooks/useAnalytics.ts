@@ -1,4 +1,4 @@
-import { useUserAnalyticsQuery } from '@/hooks/queries/useAnalytics'
+import { useMyUserAnalyticsQuery } from '@/hooks/queries/useMe'
 import { useUserWorkoutHistoryQuery } from '@/hooks/queries/useWorkoutHistory'
 import { useCallback, useMemo } from 'react'
 
@@ -43,7 +43,7 @@ export function useAnalytics(): UseAnalyticsResult {
 	const { workoutHistory } = useUserWorkoutHistoryQuery()
 
 	/* ───────────── User-level analytics ───────────── */
-	const { data: tqAnalytics } = useUserAnalyticsQuery()
+	const { data: tqAnalytics } = useMyUserAnalyticsQuery()
 
 	const userAnalytics = useMemo<UseAnalyticsResult['userAnalytics']>(() => {
 		const fallback = {

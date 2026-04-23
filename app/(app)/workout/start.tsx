@@ -5,12 +5,11 @@ import ExerciseRow from '@/components/workout/ExerciseRow'
 import RestTimerSnack from '@/components/workout/RestTimerSnack'
 
 import { useExercises } from '@/hooks/queries/useExercises'
-import { useUserQuery } from '@/hooks/queries/useUser'
-import { useAuth } from '@/stores/authStore'
-import { SelfUser } from '@/types/user'
-import { Exercise, ExerciseType } from '@/types/exercises'
-import { ExerciseGroupType, WorkoutLogGroup } from '@/types/workout'
+import { useMyProfileQuery } from '@/hooks/queries/useMe'
 import { useWorkout } from '@/stores/workoutStore'
+import { Exercise, ExerciseType } from '@/types/exercises'
+import { SelfUser } from '@/types/user'
+import { ExerciseGroupType, WorkoutLogGroup } from '@/types/workout'
 
 import { convertWeight } from '@/utils/converter'
 import { calculateWorkoutMetrics } from '@/utils/workout'
@@ -89,8 +88,7 @@ export default function StartWorkout() {
 	const { data: exerciseList = [] } = useExercises()
 
 	// Auth Store
-	const currentUserId = useAuth(s => s.userId)
-	const { data: userData } = useUserQuery(currentUserId!)
+	const { data: userData } = useMyProfileQuery()
 	const user = userData as SelfUser | null
 	const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
 

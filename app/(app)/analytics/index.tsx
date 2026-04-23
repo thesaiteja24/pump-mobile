@@ -1,10 +1,13 @@
 import { MuscleCompositionCard } from '@/components/analytics/MuscleCompositionCard'
 import { NutritionTargetsCard } from '@/components/analytics/NutritionTargetsCard'
 import ShimmerAnalyticsScreen from '@/components/analytics/ShimmerAnalyticsScreen'
-import { useFitnessProfileQuery, useMeasurementsQuery, useNutritionPlanQuery } from '@/hooks/queries/useAnalytics'
-import { useUserQuery } from '@/hooks/queries/useUser'
+import {
+	useMyFitnessProfileQuery,
+	useMyMeasurementsQuery,
+	useMyNutritionPlanQuery,
+	useMyProfileQuery,
+} from '@/hooks/queries/useMe'
 import { useThemeColor } from '@/hooks/useThemeColor'
-import { useAuth } from '@/stores/authStore'
 import { SelfUser } from '@/types/user'
 import {
 	calculateBMI,
@@ -19,13 +22,12 @@ import React, { useEffect, useMemo } from 'react'
 import { BackHandler, ScrollView, View } from 'react-native'
 
 const AnalyticsScreen = () => {
-	const currentUserId = useAuth(state => state.userId)
-	const { data: userData } = useUserQuery(currentUserId!)
+	const { data: userData } = useMyProfileQuery()
 	const user = userData as SelfUser | null
 
-	const { data: measurements, isLoading: measurementsLoading } = useMeasurementsQuery()
-	const { data: fitnessProfile, isLoading: profileLoading } = useFitnessProfileQuery()
-	const { data: nutritionPlan, isLoading: nutritionLoading } = useNutritionPlanQuery()
+	const { data: measurements, isLoading: measurementsLoading } = useMyMeasurementsQuery()
+	const { data: fitnessProfile, isLoading: profileLoading } = useMyFitnessProfileQuery()
+	const { data: nutritionPlan, isLoading: nutritionLoading } = useMyNutritionPlanQuery()
 	const isLoading = measurementsLoading || profileLoading || nutritionLoading
 
 	const latestMeasurements = measurements?.latestValues

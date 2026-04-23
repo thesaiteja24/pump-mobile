@@ -34,6 +34,23 @@ export const queryKeys = {
 		likes: (id: string, type: LikeType) => ['engagement', 'likes', type, id] as const,
 	},
 
+	me: {
+		root: ['me'] as const,
+
+		profile: ['me', 'profile'] as const,
+
+		analyticsRoot: ['me', 'analytics'] as const,
+		userAnalytics: ['me', 'analytics', 'user'] as const,
+		trainingAnalytics: (duration: string) => ['me', 'analytics', 'training', duration] as const,
+
+		fitnessProfile: ['me', 'fitnessProfile'] as const,
+		nutritionPlan: ['me', 'nutritionPlan'] as const,
+
+		measurementsRoot: ['me', 'measurements'] as const,
+		measurements: (duration?: string) =>
+			duration ? (['me', 'measurements', duration] as const) : (['me', 'measurements'] as const),
+	},
+
 	user: {
 		byId: (userId: string) => ['user', userId] as const,
 	},
@@ -83,14 +100,5 @@ export const queryKeys = {
 		replies: (commentId: string) => ['replies', commentId] as const,
 		workoutLikes: (workoutId: string) => ['workoutLikes', workoutId] as const,
 		commentLikes: (commentId: string) => ['commentLikes', commentId] as const,
-	},
-
-	analytics: {
-		measurements: (userId: string, duration?: string) =>
-			duration ? (['measurements', userId, duration] as const) : (['measurements', userId] as const),
-		userAnalytics: (userId: string) => ['analytics', userId] as const,
-		fitnessProfile: (userId: string) => ['fitnessProfile', userId] as const,
-		nutritionPlan: (userId: string) => ['nutritionPlan', userId] as const,
-		trainingAnalytics: (userId: string, duration: string) => ['trainingAnalytics', userId, duration] as const,
 	},
 } as const

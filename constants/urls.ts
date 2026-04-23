@@ -11,9 +11,17 @@ export const REFRESH_TOKEN_ENDPOINT = `/auth/refresh-token`
 export const GOOGLE_LOGIN_ENDPOINT = `/auth/google`
 
 // User Endpoints
+export const ME_ENDPOINT = `/me`
+export const MY_PROFILE_PIC_ENDPOINT = `/me/profile-picture`
+
+export const MY_ANALYTICS_ENDPOINT = `/me/analytics`
+export const MY_FITNESS_PROFILE_ENDPOINT = `/me/fitness-profile`
+export const MY_NUTRITION_PLAN_ENDPOINT = `/me/nutrition-plan`
+export const MY_MEASUREMENTS_ENDPOINT = (duration?: string) =>
+	`/me/measurements${duration ? `?duration=${duration}` : ''}`
+export const MY_TRAINING_ANALYTICS_ENDPOINT = (duration: string) => `/me/analytics/training/?duration=${duration}`
+
 export const USER_ENDPOINT = (id: string) => `/users/${id}`
-export const USER_PROFILE_PIC_ENDPOINT = (id: string) => `/users/${id}/profile-picture`
-export const USER_DATA_ENDPOINT = (id: string) => `/users/${id}`
 
 // Engagement Endpoints
 export const SEARCH_USERS_ENDPOINT = (query: string) => `/engagement/search?query=${query}`
@@ -55,12 +63,3 @@ export const COACH_CONVERSATION_ENDPOINT = (id: string) => `/coach/conversations
 export const COACH_CONVERSATION_MESSAGES_ENDPOINT = (id: string) => `/coach/conversations/${id}/messages`
 export const COACH_TRANSCRIPTION_ENDPOINT = `/coach/transcriptions`
 export const COACH_SPEECH_ENDPOINT = (id: string) => `${API_BASE_URL}/coach/speech/${id}`
-
-// Analytics Endpoints
-export const FITNESS_PROFILE_ENDPOINT = (id: string) => `/analytics/fitness-profile/${id}`
-export const MEASUREMENTS_ENDPOINT = (id: string, duration?: string) =>
-	`/analytics/measurements/${id}${duration ? `?duration=${duration}` : ''}`
-export const NUTRITION_PLAN_ENDPOINT = (id: string) => `/analytics/nutrition-plan/${id}`
-export const USER_ANALYTICS_ENDPOINT = (id: string) => `/analytics/user-analytics/${id}`
-export const TRAINING_ANALYTICS_ENDPOINT = (id: string, duration: string) =>
-	`/analytics/training/${id}?duration=${duration}`

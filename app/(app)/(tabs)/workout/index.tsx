@@ -9,14 +9,13 @@ import UserProgramCard from '@/components/workout/UserProgramCard'
 import { FREE_TIER_LIMITS } from '@/constants/limits'
 import { ROLES } from '@/constants/roles'
 import { useExercises } from '@/hooks/queries/useExercises'
+import { useMyProfileQuery } from '@/hooks/queries/useMe'
 import { useActiveProgram, usePrograms, useUserPrograms } from '@/hooks/queries/usePrograms'
 import { useTemplatesQuery } from '@/hooks/queries/useTemplates'
-import { useUserQuery } from '@/hooks/queries/useUser'
 import { useThemeColor } from '@/hooks/useThemeColor'
-import { useAuth } from '@/stores/authStore'
-import { SelfUser } from '@/types/user'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 import { useWorkout } from '@/stores/workoutStore'
+import { SelfUser } from '@/types/user'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import React, { useEffect, useRef, useState } from 'react'
@@ -43,8 +42,7 @@ export default function WorkoutScreen() {
 	const discardWorkout = useWorkout(s => s.discardWorkout)
 	const startWorkout = useWorkout(s => s.startWorkout)
 	const loadProgramDay = useWorkout(s => s.loadProgramDay)
-	const currentUserId = useAuth(s => s.userId)
-	const { data: userData } = useUserQuery(currentUserId!)
+	const { data: userData } = useMyProfileQuery()
 	const user = userData as SelfUser | null
 	const userRole = user?.role
 

@@ -3,15 +3,14 @@ import DateTimePicker from '@/components/ui/DateTimePicker'
 import { GlassBackground } from '@/components/ui/GlassBackground'
 import { SelectableCard } from '@/components/ui/SelectableCard'
 import {
-	useFitnessProfileQuery,
-	useMeasurementsQuery,
-	useUpdateFitnessProfile,
-	useUpdateNutritionPlan,
-} from '@/hooks/queries/useAnalytics'
-import { useUserQuery } from '@/hooks/queries/useUser'
-import { useAuth } from '@/stores/authStore'
-import { FitnessGoal, SelfUser } from '@/types/user'
+	useMyFitnessProfileQuery,
+	useMyMeasurementsQuery,
+	useMyProfileQuery,
+	useUpdateMyFitnessProfileMutation,
+	useUpdateMyNutritionPlanMutation,
+} from '@/hooks/queries/useMe'
 import { FitnessLevel } from '@/types/program'
+import { FitnessGoal, SelfUser } from '@/types/user'
 
 import { calculateBMR, calculateBodyFat, calculateDailyTargets, calculateTDEE } from '@/utils/analytics'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
@@ -28,12 +27,11 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	const isDarkMode = useColorScheme() === 'dark'
 	const insets = useSafeAreaInsets()
 
-	const currentUserId = useAuth(s => s.userId)
-	const { data: userData } = useUserQuery(currentUserId!)
+	const { data: userData } = useMyProfileQuery()
 	const user = userData as SelfUser | null
 
-	const { data: measurements } = useMeasurementsQuery()
-	const { data: fitnessProfile } = useFitnessProfileQuery()
+	const { data: measurements } = useMyMeasurementsQuery()
+	const { data: fitnessProfile } = useMyFitnessProfileQuery()
 	const latestMeasurements = measurements?.latestValues
 	const fitnessGoal = fitnessProfile?.fitnessGoal
 	const currentWeight = latestMeasurements?.weight ?? user?.weight
@@ -44,8 +42,8 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	const hips = latestMeasurements?.hips
 	const currentGoalType = fitnessGoal || null
 
-	const updateFitnessProfileMutation = useUpdateFitnessProfile()
-	const updateNutritionPlanMutation = useUpdateNutritionPlan()
+	const updateFitnessProfileMutation = useUpdateMyFitnessProfileMutation()
+	const updateNutritionPlanMutation = useUpdateMyNutritionPlanMutation()
 
 	const currentBodyFat = calculateBodyFat({
 		gender: gender!,

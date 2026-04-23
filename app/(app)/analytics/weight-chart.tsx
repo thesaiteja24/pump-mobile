@@ -1,7 +1,5 @@
-import { useFitnessProfileQuery, useMeasurementsQuery } from '@/hooks/queries/useAnalytics'
-import { useUserQuery } from '@/hooks/queries/useUser'
+import { useMyFitnessProfileQuery, useMyMeasurementsQuery, useMyProfileQuery } from '@/hooks/queries/useMe'
 import { useThemeColor } from '@/hooks/useThemeColor'
-import { useAuth } from '@/stores/authStore'
 import { SelfUser } from '@/types/user'
 import { convertWeight } from '@/utils/converter'
 import { Ionicons } from '@expo/vector-icons'
@@ -16,13 +14,12 @@ type TimeRange = '1W' | '1M' | '3M' | '6M' | '1Y' | 'All'
 
 const WeightChart = () => {
 	const colors = useThemeColor()
-	const currentUserId = useAuth(s => s.userId)
-	const { data: userData } = useUserQuery(currentUserId!)
+	const { data: userData } = useMyProfileQuery()
 	const user = userData as SelfUser | null
 
 	const [selectedRange, setSelectedRange] = useState<TimeRange>('1W')
-	const { data: measurementsData } = useMeasurementsQuery(selectedRange.toLowerCase())
-	const { data: fitnessProfile } = useFitnessProfileQuery()
+	const { data: measurementsData } = useMyMeasurementsQuery(selectedRange.toLowerCase())
+	const { data: fitnessProfile } = useMyFitnessProfileQuery()
 	const measurements = useMemo(() => measurementsData?.history || [], [measurementsData?.history])
 	const preferredUnit = user?.preferredWeightUnit ?? 'kg'
 	const fitnessGoal = fitnessProfile?.fitnessGoal as string | undefined

@@ -5,19 +5,18 @@ import ExerciseGroupModal, { ExerciseGroupModalHandle } from '@/components/worko
 import ExerciseRow from '@/components/workout/ExerciseRow'
 import { FREE_TIER_LIMITS } from '@/constants/limits'
 import { useExercises } from '@/hooks/queries/useExercises'
+import { useMyProfileQuery } from '@/hooks/queries/useMe'
 import {
 	useCreateTemplateMutation,
 	useTemplateByIdQuery,
 	useTemplatesQuery,
 	useUpdateTemplateMutation,
 } from '@/hooks/queries/useTemplates'
-import { useUserQuery } from '@/hooks/queries/useUser'
-import { useAuth } from '@/stores/authStore'
-import { SelfUser } from '@/types/user'
 import { useProgram } from '@/stores/programStore'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 import { useTemplate } from '@/stores/templateStore'
 import { DraftTemplate } from '@/types/template'
+import { SelfUser } from '@/types/user'
 import { ExerciseGroupType } from '@/types/workout'
 import { Ionicons } from '@expo/vector-icons'
 import { usePreventRemove } from '@react-navigation/native'
@@ -33,8 +32,7 @@ export default function TemplateEditor() {
 	const safeAreaInsets = useSafeAreaInsets()
 	const navigation = useNavigation()
 	const params = useLocalSearchParams()
-	const currentUserId = useAuth(s => s.userId)
-	const { data: userData } = useUserQuery(currentUserId!)
+	const { data: userData } = useMyProfileQuery()
 	const user = userData as SelfUser | null
 	const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
 	const { data: exerciseList = [] } = useExercises()

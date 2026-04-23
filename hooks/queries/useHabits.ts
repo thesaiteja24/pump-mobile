@@ -1,6 +1,5 @@
 import { queryClient } from '@/lib/queryClient'
 import { queryKeys } from '@/lib/queryKeys'
-import { addMeasurementsService } from '@/services/analyticsService'
 import {
 	createHabitService,
 	deleteHabitService,
@@ -9,6 +8,7 @@ import {
 	logHabitService,
 	updateHabitService,
 } from '@/services/habitService'
+import { addMeasurementsService } from '@/services/meService'
 import { useAuth } from '@/stores/authStore'
 import type { HabitLogType, HabitType } from '@/types/habits'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -171,20 +171,20 @@ export function useLogWeight() {
 	const userId = useAuth(s => s.userId)
 	return useMutation({
 		mutationFn: async (data: { weight: number; date: string }) => {
-			const res = await addMeasurementsService(userId!, data)
+			const res = await addMeasurementsService(data)
 			if (!res.success) throw new Error(res.message || 'Failed to log weight')
 			return res.data
 		},
 		onMutate: async (data: { weight: number; date: string }) => {
 			// Cancel concurrent refetches
 			await queryClient.cancelQueries({ queryKey: queryKeys.habits.logs(userId!) })
-			await queryClient.cancelQueries({ queryKey: queryKeys.analytics.measurements(userId!) })
+			await queryClient.cancelQueries({ queryKey: queryKeys.me.measurementsRoot })
 
 			const previousHabitLogs = queryClient.getQueryData<Record<string, HabitLogType[]>>(
 				queryKeys.habits.logs(userId!)
 			)
 			const previousMeasurements = queryClient.getQueriesData({
-				queryKey: queryKeys.analytics.measurements(userId!),
+				queryKey: queryKeys.me.measurementsRoot,
 			})
 
 			// 1. Update Habit Logs Cache (find weight habit)
@@ -218,7 +218,7 @@ export function useLogWeight() {
 		},
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: queryKeys.habits.logs(userId!) })
-			queryClient.invalidateQueries({ queryKey: queryKeys.analytics.measurements(userId!) })
+			queryClient.invalidateQueries({ queryKey: queryKeys.me.measurementsRoot })
 		},
 	})
 }

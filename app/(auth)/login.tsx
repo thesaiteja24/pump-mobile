@@ -2,8 +2,7 @@ import GoogleIcon from '@/assets/components/icons/Google'
 import { Button } from '@/components/ui/Button'
 import PrivacyPolicyModal, { PrivacyPolicyModalHandle } from '@/components/ui/PrivacyPolicyModal'
 import { useGoogleLoginMutation } from '@/hooks/queries/useAuthHooks'
-import { updateFitnessProfileService, updateNutritionPlanService } from '@/services/analyticsService'
-import { updateUserDataService } from '@/services/userService'
+import { updateFitnessProfileService, updateMeService, updateNutritionPlanService } from '@/services/meService'
 import { useAuth } from '@/stores/authStore'
 import { useOnboarding } from '@/stores/onboardingStore'
 import { SelfUser } from '@/types/user'
@@ -94,8 +93,8 @@ export default function Login() {
 				preferredLengthUnit: onBoardingPayload.heightUnit as any,
 			}
 
-			await updateUserDataService(user.id, userData)
-			await updateUserDataService(user.id, preferences)
+			await updateMeService(userData)
+			await updateMeService(preferences)
 
 			if (onBoardingPayload.fitnessProfile) {
 				const fp = onBoardingPayload.fitnessProfile
@@ -132,8 +131,8 @@ export default function Login() {
 				}
 
 				await Promise.all([
-					updateFitnessProfileService(user.id, fitnessPayload),
-					updateNutritionPlanService(user.id, nutritionPayload),
+					updateFitnessProfileService(fitnessPayload),
+					updateNutritionPlanService(nutritionPayload),
 				])
 			}
 
