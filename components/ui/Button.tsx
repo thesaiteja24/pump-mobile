@@ -211,7 +211,6 @@ export function Button({
 			{liquidGlass && (
 				<>
 					<BlurView
-						intensity={20}
 						tint={isDark ? 'dark' : 'light'}
 						experimentalBlurMethod="dimezisBlurView"
 						pointerEvents="none"

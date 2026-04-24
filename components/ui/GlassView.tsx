@@ -36,7 +36,7 @@ export const GlassView: React.FC<GlassViewProps> = ({
 			{...props}
 		>
 			<BlurView
-				intensity={isDark ? darkIntensity : lightIntensity}
+				// intensity={isDark ? darkIntensity : lightIntensity}
 				tint={isDark ? 'dark' : 'light'}
 				experimentalBlurMethod="dimezisBlurView"
 				style={StyleSheet.absoluteFill}

@@ -56,7 +56,6 @@ export default function TabsLayout() {
 					},
 					tabBarBackground: () => (
 						<BlurView
-							intensity={isDark ? 20 : 20}
 							tint={isDark ? 'dark' : 'light'}
 							experimentalBlurMethod="dimezisBlurView"
 							style={StyleSheet.absoluteFill}
@@ -227,7 +226,6 @@ export default function TabsLayout() {
 				<BlurView
 					intensity={isDark ? 20 : 20}
 					tint={isDark ? 'dark' : 'light'}
-					experimentalBlurMethod="dimezisBlurView"
 					style={StyleSheet.absoluteFill}
 				/>
 
