@@ -1,4 +1,4 @@
-import { useMyFitnessProfileQuery, useMyMeasurementsQuery, useMyProfileQuery } from '@/hooks/queries/useMe'
+import { useFitnessProfileQuery, useMeasurementsQuery, useProfileQuery } from '@/hooks/queries/useMe'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { SelfUser } from '@/types/user'
 import { convertWeight } from '@/utils/converter'
@@ -14,12 +14,12 @@ type TimeRange = '1W' | '1M' | '3M' | '6M' | '1Y' | 'All'
 
 const WeightChart = () => {
 	const colors = useThemeColor()
-	const { data: userData } = useMyProfileQuery()
+	const { data: userData } = useProfileQuery()
 	const user = userData as SelfUser | null
 
 	const [selectedRange, setSelectedRange] = useState<TimeRange>('1W')
-	const { data: measurementsData } = useMyMeasurementsQuery(selectedRange.toLowerCase())
-	const { data: fitnessProfile } = useMyFitnessProfileQuery()
+	const { data: measurementsData } = useMeasurementsQuery(selectedRange.toLowerCase())
+	const { data: fitnessProfile } = useFitnessProfileQuery()
 	const measurements = useMemo(() => measurementsData?.history || [], [measurementsData?.history])
 	const preferredUnit = user?.preferredWeightUnit ?? 'kg'
 	const fitnessGoal = fitnessProfile?.fitnessGoal as string | undefined

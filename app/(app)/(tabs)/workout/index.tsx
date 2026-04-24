@@ -9,7 +9,7 @@ import UserProgramCard from '@/components/workout/UserProgramCard'
 import { FREE_TIER_LIMITS } from '@/constants/limits'
 import { ROLES } from '@/constants/roles'
 import { useExercises } from '@/hooks/queries/useExercises'
-import { useMyProfileQuery } from '@/hooks/queries/useMe'
+import { useProfileQuery } from '@/hooks/queries/useMe'
 import { useActiveProgram, usePrograms, useUserPrograms } from '@/hooks/queries/usePrograms'
 import { useTemplatesQuery } from '@/hooks/queries/useTemplates'
 import { useThemeColor } from '@/hooks/useThemeColor'
@@ -42,7 +42,7 @@ export default function WorkoutScreen() {
 	const discardWorkout = useWorkout(s => s.discardWorkout)
 	const startWorkout = useWorkout(s => s.startWorkout)
 	const loadProgramDay = useWorkout(s => s.loadProgramDay)
-	const { data: userData } = useMyProfileQuery()
+	const { data: userData } = useProfileQuery()
 	const user = userData as SelfUser | null
 	const userRole = user?.role
 

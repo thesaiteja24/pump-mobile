@@ -14,8 +14,17 @@ import {
 	updateNutritionPlanService,
 } from '@/services/meService'
 import { useAuth } from '@/stores/authStore'
-import type { AnalyticsMetrics, MeasurementsQueryData, MeasurementType, TrainingAnalytics } from '@/types/analytics'
-import { UpdateUserBody, User } from '@/types/user'
+import {
+	AnalyticsMetrics,
+	FitnessProfile,
+	Measurements,
+	MeasurementsQueryData,
+	TrainingAnalytics,
+	UpdateFitnessProfileBody,
+	UpdateNutritionPlanBody,
+	UpdateUserBody,
+	User,
+} from '@/types/user'
 import {
 	addMeasurementToCache,
 	rollbackQueries,
@@ -25,25 +34,23 @@ import {
 } from '@/utils/meCacheUtils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-export function useMyProfileQuery() {
+export function useProfileQuery() {
 	return useQuery({
 		queryKey: queryKeys.me.profile,
 		queryFn: async () => {
-			const res = await getMeService()
-			return res.data as User
+			const data = await getMeService()
+			return data as User
 		},
 		staleTime: 5 * 60 * 1000,
 	})
 }
 
-export function useMyMeasurementsQuery(duration?: string) {
+export function useMeasurementsQuery(duration?: string) {
 	return useQuery({
 		queryKey: queryKeys.me.measurements(duration),
 		queryFn: async () => {
-			const res = await getMeasurementsService(duration)
-			if (!res.success) throw new Error(res.message || 'Failed to fetch measurements')
-
-			const { history = [], latestValues = {}, dailyWeightChange = null } = res.data ?? {}
+			const data = (await getMeasurementsService(duration)) as MeasurementsQueryData | null
+			const { history = [], latestValues = {}, dailyWeightChange = null } = data ?? {}
 			return { history, latestValues, dailyWeightChange } as MeasurementsQueryData
 		},
 		staleTime: 24 * 60 * 60 * 1000,
@@ -51,51 +58,47 @@ export function useMyMeasurementsQuery(duration?: string) {
 	})
 }
 
-export function useMyFitnessProfileQuery() {
+export function useFitnessProfileQuery() {
 	return useQuery({
 		queryKey: queryKeys.me.fitnessProfile,
 		queryFn: async () => {
-			const res = await getFitnessProfileService()
-			if (!res.success) throw new Error(res.message || 'Failed to fetch fitness profile')
-			return res.data ?? null
+			const data = await getFitnessProfileService()
+			return data as FitnessProfile
 		},
 		staleTime: 24 * 60 * 60 * 1000,
 		gcTime: 24 * 60 * 60 * 1000,
 	})
 }
 
-export function useMyNutritionPlanQuery() {
+export function useNutritionPlanQuery() {
 	return useQuery({
 		queryKey: queryKeys.me.nutritionPlan,
 		queryFn: async () => {
-			const res = await getNutritionPlanService()
-			if (!res.success) throw new Error(res.message || 'Failed to fetch nutrition plan')
-			return res.data ?? null
+			const data = await getNutritionPlanService()
+			return data ?? null
 		},
 		staleTime: 24 * 60 * 60 * 1000,
 		gcTime: 24 * 60 * 60 * 1000,
 	})
 }
 
-export function useMyUserAnalyticsQuery() {
+export function useUserAnalyticsQuery() {
 	return useQuery({
 		queryKey: queryKeys.me.userAnalytics,
 		queryFn: async () => {
-			const res = await getUserAnalyticsService()
-			if (!res.success) throw new Error(res.message || 'Failed to fetch analytics')
-			return (res.data || {}) as AnalyticsMetrics
+			const data = await getUserAnalyticsService()
+			return (data || {}) as AnalyticsMetrics
 		},
 		staleTime: 24 * 60 * 60 * 1000,
 	})
 }
 
-export function useMyTrainingAnalyticsQuery(duration: string = '3m') {
+export function useTrainingAnalyticsQuery(duration: string = '3m') {
 	return useQuery({
 		queryKey: queryKeys.me.trainingAnalytics(duration),
 		queryFn: async () => {
-			const res = await getTrainingAnalyticsService(duration)
-			if (!res.success) throw new Error(res.message || 'Failed to fetch training analytics')
-			return res.data as TrainingAnalytics
+			const data = await getTrainingAnalyticsService(duration)
+			return data as TrainingAnalytics
 		},
 		staleTime: 24 * 60 * 60 * 1000,
 		gcTime: 24 * 60 * 60 * 1000,
@@ -104,7 +107,7 @@ export function useMyTrainingAnalyticsQuery(duration: string = '3m') {
 
 // MUTATIONS
 
-export function useUpdateMyProfileMutation() {
+export function useUpdateProfileMutation() {
 	const qc = useQueryClient()
 
 	return useMutation({
@@ -133,46 +136,40 @@ export function useUpdateMyProfileMutation() {
 	})
 }
 
-export function useUpdateMyProfilePicMutation() {
+export function useUpdateProfilePicMutation() {
 	const qc = useQueryClient()
 
 	return useMutation({
 		mutationFn: (data: FormData) => updateMyProfilePicService(data),
 
-		onSuccess: res => {
-			if (res.success) {
-				qc.setQueryData(queryKeys.me.profile, res.data)
-				qc.invalidateQueries({ queryKey: queryKeys.me.profile })
-			}
+		onSuccess: data => {
+			qc.setQueryData(queryKeys.me.profile, data)
+			qc.invalidateQueries({ queryKey: queryKeys.me.profile })
 		},
 	})
 }
 
-export function useDeleteMyProfilePicMutation() {
+export function useDeleteProfilePicMutation() {
 	const qc = useQueryClient()
 
 	return useMutation({
 		mutationFn: () => deleteMyProfilePicService(),
 
-		onSuccess: res => {
-			if (res.success) {
-				qc.setQueryData(queryKeys.me.profile, res.data)
-				qc.invalidateQueries({ queryKey: queryKeys.me.profile })
-			}
+		onSuccess: data => {
+			qc.setQueryData(queryKeys.me.profile, data)
+			qc.invalidateQueries({ queryKey: queryKeys.me.profile })
 		},
 	})
 }
 
-export function useUpdateMyFitnessProfileMutation() {
+export function useUpdateFitnessProfileMutation() {
 	const qc = useQueryClient()
 
 	return useMutation({
-		mutationFn: async (data: any) => {
-			const res = await updateFitnessProfileService(data)
-			if (!res.success) throw new Error(res.message || 'Failed to update fitness profile')
-			return res.data
+		mutationFn: async (data: UpdateFitnessProfileBody) => {
+			return updateFitnessProfileService(data)
 		},
-		onMutate: async (newData: any) => {
+		onMutate: async (newData: UpdateFitnessProfileBody) => {
 			await qc.cancelQueries({ queryKey: queryKeys.me.fitnessProfile })
 			const previousData = qc.getQueriesData({ queryKey: queryKeys.me.fitnessProfile })
 
@@ -189,16 +186,14 @@ export function useUpdateMyFitnessProfileMutation() {
 	})
 }
 
-export function useUpdateMyNutritionPlanMutation() {
+export function useUpdateNutritionPlanMutation() {
 	const qc = useQueryClient()
 
 	return useMutation({
-		mutationFn: async (data: any) => {
-			const res = await updateNutritionPlanService(data)
-			if (!res.success) throw new Error(res.message || 'Failed to update nutrition plan')
-			return res.data
+		mutationFn: async (data: UpdateNutritionPlanBody) => {
+			return updateNutritionPlanService(data)
 		},
-		onMutate: async (newData: any) => {
+		onMutate: async (newData: UpdateNutritionPlanBody) => {
 			await qc.cancelQueries({ queryKey: queryKeys.me.nutritionPlan })
 			const previousData = qc.getQueriesData({ queryKey: queryKeys.me.nutritionPlan })
 
@@ -215,13 +210,13 @@ export function useUpdateMyNutritionPlanMutation() {
 	})
 }
 
-export function useAddMyMeasurementMutation() {
+export function useAddMeasurementMutation() {
 	const qc = useQueryClient()
 	const userId = useAuth(s => s.userId)
 
 	return useMutation({
-		mutationFn: async (data: MeasurementType & { progressPics?: any[] }) => {
-			let payload: any = data
+		mutationFn: async (data: Partial<Measurements> & { progressPics?: { uri: string; name?: string; type?: string }[] }) => {
+			let payload: FormData | Partial<Measurements> = data
 			if (data.progressPics && data.progressPics.length > 0) {
 				const formData = new FormData()
 				Object.entries(data).forEach(([key, value]) => {
@@ -230,17 +225,16 @@ export function useAddMyMeasurementMutation() {
 					}
 				})
 				data.progressPics.forEach(pic => {
-					formData.append('progressPics', pic as any)
+					formData.append('progressPics', pic as unknown as Blob)
 				})
 				payload = formData
 			}
 
-			const res = await addMeasurementsService(payload)
-			if (!res.success) throw new Error(res.message || 'Failed to add measurement')
-			return res.data
+			return addMeasurementsService(payload)
 		},
-		onMutate: async (data: MeasurementType & { progressPics?: any[] }) => {
+		onMutate: async (data: Partial<Measurements> & { progressPics?: { uri: string }[] }) => {
 			await qc.cancelQueries({ queryKey: queryKeys.me.measurementsRoot })
+			// Avoid cross-domain coupling by extracting invalidation to a cleaner approach or keeping it localized
 			await qc.cancelQueries({ queryKey: queryKeys.habits.logs(userId!) })
 
 			const previousMeasurements = qc.getQueriesData({ queryKey: queryKeys.me.measurementsRoot })
@@ -251,7 +245,7 @@ export function useAddMyMeasurementMutation() {
 				measurementData.progressPicUrls = progressPics.map(p => p.uri)
 			}
 
-			addMeasurementToCache(qc, measurementData)
+			addMeasurementToCache(qc, measurementData as Measurements)
 
 			// Optimistically update Profile cache weight
 			if (measurementData.weight != null) {

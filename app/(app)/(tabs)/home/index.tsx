@@ -13,7 +13,7 @@ import { WeightMetricCard } from '@/components/home/WeightMetricCard'
 import { Button } from '@/components/ui/Button'
 import { useAskNotificationPermission } from '@/hooks/notifications/useAskNotificationPermission'
 import { useHabitLogsQuery, useHabitsQuery } from '@/hooks/queries/useHabits'
-import { useMyMeasurementsQuery, useMyProfileQuery, useMyUserAnalyticsQuery } from '@/hooks/queries/useMe'
+import { useMeasurementsQuery, useProfileQuery, useUserAnalyticsQuery } from '@/hooks/queries/useMe'
 import { useStoreUpdate } from '@/hooks/useStoreUpdate'
 import { SelfUser } from '@/types/user'
 import { calculateBMI, calculateBodyFat, calculateComposition, estimateBodyFatFromBMI } from '@/utils/analytics'
@@ -24,7 +24,7 @@ import { router } from 'expo-router'
 import Toast from 'react-native-toast-message'
 
 export default function HomeScreen() {
-	const { data: userData } = useMyProfileQuery()
+	const { data: userData } = useProfileQuery()
 	const user = userData as SelfUser | null
 
 	// TanStack Query — analytics (auto-fetches on mount, syncs into Zustand)
@@ -32,12 +32,12 @@ export default function HomeScreen() {
 		data: measurements,
 		refetch: refetchMeasurements,
 		isLoading: isLoadingMeasurements,
-	} = useMyMeasurementsQuery()
+	} = useMeasurementsQuery()
 	const {
 		data: userAnalytics,
 		refetch: refetchUserAnalytics,
 		isLoading: isLoadingUserAnalytics,
-	} = useMyUserAnalyticsQuery()
+	} = useUserAnalyticsQuery()
 
 	const latestMeasurements = measurements?.latestValues
 

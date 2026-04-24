@@ -5,7 +5,7 @@ import ExerciseRow from '@/components/workout/ExerciseRow'
 import RestTimerSnack from '@/components/workout/RestTimerSnack'
 
 import { useExercises } from '@/hooks/queries/useExercises'
-import { useMyProfileQuery } from '@/hooks/queries/useMe'
+import { useProfileQuery } from '@/hooks/queries/useMe'
 import { useWorkout } from '@/stores/workoutStore'
 import { Exercise, ExerciseType } from '@/types/exercises'
 import { SelfUser } from '@/types/user'
@@ -88,7 +88,7 @@ export default function StartWorkout() {
 	const { data: exerciseList = [] } = useExercises()
 
 	// Auth Store
-	const { data: userData } = useMyProfileQuery()
+	const { data: userData } = useProfileQuery()
 	const user = userData as SelfUser | null
 	const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
 

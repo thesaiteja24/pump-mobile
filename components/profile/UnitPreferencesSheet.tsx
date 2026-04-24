@@ -1,4 +1,4 @@
-import { useMyProfileQuery, useUpdateMyProfileMutation } from '@/hooks/queries/useMe'
+import { useProfileQuery, useUpdateProfileMutation } from '@/hooks/queries/useMe'
 import { SelfUser } from '@/types/user'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import React, { forwardRef, useEffect, useMemo, useState } from 'react'
@@ -10,10 +10,10 @@ type WeightUnit = 'kg' | 'lbs'
 type LengthUnit = 'cm' | 'inches'
 
 export const UnitPreferencesSheet = forwardRef<BottomSheetModal>((props, ref) => {
-	const { data: userData } = useMyProfileQuery()
+	const { data: userData } = useProfileQuery()
 	const user = userData as SelfUser | null
 
-	const updateUserDataMutation = useUpdateMyProfileMutation()
+	const updateUserDataMutation = useUpdateProfileMutation()
 	const isDarkMode = useColorScheme() === 'dark'
 	const insets = useSafeAreaInsets()
 	const [isOpen, setIsOpen] = useState(false)

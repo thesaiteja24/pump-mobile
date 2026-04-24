@@ -1,4 +1,3 @@
-import { useMyUserAnalyticsQuery } from '@/hooks/queries/useMe'
 import { useUserWorkoutHistoryQuery } from '@/hooks/queries/useWorkoutHistory'
 import { useCallback, useMemo } from 'react'
 
@@ -28,14 +27,7 @@ function calculate1RM(weight: number, reps: number): number {
 /* ────────────────────────────────────────────── */
 
 export interface UseAnalyticsResult {
-	userAnalytics: {
-		streakDays: number
-		workoutsThisWeek: number
-		daysSinceLastWorkout: number
-		weeklyVolume: number
-		lastWeekVolume: number
-		workoutDates: Set<string>
-	}
+	
 	getExerciseAnalytics: (exerciseId: string) => ExerciseAnalytics
 }
 
@@ -43,30 +35,6 @@ export function useAnalytics(): UseAnalyticsResult {
 	const { workoutHistory } = useUserWorkoutHistoryQuery()
 
 	/* ───────────── User-level analytics ───────────── */
-	const { data: tqAnalytics } = useMyUserAnalyticsQuery()
-
-	const userAnalytics = useMemo<UseAnalyticsResult['userAnalytics']>(() => {
-		const fallback = {
-			streakDays: 0,
-			workoutsThisWeek: 0,
-			daysSinceLastWorkout: 0,
-			weeklyVolume: 0,
-			lastWeekVolume: 0,
-			workoutDates: new Set<string>(),
-		}
-
-		if (!tqAnalytics) return fallback
-
-		return {
-			streakDays: tqAnalytics.streakDays ?? 0,
-			workoutsThisWeek: tqAnalytics.workoutsThisWeek ?? 0,
-			daysSinceLastWorkout: tqAnalytics.daysSinceLastWorkout ?? 0,
-			weeklyVolume: tqAnalytics.weeklyVolume ?? 0,
-			lastWeekVolume: tqAnalytics.lastWeekVolume ?? 0,
-			workoutDates: new Set(Array.isArray(tqAnalytics.workoutDates) ? tqAnalytics.workoutDates : []),
-		}
-	}, [tqAnalytics])
-
 	/* ───────────── Exercise-level analytics ───────────── */
 
 	const getExerciseAnalytics = useCallback(
@@ -147,7 +115,6 @@ export function useAnalytics(): UseAnalyticsResult {
 	/* ───────────── Public API ───────────── */
 
 	return {
-		userAnalytics,
 		getExerciseAnalytics,
 	}
 }

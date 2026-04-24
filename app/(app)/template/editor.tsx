@@ -5,7 +5,7 @@ import ExerciseGroupModal, { ExerciseGroupModalHandle } from '@/components/worko
 import ExerciseRow from '@/components/workout/ExerciseRow'
 import { FREE_TIER_LIMITS } from '@/constants/limits'
 import { useExercises } from '@/hooks/queries/useExercises'
-import { useMyProfileQuery } from '@/hooks/queries/useMe'
+import { useProfileQuery } from '@/hooks/queries/useMe'
 import {
 	useCreateTemplateMutation,
 	useTemplateByIdQuery,
@@ -32,7 +32,7 @@ export default function TemplateEditor() {
 	const safeAreaInsets = useSafeAreaInsets()
 	const navigation = useNavigation()
 	const params = useLocalSearchParams()
-	const { data: userData } = useMyProfileQuery()
+	const { data: userData } = useProfileQuery()
 	const user = userData as SelfUser | null
 	const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
 	const { data: exerciseList = [] } = useExercises()

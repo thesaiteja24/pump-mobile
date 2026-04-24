@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button'
 import { GlassBackground } from '@/components/ui/GlassBackground'
-import { useAddMyMeasurementMutation, useMyProfileQuery } from '@/hooks/queries/useMe'
+import { useAddMeasurementMutation, useProfileQuery } from '@/hooks/queries/useMe'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { SelfUser } from '@/types/user'
 import { calculateBodyFat, calculateComposition } from '@/utils/analytics'
@@ -35,13 +35,13 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	const isDarkMode = useColorScheme() === 'dark'
 	const insets = useSafeAreaInsets()
 	const [isOpen, setIsOpen] = useState(false)
-	const { data: userData } = useMyProfileQuery()
+	const { data: userData } = useProfileQuery()
 	const user = userData as SelfUser | null
 
 	const gender = user?.gender
 	// height from store is always in cm (backend canonical)
 	const heightCm = user?.height
-	const addMeasurementMutation = useAddMyMeasurementMutation()
+	const addMeasurementMutation = useAddMeasurementMutation()
 	const isLoading = addMeasurementMutation.isPending
 
 	// Preferred units — read from store

@@ -6,7 +6,7 @@ import { MeasurementsSheet } from '@/components/profile/MeasurementsSheet'
 import { UnitPreferencesSheet } from '@/components/profile/UnitPreferencesSheet'
 import { Button } from '@/components/ui/Button'
 import { VerifiedBadge } from '@/components/ui/VerifiedBadge'
-import { useMyProfileQuery } from '@/hooks/queries/useMe'
+import { useProfileQuery } from '@/hooks/queries/useMe'
 import { useAuth } from '@/stores/authStore'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 import { SelfUser } from '@/types/user'
@@ -20,7 +20,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function ProfileScreen() {
 	const logout = useAuth(s => s.logout)
-	const { data: userData } = useMyProfileQuery()
+	const { data: userData } = useProfileQuery()
 	const user = userData as SelfUser | null
 
 	const { isPro, activePlanId } = useSubscriptionStore()

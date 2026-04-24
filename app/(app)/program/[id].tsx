@@ -11,7 +11,7 @@ import ShimmerProgramDetails from '@/components/program/ShimmerProgramDetails'
 import { StartProgramSheet, StartProgramSheetHandle } from '@/components/program/StartProgramSheet'
 import { WorkoutDetailsModal, WorkoutDetailsModalHandle } from '@/components/program/WorkoutDetailsModal'
 import { ROLES } from '@/constants/roles'
-import { useMyProfileQuery } from '@/hooks/queries/useMe'
+import { useProfileQuery } from '@/hooks/queries/useMe'
 import { useAuth } from '@/stores/authStore'
 import { SelfUser } from '@/types/user'
 
@@ -59,7 +59,7 @@ export default function ProgramTemplateDetails() {
 	}
 
 	const currentUserId = useAuth(s => s.userId)
-	const { data: userData } = useMyProfileQuery()
+	const { data: userData } = useProfileQuery()
 	const user = userData as SelfUser | null
 	const userId = currentUserId
 	const role = user?.role

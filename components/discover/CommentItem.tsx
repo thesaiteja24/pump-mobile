@@ -1,5 +1,5 @@
 import { useRepliesQuery, useToggleLikeMutation } from '@/hooks/queries/useEngagement'
-import { useMyProfileQuery } from '@/hooks/queries/useMe'
+import { useProfileQuery } from '@/hooks/queries/useMe'
 import { Comment } from '@/types/engagement'
 import { SelfUser } from '@/types/user'
 import { formatTimeAgo } from '@/utils/time'
@@ -28,7 +28,7 @@ const CommentItem = ({
 	const textColor = isDark ? 'white' : 'black'
 	const subTextColor = isDark ? '#a3a3a3' : '#525252'
 
-	const { data: userData } = useMyProfileQuery()
+	const { data: userData } = useProfileQuery()
 	const user = userData as SelfUser | null
 	const userId = user?.id
 

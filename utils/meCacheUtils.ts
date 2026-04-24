@@ -1,6 +1,5 @@
 import { queryKeys } from '@/lib/queryKeys'
-import { LatestMeasurements, MeasurementType, MeasurementsQueryData } from '@/types/analytics'
-import { User } from '@/types/user'
+import { LatestMeasurements, Measurements, MeasurementsQueryData, User } from '@/types/user'
 import { QueryClient, QueryKey } from '@tanstack/react-query'
 
 /**
@@ -45,7 +44,7 @@ export function updateMyNutritionPlanCache(qc: QueryClient, updater: (old: any) 
 /**
  * Adds a new measurement to the history and re-calculates daily weight change and latest values
  */
-export function addMeasurementToCache(qc: QueryClient, measurementData: MeasurementType) {
+export function addMeasurementToCache(qc: QueryClient, measurementData: Measurements) {
 	qc.setQueriesData<MeasurementsQueryData>({ queryKey: queryKeys.me.measurementsRoot }, old => {
 		if (!old) return old
 

@@ -1,4 +1,4 @@
-import { useMyFitnessProfileQuery, useMyMeasurementsQuery, useMyProfileQuery } from '@/hooks/queries/useMe'
+import { useFitnessProfileQuery, useMeasurementsQuery, useProfileQuery } from '@/hooks/queries/useMe'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { SelfUser } from '@/types/user'
 import { convertWeight } from '@/utils/converter'
@@ -14,11 +14,11 @@ interface WeightMetricCardProps {
 
 export function WeightMetricCard({ width }: WeightMetricCardProps) {
 	const colors = useThemeColor()
-	const { data: userData } = useMyProfileQuery()
+	const { data: userData } = useProfileQuery()
 	const user = userData as SelfUser | null
 
-	const { data: analytics } = useMyMeasurementsQuery()
-	const { data: fitnessProfile } = useMyFitnessProfileQuery()
+	const { data: analytics } = useMeasurementsQuery()
+	const { data: fitnessProfile } = useFitnessProfileQuery()
 
 	const preferredUnit = user?.preferredWeightUnit ?? 'kg'
 	const fitnessGoal = fitnessProfile?.fitnessGoal as string | undefined

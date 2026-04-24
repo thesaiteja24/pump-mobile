@@ -1,5 +1,5 @@
 import { useCommentsQuery, useLikesQuery, useToggleLikeMutation } from '@/hooks/queries/useEngagement'
-import { useMyProfileQuery } from '@/hooks/queries/useMe'
+import { useProfileQuery } from '@/hooks/queries/useMe'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { Comment as AppComment } from '@/types/engagement'
 import { ExerciseType } from '@/types/exercises'
@@ -40,7 +40,7 @@ function WorkoutCard({
 
 	const commentsModalRef = useRef<CommentsModalHandle>(null)
 
-	const { data: userData } = useMyProfileQuery()
+	const { data: userData } = useProfileQuery()
 	const user = userData as SelfUser | null
 
 	// TanStack Query hooks for engagement

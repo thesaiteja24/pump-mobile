@@ -1,4 +1,4 @@
-import { useMyProfileQuery } from '@/hooks/queries/useMe'
+import { useProfileQuery } from '@/hooks/queries/useMe'
 import { useAuth } from '@/stores/authStore'
 import { SelfUser } from '@/types/user'
 import { Redirect } from 'expo-router'
@@ -7,7 +7,7 @@ import { ActivityIndicator, View } from 'react-native'
 
 export default function Index() {
 	const isAuthenticated = useAuth(s => s.isAuthenticated)
-	const { data: user } = useMyProfileQuery()
+	const { data: user } = useProfileQuery()
 	const selfUser = user as SelfUser
 
 	const hasRestored = useAuth(s => s.hasRestored)

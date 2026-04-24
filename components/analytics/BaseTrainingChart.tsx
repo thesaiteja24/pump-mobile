@@ -1,4 +1,4 @@
-import { useMyTrainingAnalyticsQuery } from '@/hooks/queries/useMe'
+import { useTrainingAnalyticsQuery } from '@/hooks/queries/useMe'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { Ionicons } from '@expo/vector-icons'
 import { format } from 'date-fns'
@@ -34,7 +34,7 @@ export function BaseTrainingChart({
 	// Logic: If range > 3M, fetch the specific duration. Otherwise, use 1M or 3M cache.
 	// Actually, we'll just fetch whatever is selected for consistency and server-side precision.
 	const durationParam = useMemo(() => selectedRange.toLowerCase(), [selectedRange])
-	const { data: trainingData, isLoading } = useMyTrainingAnalyticsQuery(durationParam)
+	const { data: trainingData, isLoading } = useTrainingAnalyticsQuery(durationParam)
 
 	const rawHistory = useMemo(() => trainingData?.[metricKey] || [], [trainingData, metricKey])
 

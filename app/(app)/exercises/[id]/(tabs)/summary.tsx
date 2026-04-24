@@ -1,7 +1,7 @@
 import ExerciseCharts from '@/components/exercises/ExerciseCharts'
 import { CustomModal, ModalHandle } from '@/components/ui/CustomModal'
 import { useExercises } from '@/hooks/queries/useExercises'
-import { useMyProfileQuery } from '@/hooks/queries/useMe'
+import { useProfileQuery } from '@/hooks/queries/useMe'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { SelfUser } from '@/types/user'
@@ -27,7 +27,7 @@ export default function ViewExerciseScreen() {
 	const color = useThemeColor()
 
 	const { data: exerciseList = [] } = useExercises()
-	const { data: userData } = useMyProfileQuery()
+	const { data: userData } = useProfileQuery()
 	const user = userData as SelfUser | null
 	const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
 	const { getExerciseAnalytics } = useAnalytics()

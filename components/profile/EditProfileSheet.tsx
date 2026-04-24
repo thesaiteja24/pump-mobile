@@ -4,10 +4,10 @@ import DateTimePicker from '@/components/ui/DateTimePicker'
 import { GlassBackground } from '@/components/ui/GlassBackground'
 import { SelectableCard } from '@/components/ui/SelectableCard'
 import {
-	useDeleteMyProfilePicMutation,
-	useMyProfileQuery,
-	useUpdateMyProfileMutation,
-	useUpdateMyProfilePicMutation,
+	useDeleteProfilePicMutation,
+	useProfileQuery,
+	useUpdateProfileMutation,
+	useUpdateProfilePicMutation,
 } from '@/hooks/queries/useMe'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { SelfUser } from '@/types/user'
@@ -35,12 +35,12 @@ export const EditProfileSheet = forwardRef<BottomSheetModal>((props, ref) => {
 	const insets = useSafeAreaInsets()
 	const [isOpen, setIsOpen] = useState(false)
 
-	const { data: userData } = useMyProfileQuery()
+	const { data: userData } = useProfileQuery()
 	const user = userData as SelfUser | null
 
-	const updateProfilePicMutation = useUpdateMyProfilePicMutation()
-	const deleteProfilePicMutation = useDeleteMyProfilePicMutation()
-	const updateUserDataMutation = useUpdateMyProfileMutation()
+	const updateProfilePicMutation = useUpdateProfilePicMutation()
+	const deleteProfilePicMutation = useDeleteProfilePicMutation()
+	const updateUserDataMutation = useUpdateProfileMutation()
 	const [uploading, setUploading] = useState(false)
 
 	// Derived preferred units — read from store, not local state (set only via Unit Preferences sheet)

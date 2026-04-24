@@ -1,11 +1,11 @@
 import { BaseTrainingChart } from '@/components/analytics/BaseTrainingChart'
-import { useMyProfileQuery } from '@/hooks/queries/useMe'
+import { useProfileQuery } from '@/hooks/queries/useMe'
 import { SelfUser } from '@/types/user'
 import { convertWeight } from '@/utils/converter'
 import React from 'react'
 
 export default function VolumeChartScreen() {
-	const { data: userData } = useMyProfileQuery()
+	const { data: userData } = useProfileQuery()
 	const user = userData as SelfUser | null
 	const preferredUnit = user?.preferredWeightUnit ?? 'kg'
 
