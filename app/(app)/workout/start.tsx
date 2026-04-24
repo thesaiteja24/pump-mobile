@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button'
 import { ElapsedTime } from '@/components/workout/ElapsedTime'
-import ExerciseGroupModal, { ExerciseGroupModalHandle } from '@/components/workout/ExerciseGroupModal'
+import ExerciseGroupModal, { ExerciseGroupModalHandle } from '@/components/modals/ExerciseGroupModal'
 import ExerciseRow from '@/components/workout/ExerciseRow'
 import RestTimerSnack from '@/components/workout/RestTimerSnack'
 
@@ -18,7 +18,7 @@ import { Ionicons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { router, useNavigation } from 'expo-router'
 
-import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
+import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/modals/DeleteConfirmModal'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { usePreventRemove } from '@react-navigation/native'
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'

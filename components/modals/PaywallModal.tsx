@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router'
 import React, { forwardRef, useCallback, useImperativeHandle, useRef } from 'react'
 import { Text, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { GlassBackground } from './GlassBackground'
+import { GlassBackground } from '@/components/ui/GlassBackground'
 
 export interface PaywallModalHandle {
 	present: () => void

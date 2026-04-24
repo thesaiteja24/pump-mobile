@@ -4,8 +4,8 @@ import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, u
 import { Text, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { TimerPicker } from 'react-native-timer-picker'
-import { Button } from '../ui/Button'
-import { GlassBackground } from '../ui/GlassBackground'
+import { Button } from '@/components/ui/Button'
+import { GlassBackground } from '@/components/ui/GlassBackground'
 
 /* --------------------------------------------------
    Types

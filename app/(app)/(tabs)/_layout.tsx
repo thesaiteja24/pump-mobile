@@ -1,5 +1,5 @@
 import AnimatedButton from '@/components/coach/AnimatedButton'
-import CoachModal, { CoachModalHandle } from '@/components/coach/CoachModal'
+import CoachModal, { CoachModalHandle } from '@/components/modals/CoachModal'
 import CustomHeader from '@/components/navigation/CustomHeader'
 
 import { useThemeColor } from '@/hooks/useThemeColor'

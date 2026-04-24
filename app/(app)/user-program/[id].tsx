@@ -23,7 +23,7 @@ import Animated, {
 import Toast from 'react-native-toast-message'
 
 import ShimmerProgramDetails from '@/components/program/ShimmerProgramDetails'
-import { WorkoutDetailsModal, WorkoutDetailsModalHandle } from '@/components/program/WorkoutDetailsModal'
+import { WorkoutDetailsModal, WorkoutDetailsModalHandle } from '@/components/modals/WorkoutDetailsModal'
 import { useWorkout } from '@/stores/workoutStore'
 
 function SkeletonBlock({

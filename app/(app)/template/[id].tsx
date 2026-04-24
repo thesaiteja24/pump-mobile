@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/Button'
-import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
+import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/modals/DeleteConfirmModal'
 import { useDeleteTemplateMutation, useTemplateByIdQuery } from '@/hooks/queries/useTemplates'
 import { useTemplate } from '@/stores/templateStore'
 import * as Clipboard from 'expo-clipboard'

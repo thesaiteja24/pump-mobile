@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/Button'
-import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
+import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/modals/DeleteConfirmModal'
 import { useActiveProgram, useDeleteProgram, useProgramById, useStartProgram } from '@/hooks/queries/usePrograms'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
@@ -8,8 +8,8 @@ import { BackHandler, ScrollView, Text, TouchableOpacity, View } from 'react-nat
 import Toast from 'react-native-toast-message'
 
 import ShimmerProgramDetails from '@/components/program/ShimmerProgramDetails'
-import { StartProgramSheet, StartProgramSheetHandle } from '@/components/program/StartProgramSheet'
-import { WorkoutDetailsModal, WorkoutDetailsModalHandle } from '@/components/program/WorkoutDetailsModal'
+import { StartProgramSheet, StartProgramSheetHandle } from '@/components/modals/StartProgramSheet'
+import { WorkoutDetailsModal, WorkoutDetailsModalHandle } from '@/components/modals/WorkoutDetailsModal'
 import { ROLES } from '@/constants/roles'
 import { useProfileQuery } from '@/hooks/queries/useMe'
 import { useAuth } from '@/stores/authStore'

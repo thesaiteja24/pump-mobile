@@ -1,5 +1,5 @@
 import EditableAvatar from '@/components/EditableAvatar'
-import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
+import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/modals/DeleteConfirmModal'
 import { useDeleteMeta, useMetaById, useUpdateMeta } from '@/hooks/queries/useMeta'
 import { EquipmentType, MetaResource } from '@/types/meta'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button'
 import { GlassBackground } from '@/components/ui/GlassBackground'
-import { PaywallModal, PaywallModalHandle } from '@/components/ui/PaywallModal'
+import { PaywallModal, PaywallModalHandle } from '@/components/modals/PaywallModal'
 import { SelectableCard } from '@/components/ui/SelectableCard'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 import { Program, UserProgram } from '@/types/program'

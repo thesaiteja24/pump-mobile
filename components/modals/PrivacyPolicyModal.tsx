@@ -4,7 +4,7 @@ import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, u
 import { View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { WebView } from 'react-native-webview'
-import { GlassBackground } from './GlassBackground'
+import { GlassBackground } from '@/components/ui/GlassBackground'
 
 export interface PrivacyPolicyModalHandle {
 	present: () => void

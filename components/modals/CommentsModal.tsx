@@ -1,4 +1,4 @@
-import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
+import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/modals/DeleteConfirmModal'
 import { GlassBackground } from '@/components/ui/GlassBackground'
 import { useCommentsQuery, useDeleteCommentMutation } from '@/hooks/queries/useEngagement'
 import { Comment } from '@/types/engagement'
@@ -17,8 +17,8 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
-import CommentInputFooter from './CommentInputFooter'
-import CommentItem from './CommentItem'
+import CommentInputFooter from '@/components/discover/CommentInputFooter'
+import CommentItem from '@/components/discover/CommentItem'
 
 export interface CommentsModalHandle {
 	present: () => void

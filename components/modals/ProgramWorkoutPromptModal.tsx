@@ -4,8 +4,8 @@ import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/
 import React, { forwardRef, useCallback, useImperativeHandle, useRef } from 'react'
 import { Text, useColorScheme, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Button } from '../ui/Button'
-import { GlassBackground } from '../ui/GlassBackground'
+import { Button } from '@/components/ui/Button'
+import { GlassBackground } from '@/components/ui/GlassBackground'
 
 interface ProgramWorkoutPromptProps {
 	programTitle: string

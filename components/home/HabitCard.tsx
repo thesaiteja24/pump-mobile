@@ -1,4 +1,4 @@
-import { CustomModal, ModalHandle } from '@/components/ui/CustomModal'
+import { CustomModal, ModalHandle } from '@/components/modals/CustomModal'
 import { TextInput } from '@/components/ui/TextInput'
 import { useDeleteHabit, useHabitLogsQuery, useLogHabit, useLogWeight } from '@/hooks/queries/useHabits'
 import { HabitType } from '@/types/habits'

@@ -9,8 +9,8 @@ import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo
 import { BackHandler, Text, View, useColorScheme } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Button } from '../ui/Button'
-import { GlassBackground } from '../ui/GlassBackground'
+import { Button } from '@/components/ui/Button'
+import { GlassBackground } from '@/components/ui/GlassBackground'
 
 export interface CoachModalHandle {
 	present: () => void

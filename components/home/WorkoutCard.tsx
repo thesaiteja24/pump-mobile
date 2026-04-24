@@ -15,7 +15,7 @@ import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Alert, Pressable, Share, Text, TouchableOpacity, View } from 'react-native'
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
 import Toast from 'react-native-toast-message'
-import CommentsModal, { CommentsModalHandle } from '../discover/CommentsModal'
+import CommentsModal, { CommentsModalHandle } from '@/components/modals/CommentsModal'
 import { VerifiedBadge } from '../ui/VerifiedBadge'
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)

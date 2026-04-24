@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/Button'
-import TemplateSelectionModal, { TemplateSelectionModalHandle } from '@/components/workout/TemplateSelectionModal'
+import TemplateSelectionModal, { TemplateSelectionModalHandle } from '@/components/modals/TemplateSelectionModal'
 import { useCreateProgram, useProgramById, useUpdateProgram } from '@/hooks/queries/usePrograms'
 import { useTemplatesQuery } from '@/hooks/queries/useTemplates'
 import { useProgram } from '@/stores/programStore'

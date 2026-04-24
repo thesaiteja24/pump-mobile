@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button'
 import DateTimePicker from '@/components/ui/DateTimePicker'
-import VisibilitySelectionModal, { VisibilitySelectionModalHandle } from '@/components/workout/VisibilitySelectionModal'
+import VisibilitySelectionModal, { VisibilitySelectionModalHandle } from '@/components/modals/VisibilitySelectionModal'
 
 import { useExercises } from '@/hooks/queries/useExercises'
 import { useProfileQuery } from '@/hooks/queries/useMe'

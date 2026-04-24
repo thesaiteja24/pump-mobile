@@ -1,5 +1,5 @@
-import MetaModal, { MetaModalHandle } from '@/components/exercises/MetaModal'
-import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
+import MetaModal, { MetaModalHandle } from '@/components/modals/MetaModal'
+import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/modals/DeleteConfirmModal'
 
 import { useEquipment, useMuscleGroups } from '@/hooks/queries/useMeta'
 import { useDeleteExercise, useExercises, useUpdateExercise } from '@/hooks/queries/useExercises'

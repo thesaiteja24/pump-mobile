@@ -1,6 +1,6 @@
 import GoogleIcon from '@/assets/components/icons/Google'
 import { Button } from '@/components/ui/Button'
-import PrivacyPolicyModal, { PrivacyPolicyModalHandle } from '@/components/ui/PrivacyPolicyModal'
+import PrivacyPolicyModal, { PrivacyPolicyModalHandle } from '@/components/modals/PrivacyPolicyModal'
 import { useGoogleLoginMutation } from '@/hooks/queries/useAuth'
 import { updateFitnessProfileService, updateMeService, updateNutritionPlanService } from '@/services/meService'
 import { useAuth } from '@/stores/authStore'

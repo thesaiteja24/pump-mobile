@@ -19,8 +19,8 @@ import Animated, {
 	withTiming,
 } from 'react-native-reanimated'
 import { ElapsedTime } from './ElapsedTime'
-import RPESelectionModal, { RPESelectionModalHandle } from './RPESelectionModal'
-import SetTypeSelectionModal, { SetTypeSelectionModalHandle } from './SetTypeSelectionModal'
+import RPESelectionModal, { RPESelectionModalHandle } from '@/components/modals/RPESelectionModal'
+import SetTypeSelectionModal, { SetTypeSelectionModalHandle } from '@/components/modals/SetTypeSelectionModal'
 
 /* ───────────────── Constants ───────────────── */
 

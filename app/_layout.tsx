@@ -1,4 +1,4 @@
-import { OtaUpdateModal } from '@/components/auth/OtaUpdateModal'
+import { OtaUpdateModal } from '@/components/modals/OtaUpdateModal'
 import { CustomToast } from '@/components/ui/CustomToast'
 import { useOneSignal } from '@/hooks/notifications/useOneSignal'
 import { useThemeColor } from '@/hooks/useThemeColor'

@@ -6,8 +6,8 @@ import { router } from 'expo-router'
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { BackHandler, Text, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Button } from '../ui/Button'
-import { GlassBackground } from '../ui/GlassBackground'
+import { Button } from '@/components/ui/Button'
+import { GlassBackground } from '@/components/ui/GlassBackground'
 
 export interface WorkoutDetailsModalHandle {
 	present: (day: ProgramDay | UserProgramDay, isStartable?: boolean) => void

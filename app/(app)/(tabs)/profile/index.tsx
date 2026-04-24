@@ -1,9 +1,9 @@
 // app/(app)/(tabs)/profile.tsx
 import EditableAvatar from '@/components/EditableAvatar'
-import { EditProfileSheet } from '@/components/profile/EditProfileSheet'
-import { FitnessGoalsSheet } from '@/components/profile/FitnessGoalsSheet'
-import { MeasurementsSheet } from '@/components/profile/MeasurementsSheet'
-import { UnitPreferencesSheet } from '@/components/profile/UnitPreferencesSheet'
+import { EditProfileSheet } from '@/components/modals/EditProfileSheet'
+import { FitnessGoalsSheet } from '@/components/modals/FitnessGoalsSheet'
+import { MeasurementsSheet } from '@/components/modals/MeasurementsSheet'
+import { UnitPreferencesSheet } from '@/components/modals/UnitPreferencesSheet'
 import { Button } from '@/components/ui/Button'
 import { VerifiedBadge } from '@/components/ui/VerifiedBadge'
 import { useProfileQuery } from '@/hooks/queries/useMe'

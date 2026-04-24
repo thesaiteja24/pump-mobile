@@ -1,8 +1,8 @@
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { Modal, Text, View } from 'react-native'
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated'
-import { Button } from '../ui/Button'
-import { GlassView } from '../ui/GlassView'
+import { Button } from '@/components/ui/Button'
+import { GlassView } from '@/components/ui/GlassView'
 
 type Props = {
 	visible: boolean

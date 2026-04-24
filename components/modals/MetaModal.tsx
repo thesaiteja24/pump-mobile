@@ -3,7 +3,7 @@ import { Image } from 'expo-image'
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import { ActivityIndicator, Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { GlassBackground } from '../ui/GlassBackground'
+import { GlassBackground } from '@/components/ui/GlassBackground'
 import { MetaItem } from '@/types/meta'
 
 export interface MetaModalHandle {

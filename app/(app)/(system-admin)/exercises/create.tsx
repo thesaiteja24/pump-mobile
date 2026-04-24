@@ -1,4 +1,4 @@
-import MetaModal, { MetaModalHandle } from '@/components/exercises/MetaModal'
+import MetaModal, { MetaModalHandle } from '@/components/modals/MetaModal'
 
 import { useCreateExercise } from '@/hooks/queries/useExercises'
 import { useEquipment, useMuscleGroups } from '@/hooks/queries/useMeta'

@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/Button'
-import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
+import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/modals/DeleteConfirmModal'
 import { useExercises } from '@/hooks/queries/useExercises'
 import { useTemplate } from '@/stores/templateStore'
 import { useWorkout } from '@/stores/workoutStore'

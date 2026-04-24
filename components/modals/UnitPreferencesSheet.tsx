@@ -4,7 +4,7 @@ import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/
 import React, { forwardRef, useEffect, useMemo, useState } from 'react'
 import { BackHandler, Text, TouchableOpacity, useColorScheme, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { GlassBackground } from '../ui/GlassBackground'
+import { GlassBackground } from '@/components/ui/GlassBackground'
 
 type WeightUnit = 'kg' | 'lbs'
 type LengthUnit = 'cm' | 'inches'

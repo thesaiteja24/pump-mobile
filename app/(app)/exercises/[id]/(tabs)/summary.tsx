@@ -1,5 +1,5 @@
 import ExerciseCharts from '@/components/exercises/ExerciseCharts'
-import { CustomModal, ModalHandle } from '@/components/ui/CustomModal'
+import { CustomModal, ModalHandle } from '@/components/modals/CustomModal'
 import { useExercises } from '@/hooks/queries/useExercises'
 import { useProfileQuery } from '@/hooks/queries/useMe'
 import { useAnalytics } from '@/hooks/useAnalytics'

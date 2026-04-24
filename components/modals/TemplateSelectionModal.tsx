@@ -5,7 +5,7 @@ import * as Haptics from 'expo-haptics'
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import { Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { GlassBackground } from '../ui/GlassBackground'
+import { GlassBackground } from '@/components/ui/GlassBackground'
 
 export interface TemplateSelectionModalHandle {
 	present: () => void

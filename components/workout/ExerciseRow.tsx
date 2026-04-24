@@ -10,7 +10,7 @@ import React, { memo, useCallback, useRef, useState } from 'react'
 import { Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Button } from '../ui/Button'
-import RestTimerPickerModal, { RestTimerPickerModalHandle } from './RestTimerPickerModal'
+import RestTimerPickerModal, { RestTimerPickerModalHandle } from '@/components/modals/RestTimerPickerModal'
 
 /* ───────────────── Capabilities ───────────────── */
 

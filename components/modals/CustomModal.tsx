@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/Button'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import React, { forwardRef, useImperativeHandle, useState } from 'react'
 import { Pressable, Modal as RNModal, Text, View } from 'react-native'
-import { GlassView } from './GlassView'
+import { GlassView } from '@/components/ui/GlassView'
 
 export interface ModalHandle {
 	open: () => void

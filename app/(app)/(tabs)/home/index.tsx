@@ -1,4 +1,4 @@
-import { StoreUpdateModal } from '@/components/auth/StoreUpdateModal'
+import { StoreUpdateModal } from '@/components/modals/StoreUpdateModal'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native'
 import Animated, { Easing, FadeInDown, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'

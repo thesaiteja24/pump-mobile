@@ -1,8 +1,8 @@
-import MetaModal, { MetaModalHandle } from '@/components/exercises/MetaModal'
+import MetaModal, { MetaModalHandle } from '@/components/modals/MetaModal'
 import ExerciseList from '@/components/exercises/ExerciseList'
 
 import { Button } from '@/components/ui/Button'
-import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
+import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/modals/DeleteConfirmModal'
 
 import { ROLES as roles } from '@/constants/roles'
 import { useEquipment, useMuscleGroups } from '@/hooks/queries/useMeta'
