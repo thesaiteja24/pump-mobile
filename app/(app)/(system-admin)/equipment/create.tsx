@@ -1,9 +1,10 @@
 import EditableAvatar from '@/components/EditableAvatar'
 import { useCreateEquipment } from '@/hooks/queries/useEquipment'
+import { EquipmentType } from '@/types/equipment'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import { useNavigation } from 'expo-router'
 import React, { useCallback, useEffect, useState } from 'react'
-import { Keyboard, Platform, Text, TextInput, useColorScheme, View } from 'react-native'
+import { Keyboard, Platform, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
@@ -14,6 +15,7 @@ export default function CreateEquipment() {
 	const createEquipmentMutation = useCreateEquipment()
 
 	const [title, setTitle] = useState('')
+	const [equipmentType, setEquipmentType] = useState<EquipmentType | null>('other')
 	const [thumbnailUri, setThumbnailUri] = useState<string | null>(null)
 	const [uploading, setUploading] = useState(false)
 
@@ -33,6 +35,9 @@ export default function CreateEquipment() {
 		try {
 			const formData = new FormData()
 			formData.append('title', title.trim())
+			if (equipmentType) {
+				formData.append('type', equipmentType)
+			}
 
 			if (thumbnailUri) {
 				setUploading(true)
@@ -49,27 +54,22 @@ export default function CreateEquipment() {
 				formData.append('image', prepared as any)
 			}
 
-			const res = await createEquipmentMutation.mutateAsync(formData)
+			await createEquipmentMutation.mutateAsync(formData)
 
-			if (res?.success) {
-				Toast.show({
-					type: 'success',
-					text1: 'Equipment created successfully',
-				})
-				// Query automatically invalidated by useCreateEquipment
-				navigation.goBack()
-			} else {
-				throw new Error()
-			}
-		} catch {
+			Toast.show({
+				type: 'success',
+				text1: 'Equipment created successfully',
+			})
+			navigation.goBack()
+		} catch (e: any) {
 			Toast.show({
 				type: 'error',
-				text1: 'Failed to create equipment',
+				text1: e.message || 'Failed to create equipment',
 			})
 		} finally {
 			setUploading(false)
 		}
-	}, [title, thumbnailUri, createEquipmentMutation, navigation])
+	}, [title, equipmentType, thumbnailUri, createEquipmentMutation, navigation])
 
 	useEffect(() => {
 		;(navigation as any).setOptions({
@@ -100,18 +100,54 @@ export default function CreateEquipment() {
 			</View>
 
 			{/* Title input */}
-			<View className="flex flex-row items-center gap-8">
-				<Text className="text-lg font-semibold text-black dark:text-white">Title</Text>
+			<View className="mb-6 flex flex-row items-center gap-8">
+				<Text className="w-16 text-lg font-semibold text-black dark:text-white">Title</Text>
 
 				<TextInput
 					value={title}
 					onChangeText={setTitle}
 					editable={!createEquipmentMutation.isPending}
 					placeholder="e.g. Barbell"
-					className="text-lg text-blue-500"
+					className="flex-1 text-lg text-blue-500"
 					placeholderTextColor={isDarkMode ? '#a3a3a3' : '#737373'}
 					style={{ lineHeight }}
 				/>
+			</View>
+
+			{/* Type selection */}
+			<View className="flex flex-row items-center gap-8">
+				<Text className="w-16 text-lg font-semibold text-black dark:text-white">Type</Text>
+
+				<View className="flex-1 flex-row flex-wrap gap-2">
+					{(
+						[
+							'bodyweight',
+							'dumbbells',
+							'barbells',
+							'kettlebells',
+							'resistanceBands',
+							'machines',
+							'other',
+						] as EquipmentType[]
+					).map(t => (
+						<TouchableOpacity
+							key={t}
+							onPress={() => setEquipmentType(t)}
+							disabled={createEquipmentMutation.isPending}
+							className={`rounded-full px-4 py-2 ${
+								equipmentType === t ? 'bg-blue-500' : 'bg-neutral-100 dark:bg-neutral-800'
+							}`}
+						>
+							<Text
+								className={`text-sm font-medium ${
+									equipmentType === t ? 'text-white' : 'text-neutral-600 dark:text-neutral-400'
+								}`}
+							>
+								{t.charAt(0).toUpperCase() + t.slice(1)}
+							</Text>
+						</TouchableOpacity>
+					))}
+				</View>
 			</View>
 		</View>
 	)

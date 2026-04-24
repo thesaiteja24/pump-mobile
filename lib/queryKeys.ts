@@ -60,8 +60,9 @@ export const queryKeys = {
 		byId: (id: string) => ['exercises', id] as const,
 	},
 	equipment: {
-		all: ['equipment'] as const,
-		byId: (id: string) => ['equipment', id] as const,
+		root: ['equipment'] as const,
+		all: ['equipment', 'list'] as const,
+		byId: (id: string) => ['equipment', 'detail', id] as const,
 	},
 	muscleGroups: {
 		all: ['muscleGroups'] as const,
