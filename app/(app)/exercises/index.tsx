@@ -1,14 +1,13 @@
-import EquipmentModal, { EquipmentModalHandle } from '@/components/exercises/EquipmentModal'
+import MetaModal, { MetaModalHandle } from '@/components/exercises/MetaModal'
 import ExerciseList from '@/components/exercises/ExerciseList'
-import MuscleGroupModal, { MuscleGroupModalHandle } from '@/components/exercises/MuscleGroupModal'
+
 import { Button } from '@/components/ui/Button'
 import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
 
 import { ROLES as roles } from '@/constants/roles'
-import { useEquipment } from '@/hooks/queries/useEquipment'
+import { useEquipment, useMuscleGroups } from '@/hooks/queries/useMeta'
 import { useDeleteExercise, useExercises } from '@/hooks/queries/useExercises'
 import { useProfileQuery } from '@/hooks/queries/useMe'
-import { useMuscleGroups } from '@/hooks/queries/useMuscleGroups'
 import { Exercise } from '@/types/exercises'
 import { SelfUser } from '@/types/user'
 
@@ -102,8 +101,8 @@ export default function ExercisesScreen() {
 	const [query, setQuery] = useState('')
 	// const [showMuscleGroupsModal, setShowMuscleGroupsModal] = useState(false); // Removed
 
-	const equipmentModalRef = React.useRef<EquipmentModalHandle>(null)
-	const muscleGroupsModalRef = React.useRef<MuscleGroupModalHandle>(null)
+	const equipmentModalRef = React.useRef<MetaModalHandle>(null)
+	const muscleGroupsModalRef = React.useRef<MetaModalHandle>(null)
 	const deleteConfirmModalRef = React.useRef<DeleteConfirmModalHandle>(null)
 
 	const [filter, setFilter] = useState({
@@ -378,11 +377,12 @@ export default function ExercisesScreen() {
 			)}
 
 			{/* Modals */}
-			<EquipmentModal
+			<MetaModal
 				ref={equipmentModalRef}
+				title="Equipment"
 				loading={equipmentLoading}
 				enableCreate={role === roles.systemAdmin}
-				equipment={equipmentList}
+				items={equipmentList}
 				onClose={() => setIsEquipmentModalOpen(false)}
 				onSelect={item => {
 					setFilter(f => ({ ...f, equipmentId: item.id }))
@@ -392,21 +392,22 @@ export default function ExercisesScreen() {
 					if (role !== roles.systemAdmin) return
 					Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
 					equipmentModalRef.current?.dismiss()
-					router.push(`/(app)/(system-admin)/equipment/${item.id}`)
+					router.push(`/(app)/(system-admin)/meta/equipment/${item.id}`)
 				}}
 				onCreatePress={() => {
 					if (role !== roles.systemAdmin) return
 					Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
 					equipmentModalRef.current?.dismiss()
-					router.push(`/(app)/(system-admin)/equipment/create`)
+					router.push(`/(app)/(system-admin)/meta/equipment/create`)
 				}}
 			/>
 
-			<MuscleGroupModal
+			<MetaModal
 				ref={muscleGroupsModalRef}
+				title="Muscle Groups"
 				loading={muscleGroupLoading}
 				enableCreate={role === roles.systemAdmin}
-				muscleGroups={muscleGroupList}
+				items={muscleGroupList}
 				onClose={() => setIsMuscleGroupModalOpen(false)}
 				onSelect={item => {
 					setFilter(f => ({ ...f, muscleGroupId: item.id }))
@@ -416,13 +417,13 @@ export default function ExercisesScreen() {
 					if (role !== roles.systemAdmin) return
 					Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
 					muscleGroupsModalRef.current?.dismiss()
-					router.push(`/(app)/(system-admin)/muscle-groups/${item.id}`)
+					router.push(`/(app)/(system-admin)/meta/muscle-groups/${item.id}`)
 				}}
 				onCreatePress={() => {
 					if (role !== roles.systemAdmin) return
 					Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
 					muscleGroupsModalRef.current?.dismiss()
-					router.push(`/(app)/(system-admin)/muscle-groups/create`)
+					router.push(`/(app)/(system-admin)/meta/muscle-groups/create`)
 				}}
 			/>
 

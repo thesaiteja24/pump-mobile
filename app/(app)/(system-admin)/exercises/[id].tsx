@@ -1,10 +1,10 @@
-import EquipmentModal, { EquipmentModalHandle } from '@/components/exercises/EquipmentModal'
-import MuscleGroupModal, { MuscleGroupModalHandle } from '@/components/exercises/MuscleGroupModal'
+import MetaModal, { MetaModalHandle } from '@/components/exercises/MetaModal'
 import { DeleteConfirmModal, DeleteConfirmModalHandle } from '@/components/ui/DeleteConfirmModal'
-import { useEquipment } from '@/hooks/queries/useEquipment'
+
+import { useEquipment, useMuscleGroups } from '@/hooks/queries/useMeta'
 import { useDeleteExercise, useExercises, useUpdateExercise } from '@/hooks/queries/useExercises'
 import { ExerciseType } from '@/types/exercises'
-import { useMuscleGroups } from '@/hooks/queries/useMuscleGroups'
+import { MetaItem } from '@/types/meta'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
@@ -38,8 +38,8 @@ export default function EditExercise() {
 	const [primaryMuscleGroupId, setPrimaryMuscleGroupId] = useState(original?.primaryMuscleGroupId || '')
 	const [exerciseType, setExerciseType] = useState<ExerciseType>(original?.exerciseType || 'repsOnly')
 
-	const equipmentModalRef = useRef<EquipmentModalHandle>(null)
-	const primaryMuscleModalRef = useRef<MuscleGroupModalHandle>(null)
+	const equipmentModalRef = useRef<MetaModalHandle>(null)
+	const primaryMuscleModalRef = useRef<MetaModalHandle>(null)
 	const deleteModalRef = useRef<DeleteConfirmModalHandle>(null)
 
 	const lineHeight = Platform.OS === 'ios' ? 0 : 30
@@ -256,7 +256,7 @@ export default function EditExercise() {
 					>
 						<Text className="text-lg font-semibold text-black dark:text-white">Equipment</Text>
 						<Text className="text-lg text-neutral-500 dark:text-neutral-400">
-							{equipmentList.find(e => e.id === equipmentId)?.title || 'Select'}
+							{equipmentList.find((e: MetaItem) => e.id === equipmentId)?.title || 'Select'}
 						</Text>
 					</TouchableOpacity>
 
@@ -266,7 +266,7 @@ export default function EditExercise() {
 					>
 						<Text className="text-lg font-semibold text-black dark:text-white">Primary Muscle</Text>
 						<Text className="text-lg text-neutral-500 dark:text-neutral-400">
-							{muscleGroupList.find(m => m.id === primaryMuscleGroupId)?.title || 'Select'}
+							{muscleGroupList.find((m: MetaItem) => m.id === primaryMuscleGroupId)?.title || 'Select'}
 						</Text>
 					</TouchableOpacity>
 				</View>
@@ -275,9 +275,10 @@ export default function EditExercise() {
 			</ScrollView>
 
 			{/* Modals */}
-			<EquipmentModal
+			<MetaModal
 				ref={equipmentModalRef}
-				equipment={equipmentList}
+				title="Equipment"
+				items={equipmentList}
 				loading={false}
 				enableCreate={false}
 				onClose={() => {}}
@@ -287,9 +288,10 @@ export default function EditExercise() {
 				}}
 			/>
 
-			<MuscleGroupModal
+			<MetaModal
 				ref={primaryMuscleModalRef}
-				muscleGroups={muscleGroupList}
+				title="Muscle Groups"
+				items={muscleGroupList}
 				loading={false}
 				enableCreate={false}
 				onClose={() => {}}

@@ -7,11 +7,13 @@ export type EquipmentType =
 	| 'machines'
 	| 'other'
 
-export interface Equipment {
+export type MetaResource = 'equipment' | 'muscle-groups'
+
+export interface MetaItem {
 	id: string
-	thumbnailUrl: string
 	title: string
-	type: EquipmentType | null
+	thumbnailUrl: string
+	type?: EquipmentType // Optional, only for equipment
 	createdAt: string
 	updatedAt: string
 }

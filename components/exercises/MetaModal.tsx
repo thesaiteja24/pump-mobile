@@ -1,28 +1,30 @@
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet'
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { Image } from 'expo-image'
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import { ActivityIndicator, Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { GlassBackground } from '../ui/GlassBackground'
+import { MetaItem } from '@/types/meta'
 
-export interface EquipmentModalHandle {
+export interface MetaModalHandle {
 	present: () => void
 	dismiss: () => void
 }
 
 type Props = {
+	title: string
 	loading: boolean
 	enableCreate?: boolean
-	equipment: any[]
+	items: MetaItem[]
 
 	onClose?: () => void
-	onSelect: (equipment: any) => void
-	onLongPress?: (equipment: any) => void
+	onSelect: (item: MetaItem) => void
+	onLongPress?: (item: MetaItem) => void
 	onCreatePress?: () => void
 }
 
-const EquipmentModal = forwardRef<EquipmentModalHandle, Props>(
-	({ loading, enableCreate, equipment, onClose, onSelect, onLongPress, onCreatePress }, ref) => {
+const MetaModal = forwardRef<MetaModalHandle, Props>(
+	({ title, loading, enableCreate, items, onClose, onSelect, onLongPress, onCreatePress }, ref) => {
 		const isDark = useColorScheme() === 'dark'
 		const bottomSheetModalRef = useRef<BottomSheetModal>(null)
 		const insets = useSafeAreaInsets()
@@ -49,24 +51,23 @@ const EquipmentModal = forwardRef<EquipmentModalHandle, Props>(
 				snapPoints={snapPoints}
 				backdropComponent={renderBackdrop}
 				onDismiss={onClose}
-				backgroundComponent={GlassBackground}
 				handleIndicatorStyle={{
 					backgroundColor: isDark ? '#525252' : '#d1d5db',
 				}}
+				backgroundComponent={GlassBackground}
 				enableDynamicSizing={false}
-				// Smoother, slightly slower animation
 				animationConfigs={{
 					duration: 350,
 				}}
 			>
-				<BottomSheetView style={{ flex: 1, paddingBottom: insets.bottom }}>
+				<View style={{ flex: 1, paddingBottom: insets.bottom }}>
 					<View className="px-6 pt-4">
 						<View
 							className={`flex-row items-center ${
 								onCreatePress && enableCreate ? 'justify-between' : 'justify-center'
 							} mb-6`}
 						>
-							<Text className="text-xl font-bold text-black dark:text-white">Equipment</Text>
+							<Text className="text-xl font-bold text-black dark:text-white">{title}</Text>
 
 							{onCreatePress && enableCreate && (
 								<TouchableOpacity onPress={onCreatePress}>
@@ -81,8 +82,14 @@ const EquipmentModal = forwardRef<EquipmentModalHandle, Props>(
 							<ActivityIndicator animating size="large" />
 						</View>
 					) : (
-						<BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
-							{equipment.map(item => (
+						<BottomSheetScrollView
+							style={{ flex: 1 }}
+							contentContainerStyle={{
+								paddingHorizontal: 24,
+							}}
+							showsVerticalScrollIndicator={false}
+						>
+							{items.map(item => (
 								<TouchableOpacity
 									key={item.id}
 									className="flex-row items-center justify-between pb-4"
@@ -110,12 +117,12 @@ const EquipmentModal = forwardRef<EquipmentModalHandle, Props>(
 							))}
 						</BottomSheetScrollView>
 					)}
-				</BottomSheetView>
+				</View>
 			</BottomSheetModal>
 		)
 	}
 )
 
-EquipmentModal.displayName = 'EquipmentModal'
+MetaModal.displayName = 'MetaModal'
 
-export default EquipmentModal
+export default MetaModal

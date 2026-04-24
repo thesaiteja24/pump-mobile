@@ -215,7 +215,9 @@ export function useAddMeasurementMutation() {
 	const userId = useAuth(s => s.userId)
 
 	return useMutation({
-		mutationFn: async (data: Partial<Measurements> & { progressPics?: { uri: string; name?: string; type?: string }[] }) => {
+		mutationFn: async (
+			data: Partial<Measurements> & { progressPics?: { uri: string; name?: string; type?: string }[] }
+		) => {
 			let payload: FormData | Partial<Measurements> = data
 			if (data.progressPics && data.progressPics.length > 0) {
 				const formData = new FormData()

@@ -1,9 +1,9 @@
-import EquipmentModal, { EquipmentModalHandle } from '@/components/exercises/EquipmentModal'
-import MuscleGroupModal, { MuscleGroupModalHandle } from '@/components/exercises/MuscleGroupModal'
-import { useEquipment } from '@/hooks/queries/useEquipment'
+import MetaModal, { MetaModalHandle } from '@/components/exercises/MetaModal'
+
+import { useEquipment, useMuscleGroups } from '@/hooks/queries/useMeta'
 import { useCreateExercise } from '@/hooks/queries/useExercises'
 import { ExerciseType } from '@/types/exercises'
-import { useMuscleGroups } from '@/hooks/queries/useMuscleGroups'
+import { MetaItem } from '@/types/meta'
 
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
@@ -31,8 +31,8 @@ export default function CreateExercise() {
 	const [primaryMuscleGroupId, setPrimaryMuscleGroupId] = useState('')
 	const [exerciseType] = useState<ExerciseType>('repsOnly')
 
-	const equipmentModalRef = useRef<EquipmentModalHandle>(null)
-	const primaryMuscleModalRef = useRef<MuscleGroupModalHandle>(null)
+	const equipmentModalRef = useRef<MetaModalHandle>(null)
+	const primaryMuscleModalRef = useRef<MetaModalHandle>(null)
 
 	const lineHeight = Platform.OS === 'ios' ? 0 : 30
 
@@ -199,7 +199,7 @@ export default function CreateExercise() {
 					>
 						<Text className="text-lg font-semibold text-black dark:text-white">Equipment</Text>
 						<Text className="text-lg text-neutral-500 dark:text-neutral-400">
-							{equipmentList.find(e => e.id === equipmentId)?.title || 'Select'}
+							{equipmentList.find((e: MetaItem) => e.id === equipmentId)?.title || 'Select'}
 						</Text>
 					</TouchableOpacity>
 
@@ -209,7 +209,7 @@ export default function CreateExercise() {
 					>
 						<Text className="text-lg font-semibold text-black dark:text-white">Primary Muscle</Text>
 						<Text className="text-lg text-neutral-500 dark:text-neutral-400">
-							{muscleGroupList.find(m => m.id === primaryMuscleGroupId)?.title || 'Select'}
+							{muscleGroupList.find((m: MetaItem) => m.id === primaryMuscleGroupId)?.title || 'Select'}
 						</Text>
 					</TouchableOpacity>
 				</View>
@@ -218,9 +218,10 @@ export default function CreateExercise() {
 			</ScrollView>
 
 			{/* Modals */}
-			<EquipmentModal
+			<MetaModal
 				ref={equipmentModalRef}
-				equipment={equipmentList}
+				title="Equipment"
+				items={equipmentList}
 				loading={false}
 				enableCreate={false}
 				onClose={() => {}}
@@ -230,9 +231,10 @@ export default function CreateExercise() {
 				}}
 			/>
 
-			<MuscleGroupModal
+			<MetaModal
 				ref={primaryMuscleModalRef}
-				muscleGroups={muscleGroupList}
+				title="Muscle Groups"
+				items={muscleGroupList}
 				loading={false}
 				enableCreate={false}
 				onClose={() => {}}

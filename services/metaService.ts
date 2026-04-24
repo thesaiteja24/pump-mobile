@@ -1,13 +1,12 @@
-import {
-	EQUIPMENT_ENDPOINT as equipment_endpoint,
-	EQUIPMENT_ITEM_ENDPOINT as equipment_item_endpoint,
-} from '@/constants/urls'
+import { MetaResource } from '@/types/meta'
 import { handleApiResponse } from '@/utils/handleApiResponse'
 import client from './api'
 
-export async function getAllEquipmentService() {
+const getEndpoint = (resource: MetaResource, id?: string) => `/meta/${resource}${id ? `/${id}` : ''}`
+
+export async function getAllMetaService(resource: MetaResource) {
 	try {
-		const res = await client.get(equipment_endpoint)
+		const res = await client.get(getEndpoint(resource))
 		const handled = handleApiResponse(res)
 		if (!handled.success) throw new Error(handled.message || 'Request failed')
 		return handled.data
@@ -17,9 +16,9 @@ export async function getAllEquipmentService() {
 	}
 }
 
-export async function getEquipmentByIdService(id: string) {
+export async function getMetaByIdService(resource: MetaResource, id: string) {
 	try {
-		const res = await client.get(equipment_item_endpoint(id))
+		const res = await client.get(getEndpoint(resource, id))
 		const handled = handleApiResponse(res)
 		if (!handled.success) throw new Error(handled.message || 'Request failed')
 		return handled.data
@@ -29,9 +28,9 @@ export async function getEquipmentByIdService(id: string) {
 	}
 }
 
-export async function createEquipmentService(data: FormData) {
+export async function createMetaService(resource: MetaResource, data: FormData) {
 	try {
-		const res = await client.post(equipment_endpoint, data, {
+		const res = await client.post(getEndpoint(resource), data, {
 			headers: { 'Content-Type': 'multipart/form-data' },
 		})
 		const handled = handleApiResponse(res)
@@ -43,9 +42,9 @@ export async function createEquipmentService(data: FormData) {
 	}
 }
 
-export async function updateEquipmentService(id: string, data: FormData) {
+export async function updateMetaService(resource: MetaResource, id: string, data: FormData) {
 	try {
-		const res = await client.put(equipment_item_endpoint(id), data, {
+		const res = await client.put(getEndpoint(resource, id), data, {
 			headers: { 'Content-Type': 'multipart/form-data' },
 		})
 		const handled = handleApiResponse(res)
@@ -57,9 +56,9 @@ export async function updateEquipmentService(id: string, data: FormData) {
 	}
 }
 
-export async function deleteEquipmentService(id: string) {
+export async function deleteMetaService(resource: MetaResource, id: string) {
 	try {
-		const res = await client.delete(equipment_item_endpoint(id))
+		const res = await client.delete(getEndpoint(resource, id))
 		const handled = handleApiResponse(res)
 		if (!handled.success) throw new Error(handled.message || 'Request failed')
 		return handled.data

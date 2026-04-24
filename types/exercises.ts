@@ -1,4 +1,4 @@
-import type { Equipment } from './equipment'
+import { MetaItem } from './meta'
 import type { MuscleGroup } from './muscle-groups'
 
 export type ExerciseType = 'repsOnly' | 'assisted' | 'weighted' | 'durationOnly'
@@ -12,7 +12,7 @@ export interface Exercise {
 	primaryMuscleGroupId: string
 	primaryMuscleGroup: MuscleGroup
 	equipmentId: string
-	equipment: Equipment
+	equipment: MetaItem
 	exerciseType: ExerciseType
 	createdAt: string
 	updatedAt: string

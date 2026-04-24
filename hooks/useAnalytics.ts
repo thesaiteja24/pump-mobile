@@ -27,7 +27,6 @@ function calculate1RM(weight: number, reps: number): number {
 /* ────────────────────────────────────────────── */
 
 export interface UseAnalyticsResult {
-	
 	getExerciseAnalytics: (exerciseId: string) => ExerciseAnalytics
 }
 

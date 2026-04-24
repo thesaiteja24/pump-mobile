@@ -23,9 +23,7 @@ import {
 	getExerciseByIdService,
 	updateExerciseService,
 } from '@/services/exerciseService'
-import type { Equipment } from '@/types/equipment'
-import type { Exercise, ExerciseType } from '@/types/exercises'
-import type { MuscleGroup } from '@/types/muscle-groups'
+import type { Exercise } from '@/types/exercises'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 // ─────────────────────────────────────────────────────────────────

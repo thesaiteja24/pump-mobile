@@ -36,12 +36,12 @@ export const TOGGLE_LIKE_ENDPOINT = (id: string, type: string, liked: boolean) =
 export const WORKOUT_COMMENTS_ENDPOINT = (id: string) => `/engagement/${id}/comments`
 
 // Equipment Endpoints
-export const EQUIPMENT_ENDPOINT = `/equipment`
-export const EQUIPMENT_ITEM_ENDPOINT = (id: string) => `/equipment/${id}`
+export const EQUIPMENT_ENDPOINT = `/meta/equipment`
+export const EQUIPMENT_ITEM_ENDPOINT = (id: string) => `/meta/equipment/${id}`
 
 // Muscle Group Endpoints
-export const MUSCLE_GROUPS_ENDPOINT = `/muscle-groups`
-export const MUSCLE_GROUP_ITEM_ENDPOINT = (id: string) => `/muscle-groups/${id}`
+export const MUSCLE_GROUPS_ENDPOINT = `/meta/muscle-groups`
+export const MUSCLE_GROUP_ITEM_ENDPOINT = (id: string) => `/meta/muscle-groups/${id}`
 
 // Exercise Endpoints
 export const EXERCISES_ENDPOINT = `/exercises`

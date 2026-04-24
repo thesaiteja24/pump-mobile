@@ -59,14 +59,11 @@ export const queryKeys = {
 		all: ['exercises'] as const,
 		byId: (id: string) => ['exercises', id] as const,
 	},
-	equipment: {
-		root: ['equipment'] as const,
-		all: ['equipment', 'list'] as const,
-		byId: (id: string) => ['equipment', 'detail', id] as const,
-	},
-	muscleGroups: {
-		all: ['muscleGroups'] as const,
-		byId: (id: string) => ['muscleGroups', id] as const,
+	meta: {
+		root: ['meta'] as const,
+		resource: (resource: 'equipment' | 'muscle-groups') => ['meta', resource] as const,
+		all: (resource: 'equipment' | 'muscle-groups') => ['meta', resource, 'list'] as const,
+		byId: (resource: 'equipment' | 'muscle-groups', id: string) => ['meta', resource, 'detail', id] as const,
 	},
 	// Future phases will add more keys here
 	// Programs (Library / Global)
