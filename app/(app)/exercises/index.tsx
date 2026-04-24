@@ -434,14 +434,21 @@ export default function ExercisesScreen() {
 				onCancel={() => setDeleteExerciseId(null)}
 				onConfirm={async () => {
 					if (!deleteExerciseId) return
-					const res = await deleteExerciseMutation.mutateAsync(deleteExerciseId.id)
-					setDeleteExerciseId(null)
-
-					Toast.show({
-						type: res.success ? 'success' : 'error',
-						text1: res.success ? 'Exercise deleted successfully' : 'Error deleting exercise',
-						text2: res.message,
-					})
+					try {
+						await deleteExerciseMutation.mutateAsync(deleteExerciseId.id)
+						setDeleteExerciseId(null)
+						Toast.show({
+							type: 'success',
+							text1: 'Exercise deleted successfully',
+						})
+					} catch (e: any) {
+						setDeleteExerciseId(null)
+						Toast.show({
+							type: 'error',
+							text1: 'Error deleting exercise',
+							text2: e.message,
+						})
+					}
 				}}
 			/>
 		</View>

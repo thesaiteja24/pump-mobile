@@ -13,27 +13,6 @@
 import { LikeType } from '@/types/engagement'
 
 export const queryKeys = {
-	engagement: {
-		root: ['engagement'] as const,
-
-		suggested: ['engagement', 'follow', 'suggestedUsers'] as const,
-		searchRoot: ['engagement', 'follow', 'searchUsers'] as const,
-		search: (query: string) => ['engagement', 'follow', 'searchUsers', query] as const,
-
-		followRoot: ['engagement', 'follow'] as const,
-		followersRoot: ['engagement', 'follow', 'userFollowers'] as const,
-		followers: (userId: string) => ['engagement', 'follow', 'userFollowers', userId] as const,
-		followingRoot: ['engagement', 'follow', 'userFollowing'] as const,
-		following: (userId: string) => ['engagement', 'follow', 'userFollowing', userId] as const,
-
-		commentsRoot: ['engagement', 'comments'] as const,
-		comments: (workoutId: string) => ['engagement', 'comments', workoutId] as const,
-		repliesRoot: ['engagement', 'replies'] as const,
-		replies: (parentId: string) => ['engagement', 'replies', parentId] as const,
-
-		likes: (id: string, type: LikeType) => ['engagement', 'likes', type, id] as const,
-	},
-
 	me: {
 		root: ['me'] as const,
 
@@ -55,16 +34,40 @@ export const queryKeys = {
 		byId: (userId: string) => ['user', userId] as const,
 	},
 
-	exercises: {
-		all: ['exercises'] as const,
-		byId: (id: string) => ['exercises', id] as const,
+	engagement: {
+		root: ['engagement'] as const,
+
+		suggested: ['engagement', 'follow', 'suggestedUsers'] as const,
+		searchRoot: ['engagement', 'follow', 'searchUsers'] as const,
+		search: (query: string) => ['engagement', 'follow', 'searchUsers', query] as const,
+
+		followRoot: ['engagement', 'follow'] as const,
+		followersRoot: ['engagement', 'follow', 'userFollowers'] as const,
+		followers: (userId: string) => ['engagement', 'follow', 'userFollowers', userId] as const,
+		followingRoot: ['engagement', 'follow', 'userFollowing'] as const,
+		following: (userId: string) => ['engagement', 'follow', 'userFollowing', userId] as const,
+
+		commentsRoot: ['engagement', 'comments'] as const,
+		comments: (workoutId: string) => ['engagement', 'comments', workoutId] as const,
+		repliesRoot: ['engagement', 'replies'] as const,
+		replies: (parentId: string) => ['engagement', 'replies', parentId] as const,
+
+		likes: (id: string, type: LikeType) => ['engagement', 'likes', type, id] as const,
 	},
+
 	meta: {
 		root: ['meta'] as const,
 		resource: (resource: 'equipment' | 'muscle-groups') => ['meta', resource] as const,
 		all: (resource: 'equipment' | 'muscle-groups') => ['meta', resource, 'list'] as const,
 		byId: (resource: 'equipment' | 'muscle-groups', id: string) => ['meta', resource, 'detail', id] as const,
 	},
+
+	exercises: {
+		root: ['exercises'] as const,
+		all: ['exercises', 'list'] as const,
+		byId: (id: string) => ['exercises', 'detail', id] as const,
+	},
+
 	// Future phases will add more keys here
 	// Programs (Library / Global)
 	programs: {
@@ -92,11 +95,5 @@ export const queryKeys = {
 		list: (userId: string) => ['habits', userId] as const,
 		logs: (userId: string, startDate?: string, endDate?: string) =>
 			['habits', 'logs', userId, startDate, endDate] as const,
-	},
-	comments: {
-		byWorkout: (workoutId: string) => ['comments', workoutId] as const,
-		replies: (commentId: string) => ['replies', commentId] as const,
-		workoutLikes: (workoutId: string) => ['workoutLikes', workoutId] as const,
-		commentLikes: (commentId: string) => ['commentLikes', commentId] as const,
 	},
 } as const

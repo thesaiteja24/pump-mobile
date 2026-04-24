@@ -13,8 +13,7 @@ import {
 	toggleLikeService,
 	unFollowUserService,
 } from '@/services/engagementService'
-import { useAuth } from '@/stores/authStore'
-import { Comment, CommentsPage, EngagementUser, Like, LikeType, RepliesPage, SearchedUser } from '@/types/engagement'
+import { Comment, EngagementUser, LikeType, SearchedUser } from '@/types/engagement'
 import {
 	incrementReplyCount,
 	prependCommentToCaches,
@@ -25,7 +24,7 @@ import {
 	toggleLikeInReplies,
 	toggleLikeInWorkouts,
 	updateCommentAcrossCaches,
-} from '@/utils/engagementCacheUtils'
+} from '@/utils/queries/engagementCacheUtils'
 import { QueryClient, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 /**
@@ -59,10 +58,7 @@ function setFollowLoading(qc: QueryClient, targetUserId: string, loading: boolea
 export function useSuggestedUsersQuery() {
 	return useQuery({
 		queryKey: queryKeys.engagement.suggested,
-		queryFn: async () => {
-			const res = await getSuggestedUsersService()
-			return (res.data ?? []) as SearchedUser[]
-		},
+		queryFn: () => getSuggestedUsersService(),
 		staleTime: 2 * 60 * 1000,
 	})
 }
@@ -70,10 +66,7 @@ export function useSuggestedUsersQuery() {
 export function useSearchUsersQuery(query: string) {
 	return useQuery({
 		queryKey: queryKeys.engagement.search(query),
-		queryFn: async () => {
-			const res = await searchUsersService(query)
-			return (res.data ?? []) as SearchedUser[]
-		},
+		queryFn: () => searchUsersService(query),
 		enabled: query.trim().length > 0,
 		staleTime: 30 * 1000,
 	})
@@ -82,10 +75,7 @@ export function useSearchUsersQuery(query: string) {
 export function useUserFollowersQuery(userId?: string) {
 	return useQuery({
 		queryKey: queryKeys.engagement.followers(userId ?? ''),
-		queryFn: async () => {
-			const res = await getUserFollowersService(userId!)
-			return (res.data ?? []) as SearchedUser[]
-		},
+		queryFn: () => getUserFollowersService(userId!),
 		enabled: !!userId,
 		staleTime: 60 * 1000,
 	})
@@ -94,10 +84,7 @@ export function useUserFollowersQuery(userId?: string) {
 export function useUserFollowingQuery(userId?: string) {
 	return useQuery({
 		queryKey: queryKeys.engagement.following(userId ?? ''),
-		queryFn: async () => {
-			const res = await getUserFollowingService(userId!)
-			return (res.data ?? []) as SearchedUser[]
-		},
+		queryFn: () => getUserFollowingService(userId!),
 		enabled: !!userId,
 		staleTime: 60 * 1000,
 	})
@@ -113,8 +100,7 @@ export function useFollowUserMutation() {
 			setFollowLoading(qc, targetUserId, true)
 		},
 
-		onSuccess: (res, targetUserId) => {
-			const updatedUser = res?.data
+		onSuccess: (updatedUser, targetUserId) => {
 			if (!updatedUser) return
 
 			updateUserAcrossQueries(qc, targetUserId, user => ({
@@ -129,16 +115,13 @@ export function useFollowUserMutation() {
 		},
 
 		onSettled: () => {
-			const currentUserId = useAuth.getState().userId
 			qc.invalidateQueries({
 				queryKey: queryKeys.engagement.followRoot,
 			})
 
-			if (currentUserId) {
-				qc.invalidateQueries({
-					queryKey: queryKeys.user.byId(currentUserId),
-				})
-			}
+			qc.invalidateQueries({
+				queryKey: queryKeys.me.profile,
+			})
 		},
 	})
 }
@@ -153,8 +136,7 @@ export function useUnfollowUserMutation() {
 			setFollowLoading(qc, targetUserId, true)
 		},
 
-		onSuccess: (res, targetUserId) => {
-			const updatedUser = res?.data
+		onSuccess: (updatedUser, targetUserId) => {
 			if (!updatedUser) return
 
 			updateUserAcrossQueries(qc, targetUserId, user => ({
@@ -169,15 +151,13 @@ export function useUnfollowUserMutation() {
 		},
 
 		onSettled: () => {
-			const currentUserId = useAuth.getState().userId
 			qc.invalidateQueries({
 				queryKey: queryKeys.engagement.followRoot,
 			})
-			if (currentUserId) {
-				qc.invalidateQueries({
-					queryKey: queryKeys.user.byId(currentUserId),
-				})
-			}
+
+			qc.invalidateQueries({
+				queryKey: queryKeys.me.profile,
+			})
 		},
 	})
 }
@@ -187,12 +167,12 @@ export function useCommentsQuery(workoutId: string, limit = 3) {
 		queryKey: queryKeys.engagement.comments(workoutId),
 
 		queryFn: async ({ pageParam }) => {
-			const res = await getCommentsService(workoutId, limit, pageParam)
+			const data = await getCommentsService(workoutId, limit, pageParam)
 
 			return {
-				comments: res.data.comments,
-				nextCursor: res.data.nextCursor,
-			} as CommentsPage
+				comments: data.comments,
+				nextCursor: data.nextCursor,
+			}
 		},
 
 		initialPageParam: undefined as string | undefined,
@@ -208,12 +188,12 @@ export function useRepliesQuery(parentId?: string, limit = 3) {
 		queryKey: queryKeys.engagement.replies(parentId!),
 
 		queryFn: async ({ pageParam }) => {
-			const res = await getCommentsService(parentId!, limit, pageParam, true)
+			const data = await getCommentsService(parentId!, limit, pageParam, true)
 
 			return {
-				replies: res.data.replies,
-				nextCursor: res.data.nextCursor,
-			} as RepliesPage
+				replies: data.replies,
+				nextCursor: data.nextCursor,
+			}
 		},
 
 		initialPageParam: undefined as string | undefined,
@@ -240,8 +220,7 @@ export function useCommentMutation(workoutId: string) {
 			return { previousData }
 		},
 
-		onSuccess: (res: any) => {
-			const newComment = res.data as Comment
+		onSuccess: newComment => {
 			if (!newComment) return
 
 			prependCommentToCaches(qc, newComment)
@@ -279,8 +258,7 @@ export function useReplyMutation(workoutId: string, parentId: string) {
 			return { previousComments, previousReplies }
 		},
 
-		onSuccess: res => {
-			const newReply = res.data as Comment
+		onSuccess: newReply => {
 			if (!newReply) return
 
 			incrementReplyCount(qc, parentId)
@@ -319,7 +297,7 @@ export function useEditCommentMutation(workoutId: string) {
 			const previousComments = qc.getQueriesData({ queryKey: queryKeys.engagement.commentsRoot })
 			const previousReplies = qc.getQueriesData({ queryKey: queryKeys.engagement.repliesRoot })
 
-			updateCommentAcrossCaches(qc, commentId, comment => ({ ...comment, content }))
+			updateCommentAcrossCaches(qc, commentId, comment => ({ ...comment, content }), workoutId)
 
 			return { previousComments, previousReplies }
 		},
@@ -357,7 +335,7 @@ export function useDeleteCommentMutation() {
 			const previousComments = qc.getQueriesData({ queryKey: queryKeys.engagement.commentsRoot })
 			const previousReplies = qc.getQueriesData({ queryKey: queryKeys.engagement.repliesRoot })
 
-			removeCommentAcrossCaches(qc, comment.id, comment.parentId)
+			removeCommentAcrossCaches(qc, comment.id, comment.parentId, comment.workoutId)
 
 			return { previousComments, previousReplies }
 		},
@@ -385,12 +363,7 @@ export function useDeleteCommentMutation() {
 export function useLikesQuery(id: string, type: LikeType) {
 	return useQuery({
 		queryKey: queryKeys.engagement.likes(id, type),
-
-		queryFn: async () => {
-			const res = await getLikesService(id, type)
-			return res.data as Like[]
-		},
-
+		queryFn: () => getLikesService(id, type),
 		enabled: !!id && !!type,
 		staleTime: 30 * 1000,
 	})

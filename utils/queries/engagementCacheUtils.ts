@@ -51,9 +51,15 @@ export function prependToInfiniteData<TPage extends { [K in TKey]: { id: string 
 /**
  * Updates a specific comment across all engagement caches (main list and thread lists)
  */
-export function updateCommentAcrossCaches(qc: QueryClient, commentId: string, updater: (comment: Comment) => Comment) {
+export function updateCommentAcrossCaches(
+	qc: QueryClient,
+	commentId: string,
+	updater: (comment: Comment) => Comment,
+	workoutId?: string
+) {
 	// 1. Update in main comment lists
-	qc.setQueriesData({ queryKey: queryKeys.engagement.commentsRoot }, (old: InfiniteData<CommentsPage> | undefined) =>
+	const queryKey = workoutId ? queryKeys.engagement.comments(workoutId) : queryKeys.engagement.commentsRoot
+	qc.setQueriesData({ queryKey }, (old: InfiniteData<CommentsPage> | undefined) =>
 		updateInfiniteData(old, 'comments', items => items.map(c => (c.id === commentId ? updater(c) : c)))
 	)
 
@@ -66,9 +72,15 @@ export function updateCommentAcrossCaches(qc: QueryClient, commentId: string, up
 /**
  * Removes a comment from all engagement caches
  */
-export function removeCommentAcrossCaches(qc: QueryClient, commentId: string, parentId?: string | null) {
+export function removeCommentAcrossCaches(
+	qc: QueryClient,
+	commentId: string,
+	parentId?: string | null,
+	workoutId?: string
+) {
 	// 1. Remove from main lists
-	qc.setQueriesData({ queryKey: queryKeys.engagement.commentsRoot }, (old: InfiniteData<CommentsPage> | undefined) =>
+	const queryKey = workoutId ? queryKeys.engagement.comments(workoutId) : queryKeys.engagement.commentsRoot
+	qc.setQueriesData({ queryKey }, (old: InfiniteData<CommentsPage> | undefined) =>
 		updateInfiniteData(old, 'comments', items =>
 			items
 				.filter(c => c.id !== commentId)
@@ -98,8 +110,9 @@ export function incrementReplyCount(qc: QueryClient, parentId: string) {
  * Adds a comment to the main lists
  */
 export function prependCommentToCaches(qc: QueryClient, newComment: Comment) {
-	qc.setQueriesData({ queryKey: queryKeys.engagement.commentsRoot }, (old: InfiniteData<CommentsPage> | undefined) =>
-		prependToInfiniteData(old, 'comments', newComment)
+	qc.setQueriesData(
+		{ queryKey: queryKeys.engagement.comments(newComment.workoutId) },
+		(old: InfiniteData<CommentsPage> | undefined) => prependToInfiniteData(old, 'comments', newComment)
 	)
 }
 

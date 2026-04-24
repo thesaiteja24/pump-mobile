@@ -14,33 +14,20 @@ import {
 	updateNutritionPlanService,
 } from '@/services/meService'
 import { useAuth } from '@/stores/authStore'
-import {
-	AnalyticsMetrics,
-	FitnessProfile,
-	Measurements,
-	MeasurementsQueryData,
-	TrainingAnalytics,
-	UpdateFitnessProfileBody,
-	UpdateNutritionPlanBody,
-	UpdateUserBody,
-	User,
-} from '@/types/user'
+import { Measurements, UpdateFitnessProfileBody, UpdateNutritionPlanBody, UpdateUserBody } from '@/types/user'
 import {
 	addMeasurementToCache,
 	rollbackQueries,
 	updateMyFitnessProfileCache,
 	updateMyNutritionPlanCache,
 	updateMyProfileCache,
-} from '@/utils/meCacheUtils'
+} from '@/utils/queries/meCacheUtils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 export function useProfileQuery() {
 	return useQuery({
 		queryKey: queryKeys.me.profile,
-		queryFn: async () => {
-			const data = await getMeService()
-			return data as User
-		},
+		queryFn: () => getMeService(),
 		staleTime: 5 * 60 * 1000,
 	})
 }
@@ -48,11 +35,7 @@ export function useProfileQuery() {
 export function useMeasurementsQuery(duration?: string) {
 	return useQuery({
 		queryKey: queryKeys.me.measurements(duration),
-		queryFn: async () => {
-			const data = (await getMeasurementsService(duration)) as MeasurementsQueryData | null
-			const { history = [], latestValues = {}, dailyWeightChange = null } = data ?? {}
-			return { history, latestValues, dailyWeightChange } as MeasurementsQueryData
-		},
+		queryFn: () => getMeasurementsService(duration),
 		staleTime: 24 * 60 * 60 * 1000,
 		gcTime: 24 * 60 * 60 * 1000,
 	})
@@ -61,10 +44,7 @@ export function useMeasurementsQuery(duration?: string) {
 export function useFitnessProfileQuery() {
 	return useQuery({
 		queryKey: queryKeys.me.fitnessProfile,
-		queryFn: async () => {
-			const data = await getFitnessProfileService()
-			return data as FitnessProfile
-		},
+		queryFn: () => getFitnessProfileService(),
 		staleTime: 24 * 60 * 60 * 1000,
 		gcTime: 24 * 60 * 60 * 1000,
 	})
@@ -73,10 +53,7 @@ export function useFitnessProfileQuery() {
 export function useNutritionPlanQuery() {
 	return useQuery({
 		queryKey: queryKeys.me.nutritionPlan,
-		queryFn: async () => {
-			const data = await getNutritionPlanService()
-			return data ?? null
-		},
+		queryFn: () => getNutritionPlanService(),
 		staleTime: 24 * 60 * 60 * 1000,
 		gcTime: 24 * 60 * 60 * 1000,
 	})
@@ -85,10 +62,7 @@ export function useNutritionPlanQuery() {
 export function useUserAnalyticsQuery() {
 	return useQuery({
 		queryKey: queryKeys.me.userAnalytics,
-		queryFn: async () => {
-			const data = await getUserAnalyticsService()
-			return (data || {}) as AnalyticsMetrics
-		},
+		queryFn: () => getUserAnalyticsService(),
 		staleTime: 24 * 60 * 60 * 1000,
 	})
 }
@@ -96,10 +70,7 @@ export function useUserAnalyticsQuery() {
 export function useTrainingAnalyticsQuery(duration: string = '3m') {
 	return useQuery({
 		queryKey: queryKeys.me.trainingAnalytics(duration),
-		queryFn: async () => {
-			const data = await getTrainingAnalyticsService(duration)
-			return data as TrainingAnalytics
-		},
+		queryFn: () => getTrainingAnalyticsService(duration),
 		staleTime: 24 * 60 * 60 * 1000,
 		gcTime: 24 * 60 * 60 * 1000,
 	})

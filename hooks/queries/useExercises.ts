@@ -1,20 +1,3 @@
-/**
- * useExercises / useExerciseById
- *
- * TanStack Query hooks that replace the old exerciseStore fetch actions.
- *
- * staleTime: Infinity — exercises are reference/catalogue data that changes
- * very rarely (only when an admin updates them). The data is persisted to
- * MMKV via the global QueryClient persister, so it survives app restarts.
- * A background refetch is still triggered on every fresh app foreground
- * because TanStack Query refetches stale queries when the window regains
- * focus, but since staleTime is Infinity the cached value is rendered
- * instantly with zero loading flicker.
- *
- * Mutations (create / update / delete) live in the admin screens and call
- * the service directly, then invalidate this query to force a refetch.
- */
-
 import { queryKeys } from '@/lib/queryKeys'
 import {
 	createExerciseService,
@@ -23,44 +6,36 @@ import {
 	getExerciseByIdService,
 	updateExerciseService,
 } from '@/services/exerciseService'
-import type { Exercise } from '@/types/exercises'
+import type { Exercise, ExerciseType } from '@/types/exercises'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+/**
+ * useExercises / useExerciseById
+ * Standardized hooks with optimistic updates for administrative actions.
+ */
+
 // ─────────────────────────────────────────────────────────────────
-// READ — full list
+// READ
 // ─────────────────────────────────────────────────────────────────
 
 export function useExercises() {
 	return useQuery<Exercise[]>({
 		queryKey: queryKeys.exercises.all,
-		queryFn: async () => {
-			const res = await getAllExercisesService()
-			return res.data ?? []
-		},
-		// Exercise catalogue rarely changes — treat as effectively permanent
+		queryFn: getAllExercisesService,
 		staleTime: Infinity,
 	})
 }
 
-// ─────────────────────────────────────────────────────────────────
-// READ — single exercise (useful for detail screens)
-// ─────────────────────────────────────────────────────────────────
-
 export function useExerciseById(id: string | undefined) {
 	return useQuery<Exercise | null>({
 		queryKey: queryKeys.exercises.byId(id!),
-		queryFn: async () => {
-			const res = await getExerciseByIdService(id!)
-			return res.data ?? null
-		},
+		queryFn: () => getExerciseByIdService(id!),
 		enabled: !!id,
 		staleTime: Infinity,
 	})
 }
 
-// ─────────────────────────────────────────────────────────────────
-// WRITE — admin mutations (invalidate list after each operation)
-// ─────────────────────────────────────────────────────────────────
+// MUTATIONS
 
 export function useCreateExercise() {
 	const queryClient = useQueryClient()
@@ -76,8 +51,66 @@ export function useUpdateExercise() {
 	const queryClient = useQueryClient()
 	return useMutation({
 		mutationFn: ({ id, data }: { id: string; data: FormData }) => updateExerciseService(id, data),
-		onSuccess: () => {
+
+		onMutate: async ({ id, data }) => {
+			await queryClient.cancelQueries({ queryKey: queryKeys.exercises.root })
+
+			const previousAll = queryClient.getQueryData<Exercise[]>(queryKeys.exercises.all)
+			const previousDetail = queryClient.getQueryData<Exercise>(queryKeys.exercises.byId(id))
+
+			// Optimistic update
+			if (previousAll) {
+				const title = data.get('title') as string | null
+				const instructions = data.get('instructions') as string | null
+				const exerciseType = data.get('exerciseType') as ExerciseType | null
+
+				queryClient.setQueryData<Exercise[]>(queryKeys.exercises.all, old =>
+					old?.map(ex =>
+						ex.id === id
+							? {
+									...ex,
+									...(title && { title }),
+									...(instructions && { instructions }),
+									...(exerciseType && { exerciseType }),
+								}
+							: ex
+					)
+				)
+			}
+
+			// Also update detail cache if it exists
+			if (previousDetail) {
+				const title = data.get('title') as string | null
+				const instructions = data.get('instructions') as string | null
+				const exerciseType = data.get('exerciseType') as ExerciseType | null
+
+				queryClient.setQueryData<Exercise>(queryKeys.exercises.byId(id), old =>
+					old
+						? {
+								...old,
+								...(title && { title }),
+								...(instructions && { instructions }),
+								...(exerciseType && { exerciseType }),
+							}
+						: old
+				)
+			}
+
+			return { previousAll, previousDetail }
+		},
+
+		onError: (_err, variables, context) => {
+			if (context?.previousAll) {
+				queryClient.setQueryData(queryKeys.exercises.all, context.previousAll)
+			}
+			if (context?.previousDetail) {
+				queryClient.setQueryData(queryKeys.exercises.byId(variables.id), context.previousDetail)
+			}
+		},
+
+		onSettled: (_data, _err, variables) => {
 			queryClient.invalidateQueries({ queryKey: queryKeys.exercises.all })
+			queryClient.invalidateQueries({ queryKey: queryKeys.exercises.byId(variables.id) })
 		},
 	})
 }
@@ -86,7 +119,25 @@ export function useDeleteExercise() {
 	const queryClient = useQueryClient()
 	return useMutation({
 		mutationFn: (id: string) => deleteExerciseService(id),
-		onSuccess: () => {
+
+		onMutate: async id => {
+			await queryClient.cancelQueries({ queryKey: queryKeys.exercises.root })
+			const previousAll = queryClient.getQueryData<Exercise[]>(queryKeys.exercises.all)
+
+			if (previousAll) {
+				queryClient.setQueryData<Exercise[]>(queryKeys.exercises.all, old => old?.filter(ex => ex.id !== id))
+			}
+
+			return { previousAll }
+		},
+
+		onError: (_err, _id, context) => {
+			if (context?.previousAll) {
+				queryClient.setQueryData(queryKeys.exercises.all, context.previousAll)
+			}
+		},
+
+		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: queryKeys.exercises.all })
 		},
 	})

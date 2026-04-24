@@ -37,7 +37,7 @@ export function useGoogleLoginMutation() {
 				await setSession({ userId: user.id, accessToken, refreshToken })
 
 				// Seed the user cache immediately
-				qc.setQueryData(queryKeys.user.byId(user.id), user)
+				qc.setQueryData(queryKeys.me.profile, user)
 			}
 		},
 	})

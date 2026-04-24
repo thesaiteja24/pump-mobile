@@ -1,7 +1,7 @@
 import MetaModal, { MetaModalHandle } from '@/components/exercises/MetaModal'
 
-import { useEquipment, useMuscleGroups } from '@/hooks/queries/useMeta'
 import { useCreateExercise } from '@/hooks/queries/useExercises'
+import { useEquipment, useMuscleGroups } from '@/hooks/queries/useMeta'
 import { ExerciseType } from '@/types/exercises'
 import { MetaItem } from '@/types/meta'
 
@@ -64,22 +64,19 @@ export default function CreateExercise() {
 				} as any)
 			}
 
-			const res = await createExerciseMutation.mutateAsync(formData)
+			await createExerciseMutation.mutateAsync(formData)
 
-			if (res?.success) {
-				Toast.show({
-					type: 'success',
-					text1: 'Exercise created successfully',
-				})
-				// Query is automatically invalidated by useCreateExercise
-				navigation.goBack()
-			} else {
-				throw new Error()
-			}
-		} catch {
+			Toast.show({
+				type: 'success',
+				text1: 'Exercise created successfully',
+			})
+			// Query is automatically invalidated by useCreateExercise
+			navigation.goBack()
+		} catch (e: any) {
 			Toast.show({
 				type: 'error',
 				text1: 'Failed to create exercise',
+				text2: e.message,
 			})
 		} finally {
 			setUploading(false)

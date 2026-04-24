@@ -10,10 +10,7 @@ import { useQuery } from '@tanstack/react-query'
 export function usePublicUserQuery(userId: string) {
 	return useQuery({
 		queryKey: queryKeys.user.byId(userId),
-		queryFn: async () => {
-			const res = await getUserByIdService(userId)
-			return res.data as User
-		},
+		queryFn: () => getUserByIdService(userId),
 		enabled: !!userId,
 		staleTime: 5 * 60 * 1000,
 	})

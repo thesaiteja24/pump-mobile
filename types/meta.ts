@@ -14,6 +14,7 @@ export interface MetaItem {
 	title: string
 	thumbnailUrl: string
 	type?: EquipmentType // Optional, only for equipment
+	tags?: string[] // Optional, only for Muscle Groups
 	createdAt: string
 	updatedAt: string
 }

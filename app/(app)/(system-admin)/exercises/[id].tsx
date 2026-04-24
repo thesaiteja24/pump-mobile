@@ -95,22 +95,19 @@ export default function EditExercise() {
 				} as any)
 			}
 
-			const res = await updateExerciseMutation.mutateAsync({ id, data: formData })
+			await updateExerciseMutation.mutateAsync({ id, data: formData })
 
-			if (res?.success) {
-				Toast.show({
-					type: 'success',
-					text1: 'Exercise updated successfully',
-				})
-				// Query is automatically invalidated by useUpdateExercise
-				navigation.goBack()
-			} else {
-				throw new Error()
-			}
-		} catch {
+			Toast.show({
+				type: 'success',
+				text1: 'Exercise updated successfully',
+			})
+			// Query is automatically invalidated by useUpdateExercise
+			navigation.goBack()
+		} catch (e: any) {
 			Toast.show({
 				type: 'error',
 				text1: 'Failed to update exercise',
+				text2: e.message,
 			})
 		} finally {
 			setUploading(false)
@@ -308,21 +305,18 @@ export default function EditExercise() {
 				confirmText="Delete"
 				onConfirm={async () => {
 					try {
-						const res = await deleteExerciseMutation.mutateAsync(id)
-						if (res?.success) {
-							Toast.show({
-								type: 'success',
-								text1: 'Exercise deleted successfully',
-							})
-							// Query is automatically invalidated by useDeleteExercise
-							router.back()
-						} else {
-							throw new Error()
-						}
-					} catch {
+						await deleteExerciseMutation.mutateAsync(id)
+						Toast.show({
+							type: 'success',
+							text1: 'Exercise deleted successfully',
+						})
+						// Query is automatically invalidated by useDeleteExercise
+						router.back()
+					} catch (e: any) {
 						Toast.show({
 							type: 'error',
 							text1: 'Failed to delete exercise',
+							text2: e.message,
 						})
 					}
 				}}
