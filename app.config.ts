@@ -24,7 +24,7 @@ export default ({ config }: { config: ExpoConfig }): ExpoConfig => {
       package: 'com.thesaiteja.pump',
       versionCode: 1,
       adaptiveIcon: {
-        foregroundImage: './assets/images/adaptive-icon.png',
+        foregroundImage: './assets/images/icon.png',
         backgroundColor: '#000000',
       },
       intentFilters: [
@@ -75,7 +75,7 @@ export default ({ config }: { config: ExpoConfig }): ExpoConfig => {
       [
         'expo-splash-screen',
         {
-          image: './assets/images/splash-icon-dark.png',
+          image: './assets/images/icon.png',
           imageWidth: 200,
           resizeMode: 'contain',
           backgroundColor: '#000000',

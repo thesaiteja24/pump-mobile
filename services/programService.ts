@@ -107,7 +107,7 @@ export const getUserProgramService = async (
   }
 
   try {
-    const response = await client.get(`/users/${userId}/programs/${userProgramId}`, {
+    const response = await client.get(`/me/programs/${userProgramId}`, {
       params: { weekIndex },
     })
     return handleApiResponse<UserProgramDetailResponse>(response)
@@ -126,7 +126,7 @@ export const getActiveUserProgramService = async (): Promise<
   }
 
   try {
-    const response = await client.get(`/users/${userId}/programs/active`)
+    const response = await client.get(`/me/programs/active`)
     return handleApiResponse<ActiveUserProgramResponse>(response)
   } catch (error: any) {
     const errData = error.response?.data
@@ -144,7 +144,7 @@ export const startProgramService = async (
   }
 
   try {
-    const response = await client.post(`/users/${userId}/programs/${programId}`, payload)
+    const response = await client.post(`/me/programs/${programId}`, payload)
     return handleApiResponse<UserProgramStartResponse>(response)
   } catch (error: any) {
     const errData = error.response?.data
@@ -159,7 +159,7 @@ export const listUserProgramsService = async (): Promise<ApiResponse<UserProgram
   }
 
   try {
-    const response = await client.get(`/users/${userId}/programs`)
+    const response = await client.get(`/me/programs`)
     return handleApiResponse<UserProgramsListResponse>(response)
   } catch (error: any) {
     const errData = error.response?.data
