@@ -14,51 +14,51 @@
  * - `ProfileScreen` (app/(app)/profile/index.tsx)
  */
 export function calculateBMI(weightInput: unknown, heightCmInput: unknown): number | null {
-	// Convert safely to number
-	const weight = Number(weightInput)
-	const heightCm = Number(heightCmInput)
+  // Convert safely to number
+  const weight = Number(weightInput)
+  const heightCm = Number(heightCmInput)
 
-	// Reject invalid numbers
-	if (!Number.isFinite(weight) || !Number.isFinite(heightCm)) {
-		return null
-	}
+  // Reject invalid numbers
+  if (!Number.isFinite(weight) || !Number.isFinite(heightCm)) {
+    return null
+  }
 
-	// Reject zero or negative values
-	if (weight <= 0 || heightCm <= 0) {
-		return null
-	}
+  // Reject zero or negative values
+  if (weight <= 0 || heightCm <= 0) {
+    return null
+  }
 
-	// Reject unrealistic biological inputs
-	// Weight: 20kg – 400kg
-	// Height: 100cm – 250cm
-	if (weight < 20 || weight > 400) {
-		return null
-	}
+  // Reject unrealistic biological inputs
+  // Weight: 20kg – 400kg
+  // Height: 100cm – 250cm
+  if (weight < 20 || weight > 400) {
+    return null
+  }
 
-	if (heightCm < 100 || heightCm > 250) {
-		return null
-	}
+  if (heightCm < 100 || heightCm > 250) {
+    return null
+  }
 
-	// Convert height to meters safely
-	const heightM = heightCm / 100
+  // Convert height to meters safely
+  const heightM = heightCm / 100
 
-	// Extra safety guard against division by zero
-	if (heightM <= 0) {
-		return null
-	}
+  // Extra safety guard against division by zero
+  if (heightM <= 0) {
+    return null
+  }
 
-	const bmi = weight / (heightM * heightM)
+  const bmi = weight / (heightM * heightM)
 
-	// Reject invalid results
-	if (!Number.isFinite(bmi)) {
-		return null
-	}
+  // Reject invalid results
+  if (!Number.isFinite(bmi)) {
+    return null
+  }
 
-	// Clamp to physiologically possible BMI range
-	// Human BMI rarely below 10 or above 80
-	const clampedBMI = Math.min(Math.max(bmi, 10), 80)
+  // Clamp to physiologically possible BMI range
+  // Human BMI rarely below 10 or above 80
+  const clampedBMI = Math.min(Math.max(bmi, 10), 80)
 
-	return clampedBMI
+  return clampedBMI
 }
 
 /**
@@ -80,106 +80,106 @@ export function calculateBMI(weightInput: unknown, heightCmInput: unknown): numb
  * - `ProfileScreen` (app/(app)/profile/index.tsx)
  */
 export function calculateBodyFat({
-	gender,
-	height: heightInput,
-	neck: neckInput,
-	waist: waistInput,
-	hips: hipsInput,
+  gender,
+  height: heightInput,
+  neck: neckInput,
+  waist: waistInput,
+  hips: hipsInput,
 }: {
-	gender: string
-	height: unknown
-	neck: unknown
-	waist: unknown
-	hips?: unknown
+  gender: string
+  height: unknown
+  neck: unknown
+  waist: unknown
+  hips?: unknown
 }): number | null {
-	// Convert safely to numbers
-	const height = Number(heightInput)
-	const neck = Number(neckInput)
-	const waist = Number(waistInput)
-	const hips = hipsInput !== undefined ? Number(hipsInput) : undefined
+  // Convert safely to numbers
+  const height = Number(heightInput)
+  const neck = Number(neckInput)
+  const waist = Number(waistInput)
+  const hips = hipsInput !== undefined ? Number(hipsInput) : undefined
 
-	// Validate numeric inputs
-	if (!Number.isFinite(height) || !Number.isFinite(neck) || !Number.isFinite(waist)) {
-		return null
-	}
+  // Validate numeric inputs
+  if (!Number.isFinite(height) || !Number.isFinite(neck) || !Number.isFinite(waist)) {
+    return null
+  }
 
-	if (hipsInput !== undefined && !Number.isFinite(hips)) {
-		return null
-	}
+  if (hipsInput !== undefined && !Number.isFinite(hips)) {
+    return null
+  }
 
-	// Reject zero or negative values
-	if (height <= 0 || neck <= 0 || waist <= 0) {
-		return null
-	}
+  // Reject zero or negative values
+  if (height <= 0 || neck <= 0 || waist <= 0) {
+    return null
+  }
 
-	// Reject unrealistic biological inputs
-	// Height: 100–250 cm
-	// Circumference: 20–200 cm (reasonable human range)
-	if (height < 100 || height > 250) return null
-	if (neck < 20 || neck > 80) return null
-	if (waist < 40 || waist > 200) return null
-	if (hipsInput !== undefined && (hips! < 50 || hips! > 200)) return null
+  // Reject unrealistic biological inputs
+  // Height: 100–250 cm
+  // Circumference: 20–200 cm (reasonable human range)
+  if (height < 100 || height > 250) return null
+  if (neck < 20 || neck > 80) return null
+  if (waist < 40 || waist > 200) return null
+  if (hipsInput !== undefined && (hips! < 50 || hips! > 200)) return null
 
-	// Male calculation
-	if (gender === 'male') {
-		const diff = waist - neck
+  // Male calculation
+  if (gender === 'male') {
+    const diff = waist - neck
 
-		// log10 requires positive input
-		if (diff <= 0) return null
+    // log10 requires positive input
+    if (diff <= 0) return null
 
-		const logDiff = Math.log10(diff)
-		const logHeight = Math.log10(height)
+    const logDiff = Math.log10(diff)
+    const logHeight = Math.log10(height)
 
-		if (!Number.isFinite(logDiff) || !Number.isFinite(logHeight)) {
-			return null
-		}
+    if (!Number.isFinite(logDiff) || !Number.isFinite(logHeight)) {
+      return null
+    }
 
-		const denominator = 1.0324 - 0.19077 * logDiff + 0.15456 * logHeight
+    const denominator = 1.0324 - 0.19077 * logDiff + 0.15456 * logHeight
 
-		// Prevent division by zero or negative denominator
-		if (!Number.isFinite(denominator) || denominator <= 0) {
-			return null
-		}
+    // Prevent division by zero or negative denominator
+    if (!Number.isFinite(denominator) || denominator <= 0) {
+      return null
+    }
 
-		const result = 495 / denominator - 450
+    const result = 495 / denominator - 450
 
-		if (!Number.isFinite(result)) return null
+    if (!Number.isFinite(result)) return null
 
-		// Clamp to realistic male body fat %
-		return Math.min(Math.max(result, 2), 70)
-	}
+    // Clamp to realistic male body fat %
+    return Math.min(Math.max(result, 2), 70)
+  }
 
-	// Female calculation
-	if (gender === 'female') {
-		if (hips === undefined) return null
+  // Female calculation
+  if (gender === 'female') {
+    if (hips === undefined) return null
 
-		const diff = waist + hips - neck
+    const diff = waist + hips - neck
 
-		if (diff <= 0) return null
+    if (diff <= 0) return null
 
-		const logDiff = Math.log10(diff)
-		const logHeight = Math.log10(height)
+    const logDiff = Math.log10(diff)
+    const logHeight = Math.log10(height)
 
-		if (!Number.isFinite(logDiff) || !Number.isFinite(logHeight)) {
-			return null
-		}
+    if (!Number.isFinite(logDiff) || !Number.isFinite(logHeight)) {
+      return null
+    }
 
-		const denominator = 1.29579 - 0.35004 * logDiff + 0.221 * logHeight
+    const denominator = 1.29579 - 0.35004 * logDiff + 0.221 * logHeight
 
-		if (!Number.isFinite(denominator) || denominator <= 0) {
-			return null
-		}
+    if (!Number.isFinite(denominator) || denominator <= 0) {
+      return null
+    }
 
-		const result = 495 / denominator - 450
+    const result = 495 / denominator - 450
 
-		if (!Number.isFinite(result)) return null
+    if (!Number.isFinite(result)) return null
 
-		// Clamp to realistic female body fat %
-		return Math.min(Math.max(result, 5), 70)
-	}
+    // Clamp to realistic female body fat %
+    return Math.min(Math.max(result, 5), 70)
+  }
 
-	// Unsupported gender
-	return null
+  // Unsupported gender
+  return null
 }
 
 /**
@@ -217,75 +217,75 @@ export function calculateBodyFat({
 * * quick body fat estimate is needed
     */
 export function estimateBodyFatFromBMI({
-	gender,
-	height: heightInput,
-	weight: weightInput,
-	age: ageInput,
+  gender,
+  height: heightInput,
+  weight: weightInput,
+  age: ageInput,
 }: {
-	gender: string
-	height: unknown
-	weight: unknown
-	age: unknown
+  gender: string
+  height: unknown
+  weight: unknown
+  age: unknown
 }): number | null {
-	// Convert inputs safely
-	const height = Number(heightInput)
-	const weight = Number(weightInput)
-	const age = Number(ageInput)
+  // Convert inputs safely
+  const height = Number(heightInput)
+  const weight = Number(weightInput)
+  const age = Number(ageInput)
 
-	// Validate numeric inputs
-	if (!Number.isFinite(height) || !Number.isFinite(weight) || !Number.isFinite(age)) {
-		return null
-	}
+  // Validate numeric inputs
+  if (!Number.isFinite(height) || !Number.isFinite(weight) || !Number.isFinite(age)) {
+    return null
+  }
 
-	// Reject zero or negative values
-	if (height <= 0 || weight <= 0 || age <= 0) {
-		return null
-	}
+  // Reject zero or negative values
+  if (height <= 0 || weight <= 0 || age <= 0) {
+    return null
+  }
 
-	// Reject unrealistic biological inputs
-	// Height: 100–250 cm
-	// Weight: 25–400 kg
-	// Age: 10–120
-	if (height < 100 || height > 250) return null
-	if (weight < 25 || weight > 400) return null
-	if (age < 10 || age > 120) return null
+  // Reject unrealistic biological inputs
+  // Height: 100–250 cm
+  // Weight: 25–400 kg
+  // Age: 10–120
+  if (height < 100 || height > 250) return null
+  if (weight < 25 || weight > 400) return null
+  if (age < 10 || age > 120) return null
 
-	// Normalize gender
-	const genderLower = gender?.toLowerCase()
+  // Normalize gender
+  const genderLower = gender?.toLowerCase()
 
-	let genderFactor: number
+  let genderFactor: number
 
-	if (genderLower === 'male') {
-		genderFactor = 1
-	} else if (genderLower === 'female') {
-		genderFactor = 0
-	} else {
-		return null
-	}
+  if (genderLower === 'male') {
+    genderFactor = 1
+  } else if (genderLower === 'female') {
+    genderFactor = 0
+  } else {
+    return null
+  }
 
-	// Convert height to meters
-	const heightMeters = height / 100
+  // Convert height to meters
+  const heightMeters = height / 100
 
-	// Calculate BMI
-	const bmi = weight / (heightMeters * heightMeters)
+  // Calculate BMI
+  const bmi = weight / (heightMeters * heightMeters)
 
-	if (!Number.isFinite(bmi) || bmi <= 0) {
-		return null
-	}
+  if (!Number.isFinite(bmi) || bmi <= 0) {
+    return null
+  }
 
-	// Deurenberg formula
-	const bodyFat = 1.2 * bmi + 0.23 * age - 10.8 * genderFactor - 5.4
+  // Deurenberg formula
+  const bodyFat = 1.2 * bmi + 0.23 * age - 10.8 * genderFactor - 5.4
 
-	if (!Number.isFinite(bodyFat)) {
-		return null
-	}
+  if (!Number.isFinite(bodyFat)) {
+    return null
+  }
 
-	// Clamp to realistic body fat ranges
-	if (genderLower === 'male') {
-		return Math.min(Math.max(bodyFat, 2), 60)
-	}
+  // Clamp to realistic body fat ranges
+  if (genderLower === 'male') {
+    return Math.min(Math.max(bodyFat, 2), 60)
+  }
 
-	return Math.min(Math.max(bodyFat, 5), 65)
+  return Math.min(Math.max(bodyFat, 5), 65)
 }
 
 /**
@@ -300,60 +300,60 @@ export function estimateBodyFatFromBMI({
  * // Output: { fatMass: 10.5, leanMass: 59.5 }
  */
 export function calculateComposition({
-	weight: weightInput,
-	bodyFat: bodyFatInput,
+  weight: weightInput,
+  bodyFat: bodyFatInput,
 }: {
-	weight: unknown
-	bodyFat: unknown
+  weight: unknown
+  bodyFat: unknown
 }): { fatMass: number; leanMass: number } | null {
-	// Convert safely
-	const weight = Number(weightInput)
-	const bodyFat = Number(bodyFatInput)
+  // Convert safely
+  const weight = Number(weightInput)
+  const bodyFat = Number(bodyFatInput)
 
-	// Validate numeric
-	if (!Number.isFinite(weight) || !Number.isFinite(bodyFat)) {
-		return null
-	}
+  // Validate numeric
+  if (!Number.isFinite(weight) || !Number.isFinite(bodyFat)) {
+    return null
+  }
 
-	// Reject zero or negative weight
-	if (weight <= 0) return null
+  // Reject zero or negative weight
+  if (weight <= 0) return null
 
-	// Reject unrealistic weight (20–400kg human bounds)
-	if (weight < 20 || weight > 400) return null
+  // Reject unrealistic weight (20–400kg human bounds)
+  if (weight < 20 || weight > 400) return null
 
-	// Reject impossible body fat %
-	if (bodyFat < 0 || bodyFat > 70) return null
-	// >70% is biologically extreme; treat as invalid input
+  // Reject impossible body fat %
+  if (bodyFat < 0 || bodyFat > 70) return null
+  // >70% is biologically extreme; treat as invalid input
 
-	// Calculate fat mass
-	const fatMassRaw = weight * (bodyFat / 100)
+  // Calculate fat mass
+  const fatMassRaw = weight * (bodyFat / 100)
 
-	if (!Number.isFinite(fatMassRaw)) return null
+  if (!Number.isFinite(fatMassRaw)) return null
 
-	// Guard against floating overflow
-	const fatMass = Math.min(Math.max(fatMassRaw, 0), weight)
+  // Guard against floating overflow
+  const fatMass = Math.min(Math.max(fatMassRaw, 0), weight)
 
-	const leanMass = weight - fatMass
+  const leanMass = weight - fatMass
 
-	if (!Number.isFinite(leanMass)) return null
+  if (!Number.isFinite(leanMass)) return null
 
-	// Final safety clamp
-	const safeLeanMass = Math.min(Math.max(leanMass, 0), weight)
+  // Final safety clamp
+  const safeLeanMass = Math.min(Math.max(leanMass, 0), weight)
 
-	return {
-		fatMass: Number(fatMass.toFixed(2)),
-		leanMass: Number(safeLeanMass.toFixed(2)),
-	}
+  return {
+    fatMass: Number(fatMass.toFixed(2)),
+    leanMass: Number(safeLeanMass.toFixed(2)),
+  }
 }
 
 /**
  * Type for body fat feedback.
  */
 export type BodyFatFeedback = {
-	category: string
-	colorStart: string
-	colorEnd: string
-	insight: string
+  category: string
+  colorStart: string
+  colorEnd: string
+  insight: string
 }
 
 /**
@@ -369,60 +369,60 @@ export type BodyFatFeedback = {
  * // Output: { category: 'Athletic', colorStart: '#3b82f6', colorEnd: '#22c55e', insight: 'You are within a healthy performance range.' }
  */
 export function classifyBodyFat({
-	gender,
-	bodyFat,
-	goal,
+  gender,
+  bodyFat,
+  goal,
 }: {
-	gender: 'male' | 'female'
-	bodyFat: number
-	goal?: string | null
+  gender: 'male' | 'female'
+  bodyFat: number
+  goal?: string | null
 }): BodyFatFeedback {
-	const ranges =
-		gender === 'male'
-			? [
-					{ max: 5, label: 'Essential' },
-					{ max: 13, label: 'Athletic' },
-					{ max: 17, label: 'Fit' },
-					{ max: 24, label: 'Average' },
-					{ max: Infinity, label: 'High' },
-				]
-			: [
-					{ max: 13, label: 'Essential' },
-					{ max: 20, label: 'Athletic' },
-					{ max: 24, label: 'Fit' },
-					{ max: 31, label: 'Average' },
-					{ max: Infinity, label: 'High' },
-				]
+  const ranges =
+    gender === 'male'
+      ? [
+          { max: 5, label: 'Essential' },
+          { max: 13, label: 'Athletic' },
+          { max: 17, label: 'Fit' },
+          { max: 24, label: 'Average' },
+          { max: Infinity, label: 'High' },
+        ]
+      : [
+          { max: 13, label: 'Essential' },
+          { max: 20, label: 'Athletic' },
+          { max: 24, label: 'Fit' },
+          { max: 31, label: 'Average' },
+          { max: Infinity, label: 'High' },
+        ]
 
-	const category = ranges.find(r => bodyFat <= r.max)?.label ?? 'Unknown'
+  const category = ranges.find((r) => bodyFat <= r.max)?.label ?? 'Unknown'
 
-	const gradientMap: Record<string, [string, string]> = {
-		Essential: ['#6b7280', '#9ca3af'],
-		Athletic: ['#3b82f6', '#22c55e'],
-		Fit: ['#22c55e', '#16a34a'],
-		Average: ['#f59e0b', '#f97316'],
-		High: ['#f97316', '#ef4444'],
-	}
+  const gradientMap: Record<string, [string, string]> = {
+    Essential: ['#6b7280', '#9ca3af'],
+    Athletic: ['#3b82f6', '#22c55e'],
+    Fit: ['#22c55e', '#16a34a'],
+    Average: ['#f59e0b', '#f97316'],
+    High: ['#f97316', '#ef4444'],
+  }
 
-	const [colorStart, colorEnd] = gradientMap[category] ?? ['#6b7280', '#9ca3af']
+  const [colorStart, colorEnd] = gradientMap[category] ?? ['#6b7280', '#9ca3af']
 
-	let insight = ''
+  let insight = ''
 
-	if (goal === 'gainMuscle' && category === 'Essential') {
-		insight = 'Very low body fat may limit optimal muscle gain.'
-	} else if (goal === 'loseWeight' && category === 'High') {
-		insight = 'Reducing body fat will improve metabolic health.'
-	} else if (category === 'Athletic' || category === 'Fit') {
-		insight = 'You are within a healthy performance range.'
-	} else if (category === 'Average') {
-		insight = 'You are within general population range.'
-	} else if (category === 'High') {
-		insight = 'Body fat is above recommended range.'
-	} else {
-		insight = 'Body composition is within essential range.'
-	}
+  if (goal === 'gainMuscle' && category === 'Essential') {
+    insight = 'Very low body fat may limit optimal muscle gain.'
+  } else if (goal === 'loseWeight' && category === 'High') {
+    insight = 'Reducing body fat will improve metabolic health.'
+  } else if (category === 'Athletic' || category === 'Fit') {
+    insight = 'You are within a healthy performance range.'
+  } else if (category === 'Average') {
+    insight = 'You are within general population range.'
+  } else if (category === 'High') {
+    insight = 'Body fat is above recommended range.'
+  } else {
+    insight = 'Body composition is within essential range.'
+  }
 
-	return { category, colorStart, colorEnd, insight }
+  return { category, colorStart, colorEnd, insight }
 }
 
 /**
@@ -436,10 +436,10 @@ export function classifyBodyFat({
  * // Output: 'Normal'
  */
 export function classifyBMI(bmi: number) {
-	if (bmi < 18.5) return 'Underweight'
-	if (bmi < 25) return 'Normal'
-	if (bmi < 30) return 'Overweight'
-	return 'Obese'
+  if (bmi < 18.5) return 'Underweight'
+  if (bmi < 25) return 'Normal'
+  if (bmi < 30) return 'Overweight'
+  return 'Obese'
 }
 
 /**
@@ -453,11 +453,17 @@ export function classifyBMI(bmi: number) {
  * generateInsight({ bodyFatCategory: 'Athletic', bmiCategory: 'Normal' });
  * // Output: 'Strong metabolic health profile.'
  */
-export function generateInsight({ bodyFatCategory, bmiCategory }: { bodyFatCategory: string; bmiCategory: string }) {
-	if (bodyFatCategory === 'Athletic') return 'Strong metabolic health profile.'
-	if (bodyFatCategory === 'Fit') return 'Balanced composition and performance.'
-	if (bodyFatCategory === 'High') return 'Reducing fat mass will improve health markers.'
-	return 'Body composition within normal range.'
+export function generateInsight({
+  bodyFatCategory,
+  bmiCategory,
+}: {
+  bodyFatCategory: string
+  bmiCategory: string
+}) {
+  if (bodyFatCategory === 'Athletic') return 'Strong metabolic health profile.'
+  if (bodyFatCategory === 'Fit') return 'Balanced composition and performance.'
+  if (bodyFatCategory === 'High') return 'Reducing fat mass will improve health markers.'
+  return 'Body composition within normal range.'
 }
 
 /**
@@ -473,28 +479,28 @@ export function generateInsight({ bodyFatCategory, bmiCategory }: { bodyFatCateg
  * // Output: 80
  */
 export function calculateHealthScore({
-	bodyFatCategory,
-	bmi,
-	goal,
+  bodyFatCategory,
+  bmi,
+  goal,
 }: {
-	bodyFatCategory: string
-	bmi: number
-	goal?: string | null
+  bodyFatCategory: string
+  bmi: number
+  goal?: string | null
 }) {
-	let score = 50
+  let score = 50
 
-	if (bodyFatCategory === 'Athletic' || bodyFatCategory === 'Fit') score += 25
-	if (bodyFatCategory === 'Average') score += 10
-	if (bodyFatCategory === 'High') score -= 15
+  if (bodyFatCategory === 'Athletic' || bodyFatCategory === 'Fit') score += 25
+  if (bodyFatCategory === 'Average') score += 10
+  if (bodyFatCategory === 'High') score -= 15
 
-	if (bmi >= 18.5 && bmi < 25) score += 15
-	if (bmi >= 25 && bmi < 30) score -= 5
-	if (bmi >= 30) score -= 15
+  if (bmi >= 18.5 && bmi < 25) score += 15
+  if (bmi >= 25 && bmi < 30) score -= 5
+  if (bmi >= 30) score -= 15
 
-	if (goal === 'gainMuscle' && bodyFatCategory === 'Athletic') score += 5
-	if (goal === 'loseWeight' && bodyFatCategory === 'High') score -= 5
+  if (goal === 'gainMuscle' && bodyFatCategory === 'Athletic') score += 5
+  if (goal === 'loseWeight' && bodyFatCategory === 'High') score -= 5
 
-	return Math.max(0, Math.min(100, score))
+  return Math.max(0, Math.min(100, score))
 }
 
 /**
@@ -505,18 +511,23 @@ export function calculateHealthScore({
  * @param age - Age in years
  * @param gender - 'male' or 'female'
  */
-export function calculateBMR(weight: number, height: number, age: number, gender: 'male' | 'female' | 'other'): number {
-	// Base formula
-	let bmr = 10 * weight + 6.25 * height - 5 * age
+export function calculateBMR(
+  weight: number,
+  height: number,
+  age: number,
+  gender: 'male' | 'female' | 'other',
+): number {
+  // Base formula
+  let bmr = 10 * weight + 6.25 * height - 5 * age
 
-	if (gender === 'female') {
-		bmr -= 161
-	} else {
-		// default male or other to male formula
-		bmr += 5
-	}
+  if (gender === 'female') {
+    bmr -= 161
+  } else {
+    // default male or other to male formula
+    bmr += 5
+  }
 
-	return Math.round(bmr)
+  return Math.round(bmr)
 }
 
 /**
@@ -526,91 +537,91 @@ export function calculateBMR(weight: number, height: number, age: number, gender
  * @param activityLevel - The user's activity intensity
  */
 export function calculateTDEE(
-	bmr: number,
-	activityLevel: 'sedentary' | 'lightlyActive' | 'moderatelyActive' | 'veryActive' | 'athlete'
+  bmr: number,
+  activityLevel: 'sedentary' | 'lightlyActive' | 'moderatelyActive' | 'veryActive' | 'athlete',
 ): number {
-	const multipliers: Record<string, number> = {
-		sedentary: 1.2,
-		lightlyActive: 1.375,
-		moderatelyActive: 1.55,
-		veryActive: 1.725,
-		athlete: 1.9,
-	}
+  const multipliers: Record<string, number> = {
+    sedentary: 1.2,
+    lightlyActive: 1.375,
+    moderatelyActive: 1.55,
+    veryActive: 1.725,
+    athlete: 1.9,
+  }
 
-	const multiplier = multipliers[activityLevel] || 1.2
-	return Math.round(bmr * multiplier)
+  const multiplier = multipliers[activityLevel] || 1.2
+  return Math.round(bmr * multiplier)
 }
 
 /**
  * Calculates daily calorie and protein targets based on TDEE, goal, weight, and weekly rate
  */
 export function calculateDailyTargets({
-	tdee,
-	weightKg,
-	goal,
-	fitnessLevel,
-	weeklyRateKg,
+  tdee,
+  weightKg,
+  goal,
+  fitnessLevel,
+  weeklyRateKg,
 }: {
-	tdee: number
-	weightKg: number
-	goal:
-		| 'loseWeight'
-		| 'gainMuscle'
-		| 'improveEndurance'
-		| 'improveFlexibility'
-		| 'improveStrength'
-		| 'improveOverallFitness'
-	fitnessLevel?: 'beginner' | 'intermediate' | 'advanced' | null
-	weeklyRateKg?: number | null
+  tdee: number
+  weightKg: number
+  goal:
+    | 'loseWeight'
+    | 'gainMuscle'
+    | 'improveEndurance'
+    | 'improveFlexibility'
+    | 'improveStrength'
+    | 'improveOverallFitness'
+  fitnessLevel?: 'beginner' | 'intermediate' | 'advanced' | null
+  weeklyRateKg?: number | null
 }) {
-	let caloriesTarget = tdee
-	let deficitOrSurplus = 0
-	let proteinTarget = Math.round(weightKg * 1.8) // Default moderate protein
+  let caloriesTarget = tdee
+  let deficitOrSurplus = 0
+  let proteinTarget = Math.round(weightKg * 1.8) // Default moderate protein
 
-	if (goal === 'loseWeight' && weeklyRateKg) {
-		// 1 kg fat ≈ 7700 kcal
-		// daily deficit = (weeklyRate * 7700) / 7
-		const dailyDeficit = Math.round((weeklyRateKg * 7700) / 7)
-		caloriesTarget = tdee - dailyDeficit
-		deficitOrSurplus = -dailyDeficit
-		// protein target for fat loss: 2.0-2.2 g/kg
-		proteinTarget = Math.round(weightKg * 2.1)
-	} else if (goal === 'gainMuscle') {
-		let surplus = 200 // Default to intermediate surplus
-		if (fitnessLevel === 'beginner') surplus = 300
-		else if (fitnessLevel === 'advanced') surplus = 100
+  if (goal === 'loseWeight' && weeklyRateKg) {
+    // 1 kg fat ≈ 7700 kcal
+    // daily deficit = (weeklyRate * 7700) / 7
+    const dailyDeficit = Math.round((weeklyRateKg * 7700) / 7)
+    caloriesTarget = tdee - dailyDeficit
+    deficitOrSurplus = -dailyDeficit
+    // protein target for fat loss: 2.0-2.2 g/kg
+    proteinTarget = Math.round(weightKg * 2.1)
+  } else if (goal === 'gainMuscle') {
+    let surplus = 200 // Default to intermediate surplus
+    if (fitnessLevel === 'beginner') surplus = 300
+    else if (fitnessLevel === 'advanced') surplus = 100
 
-		caloriesTarget = tdee + surplus
-		deficitOrSurplus = surplus
-		// protein target for muscle gain: 1.6-2.0 g/kg
-		proteinTarget = Math.round(weightKg * 1.8)
-	}
+    caloriesTarget = tdee + surplus
+    deficitOrSurplus = surplus
+    // protein target for muscle gain: 1.6-2.0 g/kg
+    proteinTarget = Math.round(weightKg * 1.8)
+  }
 
-	// Floor calories to BMR or extreme lows (e.g. 1200 for females, 1500 for males usually)
-	// We'll just enforce a basic minimum standard here to prevent dangerous targets
-	const SAFE_MIN_CALORIES = 1200
-	if (caloriesTarget < SAFE_MIN_CALORIES) {
-		caloriesTarget = SAFE_MIN_CALORIES
-	}
+  // Floor calories to BMR or extreme lows (e.g. 1200 for females, 1500 for males usually)
+  // We'll just enforce a basic minimum standard here to prevent dangerous targets
+  const SAFE_MIN_CALORIES = 1200
+  if (caloriesTarget < SAFE_MIN_CALORIES) {
+    caloriesTarget = SAFE_MIN_CALORIES
+  }
 
-	// Calculate Fats and Carbs based on standard macros (25% Fats, remaining Carbs)
-	// 1g Fat = 9 kcal
-	// 1g Carb = 4 kcal
-	// 1g Protein = 4 kcal
-	const fatsTargetCalories = caloriesTarget * 0.25
-	const fatsTarget = Math.round(fatsTargetCalories / 9)
+  // Calculate Fats and Carbs based on standard macros (25% Fats, remaining Carbs)
+  // 1g Fat = 9 kcal
+  // 1g Carb = 4 kcal
+  // 1g Protein = 4 kcal
+  const fatsTargetCalories = caloriesTarget * 0.25
+  const fatsTarget = Math.round(fatsTargetCalories / 9)
 
-	const proteinTargetCalories = proteinTarget * 4
-	const remainingCaloriesForCarbs = caloriesTarget - fatsTargetCalories - proteinTargetCalories
+  const proteinTargetCalories = proteinTarget * 4
+  const remainingCaloriesForCarbs = caloriesTarget - fatsTargetCalories - proteinTargetCalories
 
-	// Ensure carbs don't go negative on extreme cut logic, floor to 0
-	const carbsTarget = Math.max(0, Math.round(remainingCaloriesForCarbs / 4))
+  // Ensure carbs don't go negative on extreme cut logic, floor to 0
+  const carbsTarget = Math.max(0, Math.round(remainingCaloriesForCarbs / 4))
 
-	return {
-		caloriesTarget,
-		proteinTarget,
-		fatsTarget,
-		carbsTarget,
-		deficitOrSurplus,
-	}
+  return {
+    caloriesTarget,
+    proteinTarget,
+    fatsTarget,
+    carbsTarget,
+    deficitOrSurplus,
+  }
 }

@@ -1,328 +1,256 @@
 import {
-	deleteConversationService,
-	downloadSpeechService,
-	getActiveConversationService,
-	sendMessageService,
-	startConversationService,
-	transcribeMessageService,
-} from '@/services/coachService'
+  useCoachConversation,
+  useDeleteCoachConversation,
+  useSendCoachMessage,
+  useStartCoachConversation,
+  useTranscribeCoachVoice,
+} from '@/hooks/queries/useCoach'
+import { downloadSpeechService } from '@/services/coachService'
 
+import { CoachState, type CoachMessage } from '@/types/coach'
+import { useQueryClient } from '@tanstack/react-query'
 import {
-	AudioModule,
-	RecorderState,
-	RecordingPresets,
-	setAudioModeAsync,
-	useAudioPlayer,
-	useAudioPlayerStatus,
-	useAudioRecorder,
-	useAudioRecorderState,
+  AudioModule,
+  RecorderState,
+  RecordingPresets,
+  setAudioModeAsync,
+  useAudioPlayer,
+  useAudioPlayerStatus,
+  useAudioRecorder,
+  useAudioRecorderState,
 } from 'expo-audio'
 import * as Crypto from 'expo-crypto'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Alert } from 'react-native'
-import { CoachState, type CoachMessage } from '@/types/coach'
 
 interface CoachVoice {
-	conversationId: string | null
-	messages: CoachMessage[]
-	coachState: CoachState
-	recorderState: RecorderState
-	isPlaying: boolean
-	isThinking: boolean
-	recordedAudioUri: string | null
+  conversationId: string | null
+  messages: CoachMessage[]
+  coachState: CoachState
+  recorderState: RecorderState
+  isPlaying: boolean
+  isThinking: boolean
+  recordedAudioUri: string | null
+  isLoading: boolean
 
-	startRecording: () => Promise<void>
-	stopRecording: () => Promise<void>
-	startPlaying: (uri: string) => Promise<void>
-	stopPlaying: () => Promise<void>
-	clearRecording: () => void
+  startRecording: () => Promise<void>
+  stopRecording: () => Promise<void>
+  startPlaying: (uri: string) => Promise<void>
+  stopPlaying: () => Promise<void>
+  clearRecording: () => void
 
-	initializeConversation: () => Promise<void>
-	startConversation: () => Promise<void>
-	deleteConversation: () => Promise<void>
-	sendVoiceMessage: () => Promise<void>
-	clearMessages: () => void
-}
-
-export const mockAskQuestionService = async (audioUri: string) => {
-	// simulate network + processing time
-	await new Promise(res => setTimeout(res, 1200))
-
-	return {
-		success: true,
-		data: {
-			text: "Alright, I heard you. Let's push one more set — controlled reps.",
-		},
-	}
+  initializeConversation: () => Promise<void>
+  startConversation: () => Promise<void>
+  deleteConversation: () => Promise<void>
+  sendVoiceMessage: () => Promise<void>
+  clearMessages: () => void
 }
 
 export function useCoach(): CoachVoice {
-	const [conversationId, setConversationId] = useState<string | null>(null)
-	const [coachState, setCoachState] = useState<CoachState>(CoachState.idle)
-	const [recordedAudioUri, setRecordedAudioUri] = useState<string | null>(null)
-	const [messages, setMessages] = useState<CoachMessage[]>([])
-	const [isThinking, setIsThinking] = useState(false)
+  const queryClient = useQueryClient()
+  const { data: conversation, isLoading: isLoadingConv } = useCoachConversation()
+  const startMutation = useStartCoachConversation()
+  const deleteMutation = useDeleteCoachConversation()
+  const sendMutation = useSendCoachMessage()
+  const transcribeMutation = useTranscribeCoachVoice()
 
-	const audioRecorder = useAudioRecorder({
-		...RecordingPresets.HIGH_QUALITY,
-		isMeteringEnabled: true,
-	})
-	const audioPlayer = useAudioPlayer()
-	const recorderState = useAudioRecorderState(audioRecorder)
-	const playerStatus = useAudioPlayerStatus(audioPlayer)
-	const isPlaying = playerStatus.playing
+  const [coachState, setCoachState] = useState<CoachState>(CoachState.idle)
+  const [recordedAudioUri, setRecordedAudioUri] = useState<string | null>(null)
+  const [localMessages, setLocalMessages] = useState<CoachMessage[]>([])
+  const [isThinking, setIsThinking] = useState(false)
 
-	// Function to start recording the audio
-	const startRecording = async () => {
-		const status = await AudioModule.requestRecordingPermissionsAsync()
-		if (!status.granted) {
-			Alert.alert('Permission to access microphone was denied')
-			return
-		}
+  const audioRecorder = useAudioRecorder({
+    ...RecordingPresets.HIGH_QUALITY,
+    isMeteringEnabled: true,
+  })
+  const audioPlayer = useAudioPlayer()
+  const recorderState = useAudioRecorderState(audioRecorder)
+  const playerStatus = useAudioPlayerStatus(audioPlayer)
+  const isPlaying = playerStatus.playing
 
-		await setAudioModeAsync({
-			playsInSilentMode: true,
-			allowsRecording: true,
-		})
+  // Sync local messages with server state when it changes
+  useEffect(() => {
+    if (conversation?.messages) {
+      setLocalMessages(conversation.messages)
+    }
+  }, [conversation?.messages])
 
-		await audioRecorder.prepareToRecordAsync()
-		audioRecorder.record()
-		setCoachState(CoachState.recording)
-	}
+  const startRecording = async () => {
+    const status = await AudioModule.requestRecordingPermissionsAsync()
+    if (!status.granted) {
+      Alert.alert('Permission to access microphone was denied')
+      return
+    }
 
-	// Function to stop recording the audio
-	const stopRecording = async () => {
-		await setAudioModeAsync({
-			playsInSilentMode: true,
-			allowsRecording: false,
-		})
+    await setAudioModeAsync({
+      playsInSilentMode: true,
+      allowsRecording: true,
+    })
 
-		await audioRecorder.stop()
-		const uri = audioRecorder.uri
-		setCoachState(CoachState.stopped)
-		setRecordedAudioUri(uri)
-	}
+    await audioRecorder.prepareToRecordAsync()
+    audioRecorder.record()
+    setCoachState(CoachState.recording)
+  }
 
-	// Function to clear the recorded audio
-	const startPlaying = async (uri: string) => {
-		audioPlayer.replace(uri)
-		audioPlayer.seekTo(0)
-		audioPlayer.play()
-	}
+  const stopRecording = async () => {
+    await setAudioModeAsync({
+      playsInSilentMode: true,
+      allowsRecording: false,
+    })
 
-	// Function to stop playing the audio
-	const stopPlaying = async () => {
-		audioPlayer.pause()
-		audioPlayer.seekTo(0)
-		setCoachState(CoachState.idle)
-	}
+    await audioRecorder.stop()
+    const uri = audioRecorder.uri
+    setCoachState(CoachState.stopped)
+    setRecordedAudioUri(uri)
+  }
 
-	// Function to clear the recorded audio
-	const clearRecording = () => {
-		setRecordedAudioUri(null)
-		setCoachState(CoachState.idle)
-	}
+  const startPlaying = async (uri: string) => {
+    audioPlayer.replace(uri)
+    audioPlayer.seekTo(0)
+    audioPlayer.play()
+  }
 
-	const initializeConversation = async () => {
-		try {
-			const active = await getActiveConversationService()
+  const stopPlaying = async () => {
+    audioPlayer.pause()
+    audioPlayer.seekTo(0)
+    setCoachState(CoachState.idle)
+  }
 
-			if (active?.data?.id) {
-				setConversationId(active.data.id)
+  const clearRecording = () => {
+    setRecordedAudioUri(null)
+    setCoachState(CoachState.idle)
+  }
 
-				const restoredMessages = active.data.messages.map((m: any) => ({
-					id: Crypto.randomUUID(),
-					role: m.role === 'assistant' ? 'coach' : 'user',
-					text: m.content,
-					thinking: false,
-				}))
+  const initializeConversation = async () => {
+    // useQuery handles initial fetch, but if we have no conversation, we might want to start one
+    if (!isLoadingConv && !conversation) {
+      await startConversation()
+    }
+  }
 
-				setMessages(restoredMessages)
-				return
-			}
+  const startConversation = async () => {
+    const thinkingId = Crypto.randomUUID()
+    setIsThinking(true)
 
-			await startConversation()
-		} catch (err) {
-			console.error('init conversation failed', err)
-		}
-	}
+    setLocalMessages((prev) => [
+      ...prev,
+      { id: thinkingId, role: 'coach', text: '', thinking: true },
+    ])
 
-	const startConversation = async () => {
-		const thinkingId = Crypto.randomUUID()
+    try {
+      const data = await startMutation.mutateAsync()
+      const audioUri = await downloadSpeechService(data.ttsId)
+      await startPlaying(audioUri)
+    } catch (e) {
+      console.error(e)
+      setLocalMessages((prev) => prev.filter((m) => m.id !== thinkingId))
+    } finally {
+      setIsThinking(false)
+    }
+  }
 
-		// insert thinking placeholder
-		setMessages(prev => [
-			...prev,
-			{
-				id: thinkingId,
-				role: 'coach',
-				text: '',
-				thinking: true,
-			},
-		])
+  const sendVoiceMessage = async () => {
+    try {
+      await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: false })
+      await audioRecorder.stop()
 
-		try {
-			const response = await startConversationService()
+      const uri = audioRecorder.uri
+      if (!uri) return
 
-			if (!response.success) {
-				setIsThinking(false)
-				return
-			}
+      setCoachState(CoachState.stopped)
+      setRecordedAudioUri(uri)
 
-			const { text, ttsId } = response.data
+      const userMessageId = Crypto.randomUUID()
+      setLocalMessages((prev) => [
+        ...prev,
+        { id: userMessageId, role: 'user', text: 'Sending...', thinking: true },
+      ])
 
-			// 1. show message instantly
-			setMessages(prev => prev.map(msg => (msg.id === thinkingId ? { ...msg, text, thinking: false } : msg)))
+      setIsThinking(true)
 
-			// 2. fetch audio
-			const audioUri = await downloadSpeechService(ttsId)
-			await startPlaying(audioUri)
-		} catch (e) {
-			console.error(e)
-			setIsThinking(false)
-		}
-	}
+      const formData = new FormData()
+      formData.append('audioFile', {
+        uri,
+        name: `recording-${Date.now()}.m4a`,
+        type: 'audio/m4a',
+      } as any)
 
-	const sendVoiceMessage = async () => {
-		try {
-			// 1️⃣ Stop recording safely
-			await setAudioModeAsync({
-				playsInSilentMode: true,
-				allowsRecording: false,
-			})
+      const { text: transcription } = await transcribeMutation.mutateAsync(formData)
 
-			await audioRecorder.stop()
+      // Update local state for transcription
+      setLocalMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === userMessageId ? { ...msg, text: transcription, thinking: false } : msg,
+        ),
+      )
 
-			const uri = audioRecorder.uri
-			if (!uri) return
+      const coachThinkingId = Crypto.randomUUID()
+      setLocalMessages((prev) => [
+        ...prev,
+        { id: coachThinkingId, role: 'coach', text: '', thinking: true },
+      ])
 
-			setCoachState(CoachState.stopped)
-			setRecordedAudioUri(uri)
+      const { text, ttsId } = await sendMutation.mutateAsync({
+        conversationId: conversation!.id,
+        question: transcription,
+      })
 
-			// 2️⃣ Temporary user message while uploading
-			const userMessageId = Crypto.randomUUID()
+      // Audio playback
+      const audioUri = await downloadSpeechService(ttsId)
+      await startPlaying(audioUri)
 
-			setMessages(prev => [
-				...prev,
-				{
-					id: userMessageId,
-					role: 'user',
-					text: 'Sending...',
-					thinking: true,
-				},
-			])
+      setIsThinking(false)
+      setCoachState(CoachState.idle)
+    } catch (error) {
+      console.error('sendVoiceMessage error:', error)
+      setLocalMessages((prev) =>
+        prev.map((msg) =>
+          msg.thinking
+            ? { ...msg, text: 'I couldn’t process that right now. Try again.', thinking: false }
+            : msg,
+        ),
+      )
+      setIsThinking(false)
+      setCoachState(CoachState.idle)
+    }
+  }
 
-			setIsThinking(true)
+  const clearMessages = () => {
+    // Not strictly supported by backend yet, but we can clear locally
+    setLocalMessages([])
+  }
 
-			// 3️⃣ Send audio for transcription
-			const formData = new FormData()
-			formData.append('audioFile', {
-				uri,
-				name: `recording-${Date.now()}.m4a`,
-				type: 'audio/m4a',
-			} as any)
+  const deleteConversation = async () => {
+    if (!conversation?.id) return
+    try {
+      await deleteMutation.mutateAsync(conversation.id)
+      setRecordedAudioUri(null)
+      setLocalMessages([])
+    } catch (error) {
+      console.error('Error deleting conversation', error)
+    }
+  }
 
-			const transcriptionResponse = await transcribeMessageService(formData)
+  return {
+    conversationId: conversation?.id || null,
+    messages: localMessages,
+    coachState,
+    recorderState,
+    isPlaying,
+    isThinking,
+    recordedAudioUri,
+    isLoading: isLoadingConv,
 
-			if (!transcriptionResponse?.success) {
-				throw new Error('Transcription failed')
-			}
+    startRecording,
+    stopRecording,
+    startPlaying,
+    stopPlaying,
+    clearRecording,
 
-			const transcription = transcriptionResponse.data.text
-
-			// 4️⃣ Replace temporary message with actual transcription
-			setMessages(prev =>
-				prev.map(msg => (msg.id === userMessageId ? { ...msg, text: transcription, thinking: false } : msg))
-			)
-
-			// 5️⃣ Add coach thinking placeholder
-			const coachThinkingId = Crypto.randomUUID()
-
-			setMessages(prev => [
-				...prev,
-				{
-					id: coachThinkingId,
-					role: 'coach',
-					text: '',
-					thinking: true,
-				},
-			])
-
-			// 6️⃣ Ask backend for answer (memory + AI + TTS)
-			const answerResponse = await sendMessageService(conversationId!, transcription)
-
-			if (!answerResponse?.success) {
-				throw new Error('Answer generation failed')
-			}
-
-			const { text, ttsId } = answerResponse.data
-
-			// 7️⃣ Replace thinking message with coach replyd
-			setMessages(prev => prev.map(msg => (msg.id === coachThinkingId ? { ...msg, text, thinking: false } : msg)))
-
-			// 8️⃣ Play TTS audio
-			const audioUri = await downloadSpeechService(ttsId)
-			await startPlaying(audioUri)
-
-			setIsThinking(false)
-			setCoachState(CoachState.idle)
-		} catch (error) {
-			console.error('askQuestion error:', error)
-
-			setMessages(prev =>
-				prev.map(msg =>
-					msg.thinking
-						? {
-								...msg,
-								text: 'I couldn’t process that right now. Try again.',
-								thinking: false,
-							}
-						: msg
-				)
-			)
-
-			setIsThinking(false)
-			setCoachState(CoachState.idle)
-		}
-	}
-
-	const clearMessages = () => {
-		setMessages([])
-	}
-
-	const deleteConversation = async () => {
-		if (!conversationId) return
-		try {
-			const response = await deleteConversationService(conversationId)
-			if (response.success) {
-				setConversationId(null)
-				setMessages([])
-				setRecordedAudioUri(null)
-			}
-		} catch (error) {
-			console.error('Error deleting conversation', error)
-		}
-	}
-
-	return {
-		conversationId,
-		messages,
-		coachState,
-		recorderState,
-		isPlaying,
-		isThinking,
-		recordedAudioUri,
-
-		startRecording,
-		stopRecording,
-		startPlaying,
-		stopPlaying,
-		clearRecording,
-
-		initializeConversation,
-		startConversation,
-		deleteConversation,
-		sendVoiceMessage,
-		clearMessages,
-	}
+    initializeConversation,
+    startConversation,
+    deleteConversation,
+    sendVoiceMessage,
+    clearMessages,
+  }
 }

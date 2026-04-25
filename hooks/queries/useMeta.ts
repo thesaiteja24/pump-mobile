@@ -1,10 +1,10 @@
 import { queryKeys } from '@/lib/queryKeys'
 import {
-	createMetaService,
-	deleteMetaService,
-	getAllMetaService,
-	getMetaByIdService,
-	updateMetaService,
+  createMetaService,
+  deleteMetaService,
+  getAllMetaService,
+  getMetaByIdService,
+  updateMetaService,
 } from '@/services/metaService'
 import { MetaItem, MetaResource } from '@/types/meta'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -15,20 +15,20 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
  */
 
 export function useMeta(resource: MetaResource) {
-	return useQuery<MetaItem[]>({
-		queryKey: queryKeys.meta.all(resource),
-		queryFn: () => getAllMetaService(resource),
-		staleTime: Infinity,
-	})
+  return useQuery<MetaItem[]>({
+    queryKey: queryKeys.meta.all(resource),
+    queryFn: () => getAllMetaService(resource),
+    staleTime: Infinity,
+  })
 }
 
 export function useMetaById(resource: MetaResource, id: string | undefined) {
-	return useQuery<MetaItem | null>({
-		queryKey: queryKeys.meta.byId(resource, id!),
-		queryFn: () => getMetaByIdService(resource, id!),
-		enabled: !!id,
-		staleTime: Infinity,
-	})
+  return useQuery<MetaItem | null>({
+    queryKey: queryKeys.meta.byId(resource, id!),
+    queryFn: () => getMetaByIdService(resource, id!),
+    enabled: !!id,
+    staleTime: Infinity,
+  })
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -36,88 +36,91 @@ export function useMetaById(resource: MetaResource, id: string | undefined) {
 // ─────────────────────────────────────────────────────────────────
 
 export function useCreateMeta(resource: MetaResource) {
-	const qc = useQueryClient()
-	return useMutation({
-		mutationFn: (data: FormData) => createMetaService(resource, data),
-		onSuccess: () => {
-			qc.invalidateQueries({ queryKey: queryKeys.meta.resource(resource) })
-		},
-	})
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: FormData) => createMetaService(resource, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.meta.resource(resource) })
+    },
+  })
 }
 
 export function useUpdateMeta(resource: MetaResource) {
-	const qc = useQueryClient()
-	return useMutation({
-		mutationFn: ({ id, data }: { id: string; data: FormData }) => updateMetaService(resource, id, data),
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: FormData }) =>
+      updateMetaService(resource, id, data),
 
-		onMutate: async ({ id, data }) => {
-			await qc.cancelQueries({ queryKey: queryKeys.meta.resource(resource) })
-			const previousAll = qc.getQueryData<MetaItem[]>(queryKeys.meta.all(resource))
-			const previousById = qc.getQueryData<MetaItem>(queryKeys.meta.byId(resource, id))
+    onMutate: async ({ id, data }) => {
+      await qc.cancelQueries({ queryKey: queryKeys.meta.resource(resource) })
+      const previousAll = qc.getQueryData<MetaItem[]>(queryKeys.meta.all(resource))
+      const previousById = qc.getQueryData<MetaItem>(queryKeys.meta.byId(resource, id))
 
-			// Optimistic update
-			if (previousAll) {
-				const title = data.get('title') as string
-				const type = data.get('type') as any // Only relevant for equipment
+      // Optimistic update
+      if (previousAll) {
+        const title = data.get('title') as string
+        const type = data.get('type') as any // Only relevant for equipment
 
-				qc.setQueryData<MetaItem[]>(queryKeys.meta.all(resource), old =>
-					old?.map(item =>
-						item.id === id
-							? {
-									...item,
-									...(title && { title }),
-									...(resource === 'equipment' && type && { type }),
-								}
-							: item
-					)
-				)
-			}
+        qc.setQueryData<MetaItem[]>(queryKeys.meta.all(resource), (old) =>
+          old?.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  ...(title && { title }),
+                  ...(resource === 'equipment' && type && { type }),
+                }
+              : item,
+          ),
+        )
+      }
 
-			return { previousAll, previousById }
-		},
+      return { previousAll, previousById }
+    },
 
-		onError: (_err, variables, context) => {
-			if (context?.previousAll) {
-				qc.setQueryData(queryKeys.meta.all(resource), context.previousAll)
-			}
-			if (context?.previousById) {
-				qc.setQueryData(queryKeys.meta.byId(resource, variables.id), context.previousById)
-			}
-		},
+    onError: (_err, variables, context) => {
+      if (context?.previousAll) {
+        qc.setQueryData(queryKeys.meta.all(resource), context.previousAll)
+      }
+      if (context?.previousById) {
+        qc.setQueryData(queryKeys.meta.byId(resource, variables.id), context.previousById)
+      }
+    },
 
-		onSettled: (_data, _err, variables) => {
-			qc.invalidateQueries({ queryKey: queryKeys.meta.all(resource) })
-			qc.invalidateQueries({ queryKey: queryKeys.meta.byId(resource, variables.id) })
-		},
-	})
+    onSettled: (_data, _err, variables) => {
+      qc.invalidateQueries({ queryKey: queryKeys.meta.all(resource) })
+      qc.invalidateQueries({ queryKey: queryKeys.meta.byId(resource, variables.id) })
+    },
+  })
 }
 
 export function useDeleteMeta(resource: MetaResource) {
-	const qc = useQueryClient()
-	return useMutation({
-		mutationFn: (id: string) => deleteMetaService(resource, id),
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => deleteMetaService(resource, id),
 
-		onMutate: async id => {
-			await qc.cancelQueries({ queryKey: queryKeys.meta.resource(resource) })
-			const previousAll = qc.getQueryData<MetaItem[]>(queryKeys.meta.all(resource))
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: queryKeys.meta.resource(resource) })
+      const previousAll = qc.getQueryData<MetaItem[]>(queryKeys.meta.all(resource))
 
-			if (previousAll) {
-				qc.setQueryData<MetaItem[]>(queryKeys.meta.all(resource), old => old?.filter(item => item.id !== id))
-			}
+      if (previousAll) {
+        qc.setQueryData<MetaItem[]>(queryKeys.meta.all(resource), (old) =>
+          old?.filter((item) => item.id !== id),
+        )
+      }
 
-			return { previousAll }
-		},
+      return { previousAll }
+    },
 
-		onError: (_err, _id, context) => {
-			if (context?.previousAll) {
-				qc.setQueryData(queryKeys.meta.all(resource), context.previousAll)
-			}
-		},
+    onError: (_err, _id, context) => {
+      if (context?.previousAll) {
+        qc.setQueryData(queryKeys.meta.all(resource), context.previousAll)
+      }
+    },
 
-		onSettled: () => {
-			qc.invalidateQueries({ queryKey: queryKeys.meta.resource(resource) })
-		},
-	})
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.meta.resource(resource) })
+    },
+  })
 }
 
 /**

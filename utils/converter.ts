@@ -10,8 +10,8 @@ const INCH_TO_CM = 2.54
    Helpers
 --------------------------------------------- */
 function round(value: number, decimals = 2) {
-	const factor = Math.pow(10, decimals)
-	return Math.round(value * factor) / factor
+  const factor = Math.pow(10, decimals)
+  return Math.round(value * factor) / factor
 }
 
 /* ---------------------------------------------
@@ -22,28 +22,28 @@ function round(value: number, decimals = 2) {
 --------------------------------------------- */
 
 export function convertWeight(
-	value: number,
-	options?: {
-		from?: WeightUnits
-		to?: WeightUnits
-		precision?: number
-	}
+  value: number,
+  options?: {
+    from?: WeightUnits
+    to?: WeightUnits
+    precision?: number
+  },
 ) {
-	// Guard against invalid input
-	if (!Number.isFinite(value)) return 0
+  // Guard against invalid input
+  if (!Number.isFinite(value)) return 0
 
-	const from = options?.from ?? 'kg'
-	const to = options?.to ?? 'kg'
-	const precision = options?.precision ?? 2
+  const from = options?.from ?? 'kg'
+  const to = options?.to ?? 'kg'
+  const precision = options?.precision ?? 2
 
-	if (from === to) return round(value, precision)
+  if (from === to) return round(value, precision)
 
-	// lbs → kg
-	if (from === 'lbs' && to === 'kg') return round(value * LB_TO_KG, precision)
-	// kg → lbs
-	if (from === 'kg' && to === 'lbs') return round(value / LB_TO_KG, precision)
+  // lbs → kg
+  if (from === 'lbs' && to === 'kg') return round(value * LB_TO_KG, precision)
+  // kg → lbs
+  if (from === 'kg' && to === 'lbs') return round(value / LB_TO_KG, precision)
 
-	return round(value, precision)
+  return round(value, precision)
 }
 
 /* ---------------------------------------------
@@ -54,28 +54,28 @@ export function convertWeight(
 --------------------------------------------- */
 
 export function convertLength(
-	value: number,
-	options?: {
-		from?: LengthUnits
-		to?: LengthUnits
-		precision?: number
-	}
+  value: number,
+  options?: {
+    from?: LengthUnits
+    to?: LengthUnits
+    precision?: number
+  },
 ) {
-	// Guard against invalid input
-	if (!Number.isFinite(value)) return 0
+  // Guard against invalid input
+  if (!Number.isFinite(value)) return 0
 
-	const from = options?.from ?? 'cm'
-	const to = options?.to ?? 'cm'
-	const precision = options?.precision ?? 2
+  const from = options?.from ?? 'cm'
+  const to = options?.to ?? 'cm'
+  const precision = options?.precision ?? 2
 
-	if (from === to) return round(value, precision)
+  if (from === to) return round(value, precision)
 
-	// inches → cm
-	if (from === 'inches' && to === 'cm') return round(value * INCH_TO_CM, precision)
-	// cm → inches
-	if (from === 'cm' && to === 'inches') return round(value / INCH_TO_CM, precision)
+  // inches → cm
+  if (from === 'inches' && to === 'cm') return round(value * INCH_TO_CM, precision)
+  // cm → inches
+  if (from === 'cm' && to === 'inches') return round(value / INCH_TO_CM, precision)
 
-	return round(value, precision)
+  return round(value, precision)
 }
 
 /* ---------------------------------------------
@@ -90,7 +90,7 @@ export function convertLength(
  * @param value - Weight in kg (as stored in the backend)
  */
 export function displayWeight(value: number, unit: WeightUnits, options?: { precision?: number }) {
-	return convertWeight(value, { from: 'kg', to: unit, precision: options?.precision ?? 2 })
+  return convertWeight(value, { from: 'kg', to: unit, precision: options?.precision ?? 2 })
 }
 
 /**
@@ -98,5 +98,5 @@ export function displayWeight(value: number, unit: WeightUnits, options?: { prec
  * @param value - Length in cm (as stored in the backend)
  */
 export function displayLength(value: number, unit: LengthUnits, options?: { precision?: number }) {
-	return convertLength(value, { from: 'cm', to: unit, precision: options?.precision ?? 2 })
+  return convertLength(value, { from: 'cm', to: unit, precision: options?.precision ?? 2 })
 }

@@ -8,8 +8,8 @@ import React from 'react'
  * where AuthGuard and other logic reside.
  */
 export default function ShareWorkoutRedirect() {
-	const { shareId } = useLocalSearchParams<{ shareId: string }>()
+  const { shareId } = useLocalSearchParams<{ shareId: string }>()
 
-	// Use replace to avoid keeping this redirect in the history stack
-	return <Redirect href={`/(app)/workout/share/${shareId}`} />
+  // Use replace to avoid keeping this redirect in the history stack
+  return <Redirect href={`/(app)/workout/share/${shareId}`} />
 }

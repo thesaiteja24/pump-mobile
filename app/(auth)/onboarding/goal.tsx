@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/buttons/Button'
 import { SelectableCard } from '@/components/ui/SelectableCard'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { useOnboarding } from '@/stores/onboardingStore'
@@ -10,68 +10,70 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
 export default function OnboardingGoal() {
-	const colors = useThemeColor()
-	const { fitnessGoal, setFitnessGoal } = useOnboarding()
+  const colors = useThemeColor()
+  const { fitnessGoal, setFitnessGoal } = useOnboarding()
 
-	const handleNext = () => {
-		if (!fitnessGoal) {
-			Toast.show({
-				type: 'error',
-				text1: 'Please select a primary goal',
-			})
-			return
-		}
-		router.push('/(auth)/onboarding/target')
-	}
+  const handleNext = () => {
+    if (!fitnessGoal) {
+      Toast.show({
+        type: 'error',
+        text1: 'Please select a primary goal',
+      })
+      return
+    }
+    router.push('/(auth)/onboarding/target')
+  }
 
-	const handleBack = () => {
-		router.back()
-	}
+  const handleBack = () => {
+    router.back()
+  }
 
-	return (
-		<SafeAreaView className="flex-1 bg-white dark:bg-black">
-			<ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 100 }}>
-				<Text className="mb-2 text-3xl font-bold text-black dark:text-white">
-					What&apos;s your primary goal?
-				</Text>
-				<Text className="mb-8 text-neutral-500 dark:text-neutral-400">
-					This helps us calibrate your daily energy requirements.
-				</Text>
+  return (
+    <SafeAreaView className="flex-1 bg-white dark:bg-black">
+      <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 100 }}>
+        <Text className="mb-2 text-3xl font-bold text-black dark:text-white">
+          What&apos;s your primary goal?
+        </Text>
+        <Text className="mb-8 text-neutral-500 dark:text-neutral-400">
+          This helps us calibrate your daily energy requirements.
+        </Text>
 
-				<View className="flex gap-4">
-					<SelectableCard
-						selected={fitnessGoal === 'loseWeight'}
-						onSelect={() => setFitnessGoal('loseWeight')}
-						title="Lose Fat"
-						className="p-4"
-					/>
-					<SelectableCard
-						selected={fitnessGoal === 'gainMuscle'}
-						onSelect={() => setFitnessGoal('gainMuscle')}
-						title="Gain Muscle"
-						className="p-4"
-					/>
-					{/* For MVP we stick to fat loss / muscle gain */}
-				</View>
-			</ScrollView>
+        <View className="flex gap-4">
+          <SelectableCard
+            selected={fitnessGoal === 'loseWeight'}
+            onSelect={() => setFitnessGoal('loseWeight')}
+            title="Lose Fat"
+            className="p-4"
+          />
+          <SelectableCard
+            selected={fitnessGoal === 'gainMuscle'}
+            onSelect={() => setFitnessGoal('gainMuscle')}
+            title="Gain Muscle"
+            className="p-4"
+          />
+          {/* For MVP we stick to fat loss / muscle gain */}
+        </View>
+      </ScrollView>
 
-			<View className="absolute bottom-0 left-0 right-0 flex items-center justify-center border-t border-neutral-100 bg-white p-6 dark:border-neutral-900 dark:bg-black">
-				<View className="flex flex-row items-center justify-between gap-4 px-8">
-					<Button
-						className="rounded-full"
-						title=""
-						onPress={handleBack}
-						leftIcon={<MaterialCommunityIcons name="chevron-left" size={24} color={colors.icon} />}
-					/>
-					<Button
-						title="Next Step"
-						variant="primary"
-						onPress={handleNext}
-						fullWidth
-						rightIcon={<MaterialCommunityIcons name="chevron-right" size={24} color={colors.icon} />}
-					/>
-				</View>
-			</View>
-		</SafeAreaView>
-	)
+      <View className="absolute bottom-0 left-0 right-0 flex items-center justify-center border-t border-neutral-100 bg-white p-6 dark:border-neutral-900 dark:bg-black">
+        <View className="flex flex-row items-center justify-between gap-4 px-8">
+          <Button
+            className="rounded-full"
+            title=""
+            onPress={handleBack}
+            leftIcon={<MaterialCommunityIcons name="chevron-left" size={24} color={colors.icon} />}
+          />
+          <Button
+            title="Next Step"
+            variant="primary"
+            onPress={handleNext}
+            fullWidth
+            rightIcon={
+              <MaterialCommunityIcons name="chevron-right" size={24} color={colors.icon} />
+            }
+          />
+        </View>
+      </View>
+    </SafeAreaView>
+  )
 }

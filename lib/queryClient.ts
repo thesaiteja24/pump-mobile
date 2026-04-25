@@ -22,21 +22,21 @@ import { persistQueryClient } from '@tanstack/react-query-persist-client'
 // ─────────────────────────────────────────────────────────────────
 
 export const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			// Don't retry on 4xx — those are user/auth errors, not transient failures.
-			retry: (failureCount, error: any) => {
-				if (error?.response?.status >= 400 && error?.response?.status < 500) return false
-				return failureCount < 2
-			},
-			// After 5 min background the data is considered stale and will refetch on focus.
-			// Individual queries can override this with their own staleTime.
-			staleTime: 5 * 60 * 1000, // 5 minutes default
-		},
-		mutations: {
-			retry: false,
-		},
-	},
+  defaultOptions: {
+    queries: {
+      // Don't retry on 4xx — those are user/auth errors, not transient failures.
+      retry: (failureCount, error: any) => {
+        if (error?.response?.status >= 400 && error?.response?.status < 500) return false
+        return failureCount < 2
+      },
+      // After 5 min background the data is considered stale and will refetch on focus.
+      // Individual queries can override this with their own staleTime.
+      staleTime: 5 * 60 * 1000, // 5 minutes default
+    },
+    mutations: {
+      retry: false,
+    },
+  },
 })
 
 // ─────────────────────────────────────────────────────────────────
@@ -46,15 +46,15 @@ export const queryClient = new QueryClient({
 // ─────────────────────────────────────────────────────────────────
 
 const mmkvAsyncAdapter = {
-	getItem: (key: string) => Promise.resolve(storage.getString(key) ?? null),
-	setItem: (key: string, value: string) => {
-		storage.set(key, value)
-		return Promise.resolve()
-	},
-	removeItem: (key: string) => {
-		storage.remove(key)
-		return Promise.resolve()
-	},
+  getItem: (key: string) => Promise.resolve(storage.getString(key) ?? null),
+  setItem: (key: string, value: string) => {
+    storage.set(key, value)
+    return Promise.resolve()
+  },
+  removeItem: (key: string) => {
+    storage.remove(key)
+    return Promise.resolve()
+  },
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -65,13 +65,13 @@ const mmkvAsyncAdapter = {
 // ─────────────────────────────────────────────────────────────────
 
 const persister = createAsyncStoragePersister({
-	storage: mmkvAsyncAdapter,
-	key: 'tanstack-query-cache',
+  storage: mmkvAsyncAdapter,
+  key: 'tanstack-query-cache',
 })
 
 persistQueryClient({
-	queryClient,
-	persister,
-	maxAge: 24 * 60 * 60 * 1000, // discard cache entries older than 24 h
-	buster: 'v1', // bump when data shapes change
+  queryClient,
+  persister,
+  maxAge: 24 * 60 * 60 * 1000, // discard cache entries older than 24 h
+  buster: 'v1', // bump when data shapes change
 })

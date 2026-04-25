@@ -1,9 +1,9 @@
 export const API_BASE_URL = (() => {
-	const url = process.env.EXPO_PUBLIC_BASE_URL
-	if (!url) {
-		throw new Error('EXPO_PUBLIC_BASE_URL is not defined. Check your env configuration.')
-	}
-	return url
+  const url = process.env.EXPO_PUBLIC_BASE_URL
+  if (!url) {
+    throw new Error('EXPO_PUBLIC_BASE_URL is not defined. Check your env configuration.')
+  }
+  return url
 })()
 
 // Authentication Endpoints
@@ -18,8 +18,9 @@ export const MY_ANALYTICS_ENDPOINT = `/me/analytics`
 export const MY_FITNESS_PROFILE_ENDPOINT = `/me/fitness-profile`
 export const MY_NUTRITION_PLAN_ENDPOINT = `/me/nutrition-plan`
 export const MY_MEASUREMENTS_ENDPOINT = (duration?: string) =>
-	`/me/measurements${duration ? `?duration=${duration}` : ''}`
-export const MY_TRAINING_ANALYTICS_ENDPOINT = (duration: string) => `/me/analytics/training/?duration=${duration}`
+  `/me/measurements${duration ? `?duration=${duration}` : ''}`
+export const MY_TRAINING_ANALYTICS_ENDPOINT = (duration: string) =>
+  `/me/analytics/training/?duration=${duration}`
 
 export const USER_ENDPOINT = (id: string) => `/users/${id}`
 
@@ -31,7 +32,7 @@ export const USER_FOLLOWERS_ENDPOINT = (id: string) => `/engagement/${id}/follow
 export const USER_FOLLOWING_ENDPOINT = (id: string) => `/engagement/${id}/following`
 export const LIKES_ENDPOINT = (id: string, type: string) => `/engagement/${id}/likes?type=${type}`
 export const TOGGLE_LIKE_ENDPOINT = (id: string, type: string, liked: boolean) =>
-	`/engagement/${id}/like?type=${type}&liked=${liked}`
+  `/engagement/${id}/like?type=${type}&liked=${liked}`
 
 export const WORKOUT_COMMENTS_ENDPOINT = (id: string) => `/engagement/${id}/comments`
 
@@ -60,6 +61,7 @@ export const COACH_CONVERSATIONS_ENDPOINT = `/coach/conversations`
 
 export const COACH_ACTIVE_CONVERSATION_ENDPOINT = `/coach/conversations/active`
 export const COACH_CONVERSATION_ENDPOINT = (id: string) => `/coach/conversations/${id}`
-export const COACH_CONVERSATION_MESSAGES_ENDPOINT = (id: string) => `/coach/conversations/${id}/messages`
+export const COACH_CONVERSATION_MESSAGES_ENDPOINT = (id: string) =>
+  `/coach/conversations/${id}/messages`
 export const COACH_TRANSCRIPTION_ENDPOINT = `/coach/transcriptions`
 export const COACH_SPEECH_ENDPOINT = (id: string) => `${API_BASE_URL}/coach/speech/${id}`
