@@ -95,7 +95,7 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
   const [weightValue, setWeightValue] = useState('')
 
   const handlePress = () => {
-    habitModalRef.current?.open()
+    habitModalRef.current?.present()
   }
 
   const logWeightMutation = useLogWeight()
@@ -121,7 +121,7 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
         text2: `Successfully logged ${weightValue} kg`,
       })
       setWeightValue('')
-      habitModalRef.current?.close()
+      habitModalRef.current?.dismiss()
     } catch (error: any) {
       Toast.show({
         type: 'error',
@@ -143,7 +143,7 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
         data: { value: numValue, date: new Date().toISOString() },
       })
       Toast.show({ type: 'success', text1: 'Progress saved!' })
-      habitModalRef.current?.close()
+      habitModalRef.current?.dismiss()
       setManualValue('')
     } catch (error: any) {
       Toast.show({ type: 'error', text1: error.message || 'Failed to save progress' })
@@ -154,14 +154,14 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
     try {
       await deleteHabitMutation.mutateAsync(habit.id)
       Toast.show({ type: 'success', text1: 'Habit deleted' })
-      habitModalRef.current?.close()
+      habitModalRef.current?.dismiss()
     } catch (error: any) {
       Toast.show({ type: 'error', text1: error.message || 'Failed to delete habit' })
     }
   }
 
   const handleEdit = () => {
-    habitModalRef.current?.close()
+    habitModalRef.current?.dismiss()
     router.push({
       pathname: '/habit',
       params: { id: habit.id },

@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/buttons/Button'
+import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import React, {
   forwardRef,
@@ -20,13 +21,15 @@ export interface PrivacyPolicyModalHandle {
 type Props = {
   onAgree: (version?: string) => void
   onClose?: () => void
+  persistOnNavigation?: boolean
 }
 
 const PrivacyPolicyModal = forwardRef<PrivacyPolicyModalHandle, Props>(
-  ({ onAgree, onClose }, ref) => {
+  ({ onAgree, onClose, persistOnNavigation = false }, ref) => {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
     const isDark = useColorScheme() === 'dark'
+    const [isOpen, setIsOpen] = useState(false)
 
     const [policyVersion, setPolicyVersion] = useState<string | null>(null)
 
@@ -47,15 +50,23 @@ const PrivacyPolicyModal = forwardRef<PrivacyPolicyModalHandle, Props>(
     true;
     `
 
+    const present = useCallback(() => {
+      setPolicyVersion(null)
+      bottomSheetModalRef.current?.present()
+    }, [])
+
+    const dismiss = useCallback(() => {
+      bottomSheetModalRef.current?.dismiss()
+    }, [])
+
     useImperativeHandle(ref, () => ({
-      present: () => {
-        setPolicyVersion(null)
-        bottomSheetModalRef.current?.present()
-      },
-      dismiss: () => {
-        bottomSheetModalRef.current?.dismiss()
-      },
+      present,
+      dismiss,
     }))
+
+    // Shared modal logic
+    useModalBackHandler(isOpen, dismiss)
+    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const snapPoints = useMemo(() => ['95%'], [])
 
@@ -74,9 +85,10 @@ const PrivacyPolicyModal = forwardRef<PrivacyPolicyModalHandle, Props>(
         backdropComponent={renderBackdrop}
         enablePanDownToClose
         onDismiss={() => {
+          setIsOpen(false)
           onClose?.()
         }}
-        
+        onChange={(index) => setIsOpen(index >= 0)}
         handleIndicatorStyle={{
           backgroundColor: isDark ? '#525252' : '#d1d5db',
         }}
@@ -116,7 +128,7 @@ const PrivacyPolicyModal = forwardRef<PrivacyPolicyModalHandle, Props>(
                 variant="success"
                 onPress={() => {
                   onAgree(policyVersion || undefined)
-                  bottomSheetModalRef.current?.dismiss()
+                  dismiss()
                 }}
                 
               />
@@ -126,7 +138,7 @@ const PrivacyPolicyModal = forwardRef<PrivacyPolicyModalHandle, Props>(
                 title="Close"
                 variant="danger"
                 onPress={() => {
-                  bottomSheetModalRef.current?.dismiss()
+                  dismiss()
                 }}
                 
               />

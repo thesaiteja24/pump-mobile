@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/buttons/Button'
+import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
 import React, {
@@ -34,6 +35,7 @@ export interface RestTimerPickerModalProps {
    * @param seconds Total selected duration in seconds
    */
   onConfirm: (seconds: number) => void
+  persistOnNavigation?: boolean
 }
 
 /* --------------------------------------------------
@@ -42,10 +44,11 @@ export interface RestTimerPickerModalProps {
 
 const RestTimerPickerModal = React.memo(
   forwardRef<RestTimerPickerModalHandle, RestTimerPickerModalProps>(
-    ({ onClose, onConfirm }, ref) => {
+    ({ onClose, onConfirm, persistOnNavigation = false }, ref) => {
       const isDark = useColorScheme() === 'dark'
       const bottomSheetModalRef = useRef<BottomSheetModal>(null)
       const insets = useSafeAreaInsets()
+      const [isOpen, setIsOpen] = useState(false)
 
       // Internal state for the picker
       const [hours, setHours] = useState(0)
@@ -54,33 +57,49 @@ const RestTimerPickerModal = React.memo(
 
       const [pickerKey, setPickerKey] = useState(0)
 
+      const present = useCallback((initialSeconds: number) => {
+        const initialHours = Math.floor(initialSeconds / 3600)
+        const remainingAfterHours = initialSeconds % 3600
+        const initialMinutes = Math.floor(remainingAfterHours / 60)
+        const initialSecs = remainingAfterHours % 60
+
+        setHours(initialHours)
+        setMinutes(initialMinutes)
+        setSeconds(initialSecs)
+
+        // Force re-mount of picker to apply new initial values
+        setPickerKey((prev) => prev + 1)
+
+        bottomSheetModalRef.current?.present()
+      }, [])
+
+      const dismiss = useCallback(() => {
+        bottomSheetModalRef.current?.dismiss()
+      }, [])
+
       // Expose methods to parent
       useImperativeHandle(ref, () => ({
-        present: (initialSeconds: number) => {
-          const initialHours = Math.floor(initialSeconds / 3600)
-          const remainingAfterHours = initialSeconds % 3600
-          const initialMinutes = Math.floor(remainingAfterHours / 60)
-          const initialSecs = remainingAfterHours % 60
-
-          setHours(initialHours)
-          setMinutes(initialMinutes)
-          setSeconds(initialSecs)
-
-          // Force re-mount of picker to apply new initial values
-          setPickerKey((prev) => prev + 1)
-
-          bottomSheetModalRef.current?.present()
-        },
-        dismiss: () => {
-          bottomSheetModalRef.current?.dismiss()
-        },
+        present,
+        dismiss,
       }))
+
+      // Shared modal logic
+      useModalBackHandler(isOpen, dismiss)
+      useModalNavigationSync({
+        isOpen,
+        present: () => {
+          const totalSeconds = hours * 3600 + minutes * 60 + seconds
+          present(totalSeconds)
+        },
+        dismiss,
+        persistOnNavigation,
+      })
 
       const handleConfirm = () => {
         const totalSeconds = hours * 3600 + minutes * 60 + seconds
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
         onConfirm(totalSeconds)
-        bottomSheetModalRef.current?.dismiss()
+        dismiss()
       }
 
       const handlePickerFeedback = () => {
@@ -106,6 +125,7 @@ const RestTimerPickerModal = React.memo(
           enablePanDownToClose={true}
           enableDynamicSizing={false}
           enableContentPanningGesture={false}
+          onChange={(index) => setIsOpen(index >= 0)}
           handleIndicatorStyle={{
             backgroundColor: isDark ? '#525252' : '#d1d5db',
           }}
@@ -158,11 +178,7 @@ const RestTimerPickerModal = React.memo(
             {/* Actions */}
             <View className="mt-4 flex-row gap-4">
               <View className="flex-1">
-                <Button
-                  title="Cancel"
-                  variant="outline"
-                  onPress={() => bottomSheetModalRef.current?.dismiss()}
-                />
+                <Button title="Cancel" variant="outline" onPress={dismiss} />
               </View>
               <View className="flex-1">
                 <Button title="Confirm" variant="primary" onPress={handleConfirm} />

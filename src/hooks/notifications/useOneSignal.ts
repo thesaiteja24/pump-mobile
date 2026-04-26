@@ -1,5 +1,5 @@
 import { router } from 'expo-router'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { LogLevel, OneSignal } from 'react-native-onesignal'
 
 const ONESIGNAL_APP_ID = '412e5d5a-c5e4-485b-a462-2ecbaf6c833a'
@@ -8,7 +8,7 @@ export const useOneSignal = () => {
   const [isInitialized, setIsInitialized] = useState(false)
   const [hasPermission, setHasPermission] = useState(false)
 
-  const initialize = useCallback(() => {
+  const initialize = useCallback(async () => {
     if (isInitialized) return
 
     if (__DEV__) {
@@ -19,7 +19,7 @@ export const useOneSignal = () => {
     OneSignal.initialize(ONESIGNAL_APP_ID)
 
     // Check existing permission
-    setHasPermission(OneSignal.Notifications.hasPermission())
+    setHasPermission(await OneSignal.Notifications.getPermissionAsync())
 
     // Notification clicked
     const clickListener = (event: any) => {
@@ -70,16 +70,19 @@ export const useOneSignal = () => {
     return granted
   }, [])
 
-  const login = useCallback(async (externalId: string) => {
-    if (!isInitialized) return
-    const subId = await OneSignal.User.pushSubscription.getIdAsync()
+  const login = useCallback(
+    async (externalId: string) => {
+      if (!isInitialized) return
+      const subId = await OneSignal.User.pushSubscription.getIdAsync()
 
-    if (subId) {
-      OneSignal.login(externalId)
-    } else {
-      console.log('⚠️ Cannot login — no subscription yet')
-    }
-  }, [isInitialized])
+      if (subId) {
+        OneSignal.login(externalId)
+      } else {
+        console.log('⚠️ Cannot login — no subscription yet')
+      }
+    },
+    [isInitialized],
+  )
 
   const logout = useCallback(() => {
     if (!isInitialized) return

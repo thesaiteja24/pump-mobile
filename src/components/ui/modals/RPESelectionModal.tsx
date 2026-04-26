@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/buttons/Button'
+import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
-import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react'
+import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -30,24 +31,34 @@ type Props = {
   currentValue?: number | null // 0 / undefined = unset
   onClose?: () => void
   onSelect: (value?: number) => void // undefined = reset
+  persistOnNavigation?: boolean
 }
 
 /* ───────────────── Component ───────────────── */
 
 const RPESelectionModal = forwardRef<RPESelectionModalHandle, Props>(
-  ({ currentValue, onClose, onSelect }, ref) => {
+  ({ currentValue, onClose, onSelect, persistOnNavigation = false }, ref) => {
     const isDark = useColorScheme() === 'dark'
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
+    const [isOpen, setIsOpen] = useState(false)
+
+    const present = useCallback(() => {
+      bottomSheetModalRef.current?.present()
+    }, [])
+
+    const dismiss = useCallback(() => {
+      bottomSheetModalRef.current?.dismiss()
+    }, [])
 
     useImperativeHandle(ref, () => ({
-      present: () => {
-        bottomSheetModalRef.current?.present()
-      },
-      dismiss: () => {
-        bottomSheetModalRef.current?.dismiss()
-      },
+      present,
+      dismiss,
     }))
+
+    // Shared modal logic
+    useModalBackHandler(isOpen, dismiss)
+    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const selectedValue = currentValue && currentValue > 0 ? currentValue : null
 
@@ -74,7 +85,7 @@ const RPESelectionModal = forwardRef<RPESelectionModalHandle, Props>(
         snapPoints={snapPoints}
         backdropComponent={renderBackdrop}
         onDismiss={onClose}
-        
+        onChange={(index) => setIsOpen(index >= 0)}
         handleIndicatorStyle={{
           backgroundColor: isDark ? '#525252' : '#d1d5db',
         }}
@@ -145,9 +156,8 @@ const RPESelectionModal = forwardRef<RPESelectionModalHandle, Props>(
                 variant="primary"
                 onPress={() => {
                   // Done
-                  bottomSheetModalRef.current?.dismiss()
+                  dismiss()
                 }}
-                
               />
             </View>
 

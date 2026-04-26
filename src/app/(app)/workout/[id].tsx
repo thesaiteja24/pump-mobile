@@ -285,15 +285,14 @@ export default function WorkoutDetails() {
           <Button
             variant="primary"
             title="Save as Template"
-            className="min-h-[52px] w-2/3"
+            className="w-2/3"
             onPress={handleSaveAsTemplate}
-            
           />
 
           {isAuthrized && (
             <Button
               title="Delete"
-              className="min-h-[52px] w-1/3"
+              className="w-1/3"
               variant="danger"
               onPress={() => deleteModalRef.current?.present()}
             />

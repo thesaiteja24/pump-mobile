@@ -90,7 +90,7 @@ export default function ViewExerciseScreen() {
             height: 230,
             paddingTop: 0,
             marginTop: 0,
-            backgroundColor: 'white',
+            backgroundColor: color.background,
           }}
           player={player}
           nativeControls={false}
@@ -110,7 +110,7 @@ export default function ViewExerciseScreen() {
         <View className="flex flex-row justify-between px-4 pt-4">
           <View className="flex flex-row items-center gap-2">
             <Text className="text-lg font-normal text-black dark:text-white">Best 1RM</Text>
-            <Pressable onPress={() => best1RMModalRef.current?.open()}>
+            <Pressable onPress={() => best1RMModalRef.current?.present()}>
               <EvilIcons name="question" size={16} color={color.icon} />
             </Pressable>
           </View>
@@ -126,7 +126,7 @@ export default function ViewExerciseScreen() {
         <View className="flex flex-row justify-between px-4">
           <View className="flex flex-row items-center gap-2">
             <Text className="text-lg font-normal text-black dark:text-white">Best Set Volume</Text>
-            <Pressable onPress={() => bestSetVolumeModalRef.current?.open()}>
+            <Pressable onPress={() => bestSetVolumeModalRef.current?.present()}>
               <EvilIcons name="question" size={16} color={color.icon} />
             </Pressable>
           </View>
@@ -142,7 +142,7 @@ export default function ViewExerciseScreen() {
         <View className="flex flex-row justify-between px-4">
           <View className="flex flex-row items-center gap-2">
             <Text className="text-lg font-normal text-black dark:text-white">Heaviest Weight</Text>
-            <Pressable onPress={() => heaviestWeightModalRef.current?.open()}>
+            <Pressable onPress={() => heaviestWeightModalRef.current?.present()}>
               <EvilIcons name="question" size={16} color={color.icon} />
             </Pressable>
           </View>

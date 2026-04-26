@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/buttons/Button'
 import { ReadOnlyExerciseRow } from '@/components/workouts/ReadOnlyExerciseRow'
+import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { ProgramDay, UserProgramDay } from '@/types/programs'
 import { TemplateExerciseGroup } from '@/types/templates'
 import { FontAwesome6 } from '@expo/vector-icons'
@@ -13,7 +14,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { BackHandler, Text, View, useColorScheme } from 'react-native'
+import { Text, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export interface WorkoutDetailsModalHandle {
@@ -24,10 +25,11 @@ export interface WorkoutDetailsModalHandle {
 export interface WorkoutDetailsModalProps {
   onOpenChange?: (isOpen: boolean) => void
   onStartWorkout?: (day: UserProgramDay) => void
+  persistOnNavigation?: boolean
 }
 
 export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, WorkoutDetailsModalProps>(
-  ({ onOpenChange, onStartWorkout }, ref) => {
+  ({ onOpenChange, onStartWorkout, persistOnNavigation = false }, ref) => {
     const [selectedDay, setSelectedDay] = useState<ProgramDay | UserProgramDay | null>(null)
     const [isStartable, setIsStartable] = useState(false)
     const isDark = useColorScheme() === 'dark'
@@ -36,31 +38,31 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const dynamicSizing = selectedDay?.isRestDay ? true : false
 
+    const presentModal = useCallback((day: ProgramDay | UserProgramDay, startable: boolean = false) => {
+      setSelectedDay(day)
+      setIsStartable(startable)
+      bottomSheetModalRef.current?.present()
+    }, [])
+
+    const dismissModal = useCallback(() => {
+      bottomSheetModalRef.current?.dismiss()
+    }, [])
+
     useImperativeHandle(ref, () => ({
-      present: (day: ProgramDay | UserProgramDay, startable: boolean = false) => {
-        setSelectedDay(day)
-        setIsStartable(startable)
-        setIsOpen(true)
-        onOpenChange?.(true)
-        bottomSheetModalRef.current?.present()
-      },
-      dismiss: () => {
-        bottomSheetModalRef.current?.dismiss()
-      },
+      present: presentModal,
+      dismiss: dismissModal,
     }))
 
-    // ✅ Handle Android back gesture
-    React.useEffect(() => {
-      const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-        if (isOpen) {
-          bottomSheetModalRef.current?.dismiss()
-          return true // consume back press
-        }
-        return false // allow navigation
-      })
-
-      return () => subscription.remove()
-    }, [isOpen])
+    // Shared modal logic
+    useModalBackHandler(isOpen, dismissModal)
+    useModalNavigationSync({
+      isOpen,
+      present: () => {
+        if (selectedDay) presentModal(selectedDay, isStartable)
+      },
+      dismiss: dismissModal,
+      persistOnNavigation,
+    })
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -158,12 +160,13 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
                   if (selectedDay && 'templateSnapshot' in selectedDay) {
                     onStartWorkout?.(selectedDay as UserProgramDay)
                   }
-                  bottomSheetModalRef.current?.dismiss()
+                  if (!persistOnNavigation) {
+                    bottomSheetModalRef.current?.dismiss()
+                  }
                   router.push({
                     pathname: '/(app)/workout/start',
                   })
                 }}
-                
               />
             </View>
           )}
@@ -177,7 +180,6 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
         snapPoints={snapPoints}
         enableDynamicSizing={dynamicSizing}
         backdropComponent={renderBackdrop}
-        
         onDismiss={() => {
           setIsOpen(false)
           onOpenChange?.(false)

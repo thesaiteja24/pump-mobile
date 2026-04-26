@@ -1,4 +1,3 @@
-import GoogleIcon from '../../assets/components/icons/Google'
 import { Button } from '@/components/ui/buttons/Button'
 import PrivacyPolicyModal, {
   PrivacyPolicyModalHandle,
@@ -27,6 +26,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
+import GoogleIcon from '../../assets/components/icons/Google'
 
 export default function Login() {
   const [privacyAccepted, setPrivacyAccepted] = useState(false)
@@ -204,7 +204,7 @@ export default function Login() {
           <View className="w-full border-t-[0.25px] border-gray-500 dark:border-gray-400"></View>
         </View>
         <Button
-          className="min-h-[52px]"
+          className=""
           title="Continue with Google"
           onPress={() => onGoogleButtonPress()}
           variant="ghost"
@@ -215,7 +215,6 @@ export default function Login() {
             isGooglePending.current = true
             privacyModalRef.current?.present()
           }}
-          
         />
         <View className="mt-4 flex-row items-center justify-center gap-4 px-6">
           <Pressable

@@ -357,8 +357,7 @@ export default function UserProgramDashboard() {
                   : 'No Workout Today'
             }
             variant="primary"
-            className="mb-4 min-h-[52px]"
-            
+            className="mb-4"
             onPress={() => {
               if (!todayDay) return
 

@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui/buttons/Button'
+import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import { useRouter } from 'expo-router'
-import React, { forwardRef, useCallback, useImperativeHandle, useRef } from 'react'
+import React, { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react'
 import { Text, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -25,6 +26,7 @@ type Props = {
    * Optional callback when cancel is pressed.
    */
   onCancel?: () => void
+  persistOnNavigation?: boolean
 }
 
 export const PaywallModal = forwardRef<PaywallModalHandle, Props>(
@@ -36,6 +38,7 @@ export const PaywallModal = forwardRef<PaywallModalHandle, Props>(
       cancelText = 'Not now',
       onContinue,
       onCancel,
+      persistOnNavigation = false,
     },
     ref,
   ) => {
@@ -44,15 +47,24 @@ export const PaywallModal = forwardRef<PaywallModalHandle, Props>(
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
     const router = useRouter()
+    const [isOpen, setIsOpen] = useState(false)
+
+    const present = useCallback(() => {
+      bottomSheetModalRef.current?.present()
+    }, [])
+
+    const dismiss = useCallback(() => {
+      bottomSheetModalRef.current?.dismiss()
+    }, [])
 
     useImperativeHandle(ref, () => ({
-      present: () => {
-        bottomSheetModalRef.current?.present()
-      },
-      dismiss: () => {
-        bottomSheetModalRef.current?.dismiss()
-      },
+      present,
+      dismiss,
     }))
+
+    // Shared modal logic
+    useModalBackHandler(isOpen, dismiss)
+    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -62,7 +74,11 @@ export const PaywallModal = forwardRef<PaywallModalHandle, Props>(
     )
 
     const handleContinue = () => {
-      bottomSheetModalRef.current?.dismiss()
+      // If we persist on navigation, we don't dismiss manually.
+      // useModalNavigationSync will handle dismissal on blur and set the reopen flag.
+      if (!persistOnNavigation) {
+        dismiss()
+      }
       if (onContinue) {
         onContinue()
       } else {
@@ -76,7 +92,7 @@ export const PaywallModal = forwardRef<PaywallModalHandle, Props>(
         ref={bottomSheetModalRef}
         backdropComponent={renderBackdrop}
         enableDynamicSizing
-        
+        onChange={(index) => setIsOpen(index >= 0)}
         handleIndicatorStyle={{
           backgroundColor: isDark ? '#525252' : '#d1d5db',
         }}
@@ -98,10 +114,9 @@ export const PaywallModal = forwardRef<PaywallModalHandle, Props>(
               title={cancelText}
               variant="secondary"
               onPress={() => {
-                bottomSheetModalRef.current?.dismiss()
+                dismiss()
                 onCancel?.()
               }}
-              
             />
 
             {/* Continue */}
@@ -110,7 +125,6 @@ export const PaywallModal = forwardRef<PaywallModalHandle, Props>(
               title={continueText}
               variant="primary"
               onPress={handleContinue}
-              
             />
           </View>
         </BottomSheetView>

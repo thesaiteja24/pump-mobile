@@ -1,9 +1,10 @@
+import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { WorkoutLogSet } from '@/types/workouts'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
-import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react'
+import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -48,23 +49,33 @@ type Props = {
   currentType: WorkoutLogSet['setType']
   onSelect: (type: WorkoutLogSet['setType']) => void
   onClose?: () => void
+  persistOnNavigation?: boolean
 }
 
 const SetTypeSelectionModal = forwardRef<SetTypeSelectionModalHandle, Props>(
-  ({ currentType, onSelect, onClose }, ref) => {
+  ({ currentType, onSelect, onClose, persistOnNavigation = false }, ref) => {
     const colors = useThemeColor()
     const isDark = useColorScheme() === 'dark'
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
+    const [isOpen, setIsOpen] = useState(false)
+
+    const present = useCallback(() => {
+      bottomSheetModalRef.current?.present()
+    }, [])
+
+    const dismiss = useCallback(() => {
+      bottomSheetModalRef.current?.dismiss()
+    }, [])
 
     useImperativeHandle(ref, () => ({
-      present: () => {
-        bottomSheetModalRef.current?.present()
-      },
-      dismiss: () => {
-        bottomSheetModalRef.current?.dismiss()
-      },
+      present,
+      dismiss,
     }))
+
+    // Shared modal logic
+    useModalBackHandler(isOpen, dismiss)
+    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -81,7 +92,7 @@ const SetTypeSelectionModal = forwardRef<SetTypeSelectionModalHandle, Props>(
         snapPoints={snapPoints}
         backdropComponent={renderBackdrop}
         onDismiss={onClose}
-        
+        onChange={(index) => setIsOpen(index >= 0)}
         handleIndicatorStyle={{
           backgroundColor: isDark ? '#525252' : '#d1d5db',
         }}
@@ -96,7 +107,7 @@ const SetTypeSelectionModal = forwardRef<SetTypeSelectionModalHandle, Props>(
             <View className="mb-6 flex-row items-center justify-between">
               <Text className="text-xl font-bold text-black dark:text-white">Set Type</Text>
 
-              <TouchableOpacity onPress={() => bottomSheetModalRef.current?.dismiss()}>
+              <TouchableOpacity onPress={dismiss}>
                 <Ionicons name="close" size={24} color={isDark ? 'white' : 'gray'} />
               </TouchableOpacity>
             </View>
@@ -112,7 +123,7 @@ const SetTypeSelectionModal = forwardRef<SetTypeSelectionModalHandle, Props>(
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
                       onSelect(type.key)
-                      bottomSheetModalRef.current?.dismiss()
+                      dismiss()
                     }}
                     className={`rounded-xl border p-4 ${
                       selected

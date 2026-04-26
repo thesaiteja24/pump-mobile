@@ -2,6 +2,7 @@ import { Exercise } from '@/types/exercises'
 import { Image } from 'expo-image'
 import React, { useCallback } from 'react'
 import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native'
+import { useThemeColor } from '@/hooks/theme'
 
 /* ───────────────── Types ───────────────── */
 
@@ -31,6 +32,8 @@ const ExerciseRow = React.memo(
     onPress: (e: Exercise) => void
     onLongPress?: (e: Exercise) => void
   }) => {
+    const colors = useThemeColor()
+
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -42,7 +45,9 @@ const ExerciseRow = React.memo(
         delayLongPress={700}
       >
         <View className="w-3/4">
-          <Text className="text-lg font-semibold text-black dark:text-white">{item.title}</Text>
+          <Text className="text-lg font-semibold" style={{ color: colors.text }}>
+            {item.title}
+          </Text>
 
           <View className="mt-1 flex-row gap-4">
             {item.equipment && <Text className="text-sm text-primary">{item.equipment.title}</Text>}
@@ -62,8 +67,8 @@ const ExerciseRow = React.memo(
             height: 48,
             borderRadius: 100,
             borderWidth: 1,
-            borderColor: 'gray',
-            backgroundColor: 'white',
+            borderColor: colors.border,
+            backgroundColor: colors.isDark ? colors.neutral[800] : colors.white,
           }}
           contentFit="cover"
         />
@@ -84,6 +89,8 @@ export default function ExerciseList({
   onPress,
   onLongPress,
 }: Props) {
+  const colors = useThemeColor()
+
   // Move useCallback before any early returns to comply with rules-of-hooks
   const renderItem = useCallback(
     ({ item }: { item: Exercise }) => (
@@ -99,13 +106,15 @@ export default function ExerciseList({
   )
 
   if (loading) {
-    return <ActivityIndicator animating size="large" className="mt-8" />
+    return <ActivityIndicator animating size="large" className="mt-8" color={colors.primary} />
   }
 
   if (!exercises.length) {
     return (
       <View className="my-8 px-4">
-        <Text className="text-center text-black dark:text-white">No exercises found.</Text>
+        <Text className="text-center" style={{ color: colors.text }}>
+          No exercises found.
+        </Text>
       </View>
     )
   }

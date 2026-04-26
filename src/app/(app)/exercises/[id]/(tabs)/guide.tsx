@@ -1,4 +1,5 @@
 import { useExercises } from '@/hooks/queries/exercises'
+import { useThemeColor } from '@/hooks/theme'
 import { useGlobalSearchParams } from 'expo-router'
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { Dimensions, ScrollView, Text, View } from 'react-native'
@@ -19,10 +20,15 @@ export default function GuideScreen() {
     player.play()
   })
 
+  const colors = useThemeColor()
+
   return (
     <View
-      className="flex-1 items-center justify-center bg-white dark:bg-black"
-      style={{ paddingBottom: useSafeAreaInsets().bottom }}
+      className="flex-1 items-center justify-center"
+      style={{
+        paddingBottom: useSafeAreaInsets().bottom,
+        backgroundColor: colors.background,
+      }}
     >
       <VideoView
         style={{
@@ -30,7 +36,7 @@ export default function GuideScreen() {
           height: 230,
           paddingTop: 0,
           marginTop: 0,
-          backgroundColor: 'white',
+          backgroundColor: colors.background,
         }}
         player={player}
         nativeControls={false}

@@ -202,8 +202,7 @@ export default function ProgramTemplateDetails() {
           onPress={() => {
             startProgramSheetRef.current?.present()
           }}
-          className="mb-4 min-h-[52px]"
-          
+          className="mb-4"
         />
       </View>
       <DeleteConfirmModal

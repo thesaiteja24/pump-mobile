@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/buttons/Button'
+import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import React, { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react'
@@ -16,6 +17,7 @@ type Props = {
   onCancel?: () => void
   onConfirm: () => Promise<void> | void
   confirmText?: string
+  persistOnNavigation?: boolean
 }
 
 export const DeleteConfirmModal = forwardRef<DeleteConfirmModalHandle, Props>(
@@ -26,6 +28,7 @@ export const DeleteConfirmModal = forwardRef<DeleteConfirmModalHandle, Props>(
       onCancel,
       onConfirm,
       confirmText = 'Delete',
+      persistOnNavigation = false,
     },
     ref,
   ) => {
@@ -34,17 +37,26 @@ export const DeleteConfirmModal = forwardRef<DeleteConfirmModalHandle, Props>(
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
 
+    const [isOpen, setIsOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
 
+    const present = useCallback(() => {
+      setIsLoading(false)
+      bottomSheetModalRef.current?.present()
+    }, [])
+
+    const dismiss = useCallback(() => {
+      bottomSheetModalRef.current?.dismiss()
+    }, [])
+
     useImperativeHandle(ref, () => ({
-      present: () => {
-        setIsLoading(false)
-        bottomSheetModalRef.current?.present()
-      },
-      dismiss: () => {
-        bottomSheetModalRef.current?.dismiss()
-      },
+      present,
+      dismiss,
     }))
+
+    // Shared modal logic
+    useModalBackHandler(isOpen, dismiss)
+    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -59,7 +71,7 @@ export const DeleteConfirmModal = forwardRef<DeleteConfirmModalHandle, Props>(
       try {
         setIsLoading(true)
         await onConfirm()
-        bottomSheetModalRef.current?.dismiss()
+        dismiss()
       } finally {
         setIsLoading(false)
       }
@@ -70,8 +82,11 @@ export const DeleteConfirmModal = forwardRef<DeleteConfirmModalHandle, Props>(
         ref={bottomSheetModalRef}
         backdropComponent={renderBackdrop}
         enableDynamicSizing
-        onDismiss={onCancel}
-        
+        onDismiss={() => {
+          setIsOpen(false)
+          onCancel?.()
+        }}
+        onChange={(index) => setIsOpen(index >= 0)}
         handleIndicatorStyle={{
           backgroundColor: isDark ? '#525252' : '#d1d5db',
         }}
@@ -95,9 +110,8 @@ export const DeleteConfirmModal = forwardRef<DeleteConfirmModalHandle, Props>(
               disabled={isLoading}
               onPress={() => {
                 onCancel?.()
-                bottomSheetModalRef.current?.dismiss()
+                dismiss()
               }}
-              
             />
 
             {/* Delete */}
@@ -107,7 +121,6 @@ export const DeleteConfirmModal = forwardRef<DeleteConfirmModalHandle, Props>(
               variant="danger"
               loading={isLoading}
               onPress={handleConfirm}
-              
             />
           </View>
         </BottomSheetView>

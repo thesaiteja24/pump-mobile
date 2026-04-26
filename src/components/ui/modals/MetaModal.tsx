@@ -1,7 +1,9 @@
+import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
+import { useThemeColor } from '@/hooks/theme'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { Image } from 'expo-image'
-import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react'
-import { ActivityIndicator, Text, TouchableOpacity, View, useColorScheme } from 'react-native'
+import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { MetaItem } from '@/types/meta'
 
@@ -15,27 +17,46 @@ type Props = {
   loading: boolean
   enableCreate?: boolean
   items: MetaItem[]
-
   onClose?: () => void
   onSelect: (item: MetaItem) => void
   onLongPress?: (item: MetaItem) => void
   onCreatePress?: () => void
+  persistOnNavigation?: boolean
 }
 
 const MetaModal = forwardRef<MetaModalHandle, Props>(
-  ({ title, loading, enableCreate, items, onClose, onSelect, onLongPress, onCreatePress }, ref) => {
-    const isDark = useColorScheme() === 'dark'
+  ({
+    title,
+    loading,
+    enableCreate,
+    items,
+    onClose,
+    onSelect,
+    onLongPress,
+    onCreatePress,
+    persistOnNavigation = false,
+  }, ref) => {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
+    const colors = useThemeColor()
+    const [isOpen, setIsOpen] = useState(false)
+
+    const present = useCallback(() => {
+      bottomSheetModalRef.current?.present()
+    }, [])
+
+    const dismiss = useCallback(() => {
+      bottomSheetModalRef.current?.dismiss()
+    }, [])
 
     useImperativeHandle(ref, () => ({
-      present: () => {
-        bottomSheetModalRef.current?.present()
-      },
-      dismiss: () => {
-        bottomSheetModalRef.current?.dismiss()
-      },
+      present,
+      dismiss,
     }))
+
+    // Shared modal logic
+    useModalBackHandler(isOpen, dismiss)
+    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -52,10 +73,10 @@ const MetaModal = forwardRef<MetaModalHandle, Props>(
         snapPoints={snapPoints}
         backdropComponent={renderBackdrop}
         onDismiss={onClose}
+        onChange={(index) => setIsOpen(index >= 0)}
         handleIndicatorStyle={{
-          backgroundColor: isDark ? '#525252' : '#d1d5db',
+          backgroundColor: colors.isDark ? '#525252' : '#d1d5db',
         }}
-        
         enableDynamicSizing={false}
         animationConfigs={{
           duration: 350,
@@ -68,7 +89,9 @@ const MetaModal = forwardRef<MetaModalHandle, Props>(
                 onCreatePress && enableCreate ? 'justify-between' : 'justify-center'
               } mb-6`}
             >
-              <Text className="text-xl font-bold text-black dark:text-white">{title}</Text>
+              <Text className="text-xl font-bold" style={{ color: colors.text }}>
+                {title}
+              </Text>
 
               {onCreatePress && enableCreate && (
                 <TouchableOpacity onPress={onCreatePress}>
@@ -98,7 +121,7 @@ const MetaModal = forwardRef<MetaModalHandle, Props>(
                   onLongPress={() => onLongPress?.(item)}
                   delayLongPress={700}
                 >
-                  <Text className="text-xl font-semibold text-black dark:text-white">
+                  <Text className="text-xl font-semibold" style={{ color: colors.text }}>
                     {item.title}
                   </Text>
 
@@ -109,8 +132,8 @@ const MetaModal = forwardRef<MetaModalHandle, Props>(
                       height: 50,
                       borderRadius: 100,
                       borderWidth: 1,
-                      borderColor: 'gray',
-                      backgroundColor: 'white',
+                      borderColor: colors.border,
+                      backgroundColor: colors.isDark ? colors.neutral[800] : colors.white,
                     }}
                     contentFit="contain"
                   />

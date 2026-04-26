@@ -1,8 +1,9 @@
+import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { WorkoutTemplate } from '@/types/templates'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
-import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react'
+import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -15,18 +16,27 @@ type Props = {
   templates: WorkoutTemplate[]
   onSelect: (templateId: string) => void
   onClose?: () => void
+  persistOnNavigation?: boolean
 }
 
 const TemplateSelectionModal = forwardRef<TemplateSelectionModalHandle, Props>(
-  ({ templates, onSelect, onClose }, ref) => {
+  ({ templates, onSelect, onClose, persistOnNavigation = false }, ref) => {
     const isDark = useColorScheme() === 'dark'
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
+    const [isOpen, setIsOpen] = useState(false)
+
+    const present = useCallback(() => bottomSheetModalRef.current?.present(), [])
+    const dismiss = useCallback(() => bottomSheetModalRef.current?.dismiss(), [])
 
     useImperativeHandle(ref, () => ({
-      present: () => bottomSheetModalRef.current?.present(),
-      dismiss: () => bottomSheetModalRef.current?.dismiss(),
+      present,
+      dismiss,
     }))
+
+    // Shared modal logic
+    useModalBackHandler(isOpen, dismiss)
+    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -43,7 +53,7 @@ const TemplateSelectionModal = forwardRef<TemplateSelectionModalHandle, Props>(
         snapPoints={snapPoints}
         backdropComponent={renderBackdrop}
         onDismiss={onClose}
-        
+        onChange={(index) => setIsOpen(index >= 0)}
         handleIndicatorStyle={{ backgroundColor: isDark ? '#525252' : '#d1d5db' }}
         animationConfigs={{
           duration: 350,
@@ -55,7 +65,7 @@ const TemplateSelectionModal = forwardRef<TemplateSelectionModalHandle, Props>(
               <Text className="text-xl font-bold text-black dark:text-white">
                 Select a Template
               </Text>
-              <TouchableOpacity onPress={() => bottomSheetModalRef.current?.dismiss()}>
+              <TouchableOpacity onPress={dismiss}>
                 <Ionicons name="close" size={24} color={isDark ? 'white' : 'gray'} />
               </TouchableOpacity>
             </View>
@@ -70,7 +80,7 @@ const TemplateSelectionModal = forwardRef<TemplateSelectionModalHandle, Props>(
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
                       onSelect(type.id)
-                      bottomSheetModalRef.current?.dismiss()
+                      dismiss()
                     }}
                     className="rounded-xl border border-neutral-300 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800"
                   >

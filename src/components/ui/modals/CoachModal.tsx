@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/buttons/Button'
 import { useCoach } from '@/hooks/coach'
+import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
 import { CoachMessage } from '@/types/coach'
@@ -15,7 +16,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { BackHandler, Text, View, useColorScheme } from 'react-native'
+import { Text, View, useColorScheme } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -26,6 +27,7 @@ export interface CoachModalHandle {
 
 type Props = {
   onClose?: () => void
+  persistOnNavigation?: boolean
 }
 
 const ChatBubble = ({ message }: { message: CoachMessage }) => {
@@ -60,7 +62,7 @@ const ChatBubble = ({ message }: { message: CoachMessage }) => {
   )
 }
 
-const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose }, ref) => {
+const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose, persistOnNavigation = false }, ref) => {
   const colors = useThemeColor()
   const isDark = useColorScheme() === 'dark'
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
@@ -83,28 +85,22 @@ const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose }, ref) => {
 
   const [isOpen, setIsOpen] = useState(false)
 
+  const present = useCallback(() => {
+    bottomSheetModalRef.current?.present()
+  }, [])
+
+  const dismiss = useCallback(() => {
+    bottomSheetModalRef.current?.dismiss()
+  }, [])
+
   useImperativeHandle(ref, () => ({
-    present: () => {
-      setIsOpen(true)
-      bottomSheetModalRef.current?.present()
-    },
-    dismiss: () => {
-      bottomSheetModalRef.current?.dismiss()
-    },
+    present,
+    dismiss,
   }))
 
-  // ✅ Handle Android back gesture
-  useEffect(() => {
-    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (isOpen) {
-        bottomSheetModalRef.current?.dismiss()
-        return true // consume back press
-      }
-      return false // allow navigation
-    })
-
-    return () => subscription.remove()
-  }, [isOpen])
+  // Shared modal logic
+  useModalBackHandler(isOpen, dismiss)
+  useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -134,6 +130,7 @@ const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose }, ref) => {
         setIsOpen(false)
         onClose?.()
       }}
+      onChange={(index) => setIsOpen(index >= 0)}
       enablePanDownToClose
       handleIndicatorStyle={{
         backgroundColor: isDark ? '#525252' : '#d1d5db',
