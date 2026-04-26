@@ -98,7 +98,9 @@ export const queryKeys = {
     byId: (id: string) => ['workouts', 'detail', id] as const,
   },
   habits: {
-    list: (userId: string) => ['habits', userId] as const,
+    root: ['habits'] as const,
+    all: (userId: string) => ['habits', userId, 'list'] as const,
+    logsRoot: ['habits', 'logs'] as const,
     logs: (userId: string, startDate?: string, endDate?: string) =>
       ['habits', 'logs', userId, startDate, endDate] as const,
   },

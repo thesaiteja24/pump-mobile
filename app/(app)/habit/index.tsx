@@ -1,6 +1,13 @@
 import { Button } from '@/components/ui/buttons/Button'
 import { useCreateHabit, useHabitsQuery, useUpdateHabit } from '@/hooks/queries/useHabits'
-import { HabitFooterType } from '@/types/habits'
+import {
+  HabitColorScheme,
+  HabitFooterType,
+  HabitSourceType,
+  HabitTrackingType,
+  InternalMetricId,
+  UpdateHabitPayload,
+} from '@/types/habits'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useState } from 'react'
@@ -16,7 +23,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-const COLORS = [
+const COLORS: { name: HabitColorScheme; hex: string }[] = [
   { name: 'blue', hex: '#3b82f6' },
   { name: 'emerald', hex: '#10b981' },
   { name: 'amber', hex: '#f59e0b' },
@@ -25,7 +32,12 @@ const COLORS = [
   { name: 'orange', hex: '#f97316' },
 ]
 
-const INTERNAL_METRICS = [
+const INTERNAL_METRICS: {
+  id: InternalMetricId
+  title: string
+  label: string
+  icon: keyof typeof Ionicons.glyphMap
+}[] = [
   { id: 'weight', title: 'Body Weight', label: 'Body Weight', icon: 'scale-outline' },
   { id: 'workout', title: 'Workout', label: 'Workout Frequency', icon: 'barbell-outline' },
   { id: 'bodyFat', title: 'Body Fat %', label: 'Body Fat %', icon: 'fitness-outline' },
@@ -47,12 +59,14 @@ export default function HabitCreatorScreen() {
   const habitToEdit = habits.find((h) => h.id === id)
 
   const [title, setTitle] = useState(habitToEdit?.title || '')
-  const [selectedColor, setSelectedColor] = useState(habitToEdit?.colorScheme || 'emerald')
-  const [trackingType, setTrackingType] = useState<'streak' | 'quantity'>(
+  const [selectedColor, setSelectedColor] = useState<HabitColorScheme>(
+    habitToEdit?.colorScheme || 'emerald',
+  )
+  const [trackingType, setTrackingType] = useState<HabitTrackingType>(
     habitToEdit?.trackingType || 'streak',
   )
-  const [source, setSource] = useState<'manual' | 'internal'>(habitToEdit?.source || 'internal')
-  const [internalMetricId, setInternalMetricId] = useState<string | null>(
+  const [source, setSource] = useState<HabitSourceType>(habitToEdit?.source || 'internal')
+  const [internalMetricId, setInternalMetricId] = useState<InternalMetricId | null>(
     habitToEdit?.internalMetricId || null,
   )
   const [targetValue, setTargetValue] = useState(habitToEdit?.targetValue?.toString() || '')
@@ -90,7 +104,7 @@ export default function HabitCreatorScreen() {
       }
 
       if (isEdit) {
-        const updateData: any = {
+        const updateData: UpdateHabitPayload = {
           title,
           colorScheme: selectedColor,
           footerType,

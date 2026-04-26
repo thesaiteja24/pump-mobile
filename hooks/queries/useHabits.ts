@@ -1,4 +1,3 @@
-import { queryClient } from '@/lib/queryClient'
 import { queryKeys } from '@/lib/queryKeys'
 import {
   createHabitService,
@@ -10,43 +9,32 @@ import {
 } from '@/services/habitService'
 import { addMeasurementsService } from '@/services/meService'
 import { useAuth } from '@/stores/authStore'
-import type { HabitLogType, HabitType } from '@/types/habits'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import type {
+  CreateHabitPayload,
+  HabitLogType,
+  HabitType,
+  UpdateHabitPayload,
+} from '@/types/habits'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-// ─────────────────────────────────────────────────────
-// READ — habits list
-// ─────────────────────────────────────────────────────
 export function useHabitsQuery() {
   const userId = useAuth((s) => s.userId)
 
-  return useQuery({
-    queryKey: queryKeys.habits.list(userId ?? ''),
-    queryFn: async () => {
-      if (!userId) return [] as HabitType[]
-      const res = await getHabitsService(userId)
-      if (!res.success) return [] as HabitType[]
-      return (res.data as HabitType[]) || []
-    },
+  return useQuery<HabitType[]>({
+    queryKey: queryKeys.habits.all(userId ?? ''),
+    queryFn: () => getHabitsService(userId!),
     enabled: Boolean(userId),
     staleTime: 24 * 60 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
   })
 }
 
-// ─────────────────────────────────────────────────────
-// READ — habit logs (for a date range)
-// ─────────────────────────────────────────────────────
 export function useHabitLogsQuery(startDate?: string, endDate?: string) {
   const userId = useAuth((s) => s.userId)
 
-  return useQuery({
+  return useQuery<Record<string, HabitLogType[]>>({
     queryKey: queryKeys.habits.logs(userId ?? '', startDate, endDate),
-    queryFn: async () => {
-      if (!userId) return {} as Record<string, HabitLogType[]>
-      const res = await getHabitLogsService(userId, startDate, endDate)
-      if (!res.success) return {} as Record<string, HabitLogType[]>
-      return (res.data as Record<string, HabitLogType[]>) || {}
-    },
+    queryFn: () => getHabitLogsService(userId!, startDate, endDate),
     enabled: Boolean(userId),
     staleTime: 24 * 60 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
@@ -54,100 +42,115 @@ export function useHabitLogsQuery(startDate?: string, endDate?: string) {
 }
 
 export function useCreateHabit() {
+  const queryClient = useQueryClient()
   const userId = useAuth((s) => s.userId)
+
   return useMutation({
-    mutationFn: async (data: Omit<HabitType, 'id'>) => {
-      const res = await createHabitService(userId!, data)
-      if (!res.success) throw new Error(res.message)
-      return res.data as HabitType
-    },
-    onMutate: async (newHabit: any) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.habits.list(userId!) })
-      const previousHabits = queryClient.getQueryData<HabitType[]>(queryKeys.habits.list(userId!))
-      const tempHabit = { ...newHabit, id: Math.random().toString(36).substring(7) }
-      queryClient.setQueryData<HabitType[]>(queryKeys.habits.list(userId!), (old) => [
-        ...(old || []),
-        tempHabit,
-      ])
+    mutationFn: (data: CreateHabitPayload) => createHabitService(userId!, data),
+    onMutate: async (newHabit) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.habits.all(userId!) })
+      const previousHabits = queryClient.getQueryData<HabitType[]>(queryKeys.habits.all(userId!))
+
+      if (previousHabits) {
+        const tempHabit = {
+          ...newHabit,
+          id: `temp-${Math.random().toString(36).substring(7)}`,
+        } as HabitType
+        queryClient.setQueryData<HabitType[]>(queryKeys.habits.all(userId!), (old) => [
+          ...(old || []),
+          tempHabit,
+        ])
+      }
+
       return { previousHabits }
     },
-    onError: (err, newHabit, context) => {
-      queryClient.setQueryData(queryKeys.habits.list(userId!), context?.previousHabits)
+    onError: (_err, _variables, context) => {
+      if (context?.previousHabits) {
+        queryClient.setQueryData(queryKeys.habits.all(userId!), context.previousHabits)
+      }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['habits'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.habits.all(userId!) })
     },
   })
 }
 
 export function useUpdateHabit() {
+  const queryClient = useQueryClient()
   const userId = useAuth((s) => s.userId)
+
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<HabitType> }) => {
-      const res = await updateHabitService(userId!, id, data)
-      if (!res.success) throw new Error(res.message)
-      return res.data as HabitType
-    },
+    mutationFn: ({ id, data }: { id: string; data: UpdateHabitPayload }) =>
+      updateHabitService(userId!, id, data),
     onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.habits.list(userId!) })
-      const previousHabits = queryClient.getQueryData<HabitType[]>(queryKeys.habits.list(userId!))
-      queryClient.setQueryData<HabitType[]>(queryKeys.habits.list(userId!), (old) =>
-        old?.map((h) => (h.id === id ? { ...h, ...data } : h)),
-      )
+      await queryClient.cancelQueries({ queryKey: queryKeys.habits.all(userId!) })
+      const previousHabits = queryClient.getQueryData<HabitType[]>(queryKeys.habits.all(userId!))
+
+      if (previousHabits) {
+        queryClient.setQueryData<HabitType[]>(queryKeys.habits.all(userId!), (old) =>
+          old?.map((h) => (h.id === id ? { ...h, ...data } : h)),
+        )
+      }
+
       return { previousHabits }
     },
-    onError: (err, variables, context) => {
-      queryClient.setQueryData(queryKeys.habits.list(userId!), context?.previousHabits)
+    onError: (_err, _variables, context) => {
+      if (context?.previousHabits) {
+        queryClient.setQueryData(queryKeys.habits.all(userId!), context.previousHabits)
+      }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['habits'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.habits.all(userId!) })
     },
   })
 }
 
 export function useDeleteHabit() {
+  const queryClient = useQueryClient()
   const userId = useAuth((s) => s.userId)
+
   return useMutation({
-    mutationFn: async (habitId: string) => {
-      const res = await deleteHabitService(userId!, habitId)
-      if (!res.success) throw new Error(res.message)
-      return res.data
-    },
-    onMutate: async (habitId: string) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.habits.list(userId!) })
-      const previousHabits = queryClient.getQueryData<HabitType[]>(queryKeys.habits.list(userId!))
-      queryClient.setQueryData<HabitType[]>(queryKeys.habits.list(userId!), (old) =>
-        old?.filter((h) => h.id !== habitId),
-      )
+    mutationFn: (habitId: string) => deleteHabitService(userId!, habitId),
+    onMutate: async (habitId) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.habits.all(userId!) })
+      const previousHabits = queryClient.getQueryData<HabitType[]>(queryKeys.habits.all(userId!))
+
+      if (previousHabits) {
+        queryClient.setQueryData<HabitType[]>(queryKeys.habits.all(userId!), (old) =>
+          old?.filter((h) => h.id !== habitId),
+        )
+      }
+
       return { previousHabits }
     },
-    onError: (err, habitId, context) => {
-      queryClient.setQueryData(queryKeys.habits.list(userId!), context?.previousHabits)
+    onError: (_err, _variables, context) => {
+      if (context?.previousHabits) {
+        queryClient.setQueryData(queryKeys.habits.all(userId!), context.previousHabits)
+      }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['habits'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.habits.all(userId!) })
     },
   })
 }
 
 export function useLogHabit() {
+  const queryClient = useQueryClient()
   const userId = useAuth((s) => s.userId)
-  return useMutation({
-    mutationFn: async ({ habitId, data }: { habitId: string; data: HabitLogType }) => {
-      const res = await logHabitService(userId!, habitId, data)
-      if (!res.success) throw new Error(res.message || 'Failed to log habit')
-      return res.data as Record<string, HabitLogType[]>
-    },
-    onMutate: async ({ habitId, data }) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.habits.logs(userId!) })
-      const previousLogs = queryClient.getQueryData<Record<string, HabitLogType[]>>(
-        queryKeys.habits.logs(userId!),
-      )
 
-      queryClient.setQueryData<Record<string, HabitLogType[]>>(
-        queryKeys.habits.logs(userId!),
-        (old) => {
-          const newLogs = { ...(old || {}) }
+  return useMutation({
+    mutationFn: ({ habitId, data }: { habitId: string; data: HabitLogType }) =>
+      logHabitService(userId!, habitId, data),
+    onMutate: async ({ habitId, data }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.habits.logsRoot })
+      const previousLogs = queryClient.getQueriesData<Record<string, HabitLogType[]>>({
+        queryKey: queryKeys.habits.logsRoot,
+      })
+
+      previousLogs.forEach(([queryKey]) => {
+        queryClient.setQueryData<Record<string, HabitLogType[]>>(queryKey, (old) => {
+          if (!old) return old
+          const newLogs = { ...old }
           const habitLogs = [...(newLogs[habitId] || [])]
           const dateKey = data.date.split('T')[0]
           const existingIdx = habitLogs.findIndex((l) => l.date.split('T')[0] === dateKey)
@@ -159,73 +162,75 @@ export function useLogHabit() {
           }
           newLogs[habitId] = habitLogs
           return newLogs
-        },
-      )
+        })
+      })
 
       return { previousLogs }
     },
-    onError: (err, variables, context) => {
-      queryClient.setQueryData(queryKeys.habits.logs(userId!), context?.previousLogs)
+    onError: (_err, _variables, context) => {
+      context?.previousLogs?.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data)
+      })
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['habits'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.habits.logsRoot })
     },
   })
 }
 
 export function useLogWeight() {
+  const queryClient = useQueryClient()
   const userId = useAuth((s) => s.userId)
+
   return useMutation({
-    mutationFn: async (data: { weight: number; date: string }) => {
-      const res = await addMeasurementsService(data)
-      return res
-    },
-    onMutate: async (data: { weight: number; date: string }) => {
-      // Cancel concurrent refetches
-      await queryClient.cancelQueries({ queryKey: queryKeys.habits.logs(userId!) })
+    mutationFn: (data: { weight: number; date: string }) => addMeasurementsService(data),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.habits.logsRoot })
       await queryClient.cancelQueries({ queryKey: queryKeys.me.measurementsRoot })
 
-      const previousHabitLogs = queryClient.getQueryData<Record<string, HabitLogType[]>>(
-        queryKeys.habits.logs(userId!),
-      )
+      const previousHabitLogs = queryClient.getQueriesData<Record<string, HabitLogType[]>>({
+        queryKey: queryKeys.habits.logsRoot,
+      })
       const previousMeasurements = queryClient.getQueriesData({
         queryKey: queryKeys.me.measurementsRoot,
       })
 
-      // 1. Update Habit Logs Cache (find weight habit)
-      const habits = queryClient.getQueryData<HabitType[]>(queryKeys.habits.list(userId!)) || []
+      // Update Habit Logs Cache (find weight habit)
+      const habits = queryClient.getQueryData<HabitType[]>(queryKeys.habits.all(userId!)) || []
       const weightHabit = habits.find((h) => h.internalMetricId === 'weight')
 
       if (weightHabit) {
-        queryClient.setQueryData<Record<string, HabitLogType[]>>(
-          queryKeys.habits.logs(userId!),
-          (old) => {
-            const newLogs = { ...(old || {}) }
+        previousHabitLogs.forEach(([queryKey]) => {
+          queryClient.setQueryData<Record<string, HabitLogType[]>>(queryKey, (old) => {
+            if (!old) return old
+            const newLogs = { ...old }
             const habitLogs = [...(newLogs[weightHabit.id] || [])]
             const dateKey = data.date.split('T')[0]
             const existingIdx = habitLogs.findIndex((l) => l.date.split('T')[0] === dateKey)
 
             if (existingIdx !== -1) {
-              habitLogs[existingIdx] = { ...habitLogs[existingIdx], value: 1 } // streak is 1
+              habitLogs[existingIdx] = { ...habitLogs[existingIdx], value: 1 }
             } else {
               habitLogs.push({ date: data.date, value: 1 })
             }
             newLogs[weightHabit.id] = habitLogs
             return newLogs
-          },
-        )
+          })
+        })
       }
 
       return { previousHabitLogs, previousMeasurements }
     },
-    onError: (err, variables, context) => {
-      queryClient.setQueryData(queryKeys.habits.logs(userId!), context?.previousHabitLogs)
+    onError: (_err, _variables, context) => {
+      context?.previousHabitLogs?.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data)
+      })
       context?.previousMeasurements?.forEach(([queryKey, data]) => {
         queryClient.setQueryData(queryKey, data)
       })
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.habits.logs(userId!) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.habits.logsRoot })
       queryClient.invalidateQueries({ queryKey: queryKeys.me.measurementsRoot })
     },
   })
