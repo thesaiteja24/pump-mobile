@@ -23,7 +23,7 @@ export const GlassBackground: React.FC<BottomSheetBackgroundProps> = ({ style, a
     <View style={containerStyle} pointerEvents="none">
       <BlurView
         tint={isDark ? 'dark' : 'light'}
-        experimentalBlurMethod="dimezisBlurView"
+        blurMethod="dimezisBlurViewSdk31Plus"
         style={StyleSheet.absoluteFill}
       />
       {/* Subtle overlay to control translucency */}

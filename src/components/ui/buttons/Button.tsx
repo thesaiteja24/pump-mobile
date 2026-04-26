@@ -233,7 +233,7 @@ export function Button({
         <>
           <BlurView
             tint={isDark ? 'dark' : 'light'}
-            experimentalBlurMethod="dimezisBlurView"
+            blurMethod="dimezisBlurViewSdk31Plus"
             pointerEvents="none"
             style={StyleSheet.absoluteFill}
           />

@@ -12,6 +12,7 @@ import { useFonts } from 'expo-font'
 import { SplashScreen, Stack } from 'expo-router'
 import * as Updates from 'expo-updates'
 import { useColorScheme } from 'nativewind'
+import { BlurTargetView } from 'expo-blur'
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, StatusBar, View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
@@ -184,55 +185,57 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
-        <BottomSheetModalProvider>
-          <>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                animation: 'slide_from_right',
-                contentStyle: { backgroundColor: colors.background },
-              }}
-            >
-              <Stack.Screen name="index" />
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen name="(app)" />
-            </Stack>
+        <BlurTargetView style={{ flex: 1 }}>
+          <BottomSheetModalProvider>
+            <>
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  animation: 'slide_from_right',
+                  contentStyle: { backgroundColor: colors.background },
+                }}
+              >
+                <Stack.Screen name="index" />
+                <Stack.Screen name="(auth)" />
+                <Stack.Screen name="(app)" />
+              </Stack>
 
-            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+              <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
-            <Toast
-              config={{
-                success: (props) => <CustomToast {...props} type="success" />,
-                error: (props) => <CustomToast {...props} type="error" />,
-                info: (props) => <CustomToast {...props} type="info" />,
-              }}
-            />
+              <Toast
+                config={{
+                  success: (props) => <CustomToast {...props} type="success" />,
+                  error: (props) => <CustomToast {...props} type="error" />,
+                  info: (props) => <CustomToast {...props} type="info" />,
+                }}
+              />
 
-            <OtaUpdateModal
-              visible={showOtaModal}
-              state={updateState}
-              onLater={() => {
-                if (updateState === 'idle') {
-                  setShowOtaModal(false)
-                }
-              }}
-              onRestart={async () => {
-                try {
-                  setUpdateState('downloading')
-                  await Updates.fetchUpdateAsync()
-
-                  setUpdateState('restarting')
-                  await Updates.reloadAsync()
-                } catch (e) {
-                  if (__DEV__) {
-                    console.log('OTA update failed:', e)
+              <OtaUpdateModal
+                visible={showOtaModal}
+                state={updateState}
+                onLater={() => {
+                  if (updateState === 'idle') {
+                    setShowOtaModal(false)
                   }
-                  setUpdateState('idle')
-                }
-              }}
-            />
-          </>
-        </BottomSheetModalProvider>
+                }}
+                onRestart={async () => {
+                  try {
+                    setUpdateState('downloading')
+                    await Updates.fetchUpdateAsync()
+
+                    setUpdateState('restarting')
+                    await Updates.reloadAsync()
+                  } catch (e) {
+                    if (__DEV__) {
+                      console.log('OTA update failed:', e)
+                    }
+                    setUpdateState('idle')
+                  }
+                }}
+              />
+            </>
+          </BottomSheetModalProvider>
+        </BlurTargetView>
       </GestureHandlerRootView>
     </QueryClientProvider>
   )

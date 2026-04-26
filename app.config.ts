@@ -12,7 +12,6 @@ export default ({ config }: { config: ExpoConfig }): ExpoConfig => {
     icon: isProd ? './assets/images/icon.png' : './assets/images/icon.png',
     scheme: 'pump',
     userInterfaceStyle: 'dark',
-    newArchEnabled: true,
 
     ios: {
       supportsTablet: true,
@@ -50,6 +49,8 @@ export default ({ config }: { config: ExpoConfig }): ExpoConfig => {
 
     plugins: [
       'expo-router',
+      'expo-image',
+      'expo-secure-store',
       [
         'expo-build-properties',
         {
@@ -69,7 +70,12 @@ export default ({ config }: { config: ExpoConfig }): ExpoConfig => {
 						-keep class io.opentelemetry.** { *; }
 						-dontwarn io.opentelemetry.**
 					`,
+            useHermesV1: true,
           },
+          ios: {
+            useHermesV1: true,
+          },
+          buildReactNativeFromSource: true,
         },
       ],
       [
@@ -124,6 +130,7 @@ export default ({ config }: { config: ExpoConfig }): ExpoConfig => {
       checkAutomatically: 'NEVER',
       fallbackToCacheTimeout: 0,
       url: 'https://u.expo.dev/46384027-b755-4a49-9a73-31783f8b85fe',
+      enableBsdiffPatchSupport: true,
     },
   }
 }

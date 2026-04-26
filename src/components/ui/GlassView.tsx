@@ -38,7 +38,7 @@ export const GlassView: React.FC<GlassViewProps> = ({
       <BlurView
         // intensity={isDark ? darkIntensity : lightIntensity}
         tint={isDark ? 'dark' : 'light'}
-        experimentalBlurMethod="dimezisBlurView"
+        blurMethod="dimezisBlurViewSdk31Plus"
         style={StyleSheet.absoluteFill}
       />
       {/* Subtle overlay to control translucency */}
