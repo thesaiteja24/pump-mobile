@@ -2,7 +2,7 @@ import {
   useCommentMutation,
   useEditCommentMutation,
   useReplyMutation,
-} from '@/hooks/queries/useEngagement'
+} from '@/hooks/queries/engagement'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetFooter, BottomSheetTextInput } from '@gorhom/bottom-sheet'
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'

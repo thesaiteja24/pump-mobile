@@ -3,8 +3,8 @@ import {
   DeleteConfirmModal,
   DeleteConfirmModalHandle,
 } from '@/components/ui/modals/DeleteConfirmModal'
-import { useDeleteTemplateMutation, useTemplateByIdQuery } from '@/hooks/queries/useTemplates'
-import { useTemplate } from '@/stores/templateStore'
+import { useDeleteTemplateMutation, useTemplateByIdQuery } from '@/hooks/queries/templates'
+import { useTemplate } from '@/stores/templates.store'
 import * as Clipboard from 'expo-clipboard'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
 import ShimmerTemplateScreen from '@/components/ui/shimmers/ShimmerTemplateScreen'
-import { ReadOnlyExerciseRow } from '@/components/workout/ReadOnlyExerciseRow'
+import { ReadOnlyExerciseRow } from '@/components/workouts/ReadOnlyExerciseRow'
 
 export default function TemplateDetails() {
   const { id } = useLocalSearchParams<{ id: string }>()

@@ -1,5 +1,5 @@
 import { ExerciseType } from '@/types/exercises'
-import { WorkoutHistoryItem, WorkoutLog, WorkoutLogSet, WorkoutPruneReport } from '@/types/workout'
+import { WorkoutHistoryItem, WorkoutLog, WorkoutLogSet, WorkoutPruneReport } from '@/types/workouts'
 
 /* ───────────────── Metrics ───────────────── */
 

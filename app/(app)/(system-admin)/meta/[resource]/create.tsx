@@ -1,5 +1,5 @@
-import EditableAvatar from '@/components/ui/EditableAvatar'
-import { useCreateMeta } from '@/hooks/queries/useMeta'
+import EditableAvatar from '@/components/me/EditableAvatar'
+import { useCreateMeta } from '@/hooks/queries/meta'
 
 import { EquipmentType, MetaResource } from '@/types/meta'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'

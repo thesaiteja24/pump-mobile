@@ -3,12 +3,12 @@ import {
   DeleteConfirmModal,
   DeleteConfirmModalHandle,
 } from '@/components/ui/modals/DeleteConfirmModal'
-import { useExercises } from '@/hooks/queries/useExercises'
-import { useTemplate } from '@/stores/templateStore'
-import { useWorkout } from '@/stores/workoutStore'
+import { useExercises } from '@/hooks/queries/exercises'
+import { useTemplate } from '@/stores/templates.store'
+import { useWorkout } from '@/stores/workouts.store'
 import { ExerciseType } from '@/types/exercises'
-import { TemplateExercise, TemplateExerciseGroup } from '@/types/template'
-import { WorkoutHistoryExercise, WorkoutHistorySet, WorkoutLogGroup } from '@/types/workout'
+import { TemplateExercise, TemplateExerciseGroup } from '@/types/templates'
+import { WorkoutHistoryExercise, WorkoutHistorySet, WorkoutLogGroup } from '@/types/workouts'
 import { formatDate, formatDurationFromDates } from '@/utils/time'
 import { calculateWorkoutMetrics } from '@/utils/workout'
 import * as Crypto from 'expo-crypto'
@@ -18,17 +18,17 @@ import { BackHandler, ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
+import { VerifiedBadge } from '@/components/subscriptions/VerifiedBadge'
 import ShimmerWorkoutScreen from '@/components/ui/shimmers/ShimmerWorkoutScreen'
-import { VerifiedBadge } from '@/components/ui/VerifiedBadge'
-import { ReadOnlyExerciseRow } from '@/components/workout/ReadOnlyExerciseRow'
+import { ReadOnlyExerciseRow } from '@/components/workouts/ReadOnlyExerciseRow'
 import {
   useDeleteWorkoutMutation,
   useDiscoverWorkoutsQuery,
   useUserWorkoutHistoryQuery,
   useWorkoutByIdQuery,
-} from '@/hooks/queries/useWorkoutHistory'
-import { useThemeColor } from '@/hooks/useThemeColor'
-import { useAuth } from '@/stores/authStore'
+} from '@/hooks/queries/workouts'
+import { useThemeColor } from '@/hooks/theme'
+import { useAuth } from '@/stores/auth.store'
 import { Image } from 'expo-image'
 
 /* ───────────────── Component ───────────────── */

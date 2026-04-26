@@ -1,4 +1,4 @@
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { useThemeColor } from '@/hooks/theme'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
 import React, { useCallback, useMemo, useRef, useState } from 'react'

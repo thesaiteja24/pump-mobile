@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import StreakCard, { StreakDay } from '@/components/me/StreakCard'
 import ShimmerHomeScreen from '@/components/ui/shimmers/ShimmerHomeScreen'
 
-import { HabitCard } from '@/components/habit/HabitCard'
+import { HabitCard } from '@/components/habits/HabitCard'
 import {
   WeeklyDurationCard,
   WeeklyRepsCard,
@@ -22,10 +22,10 @@ import {
 import { WeightMetricCard } from '@/components/me/WeightMetricCard'
 import { Button } from '@/components/ui/buttons/Button'
 import { useAskNotificationPermission } from '@/hooks/notifications/useAskNotificationPermission'
-import { useHabitLogsQuery, useHabitsQuery } from '@/hooks/queries/useHabits'
-import { useMeasurementsQuery, useProfileQuery, useUserAnalyticsQuery } from '@/hooks/queries/useMe'
-import { useStoreUpdate } from '@/hooks/useStoreUpdate'
-import { SelfUser } from '@/types/user'
+import { useHabitLogsQuery, useHabitsQuery } from '@/hooks/queries/habits'
+import { useMeasurementsQuery, useProfileQuery, useUserAnalyticsQuery } from '@/hooks/queries/me'
+import { useStoreUpdate } from '@/hooks/system'
+import { SelfUser } from '@/types/me'
 import {
   calculateBMI,
   calculateBodyFat,

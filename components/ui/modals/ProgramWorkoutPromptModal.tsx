@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/buttons/Button'
 import { GlassBackground } from '@/components/ui/GlassBackground'
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { useThemeColor } from '@/hooks/theme'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import React, { forwardRef, useCallback, useImperativeHandle, useRef } from 'react'

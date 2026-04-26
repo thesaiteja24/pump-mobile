@@ -1,4 +1,4 @@
-import { LengthUnits, WeightUnits } from '@/types/user'
+import { LengthUnits, WeightUnits } from '@/types/me'
 
 /* ---------------------------------------------
    Constants (never magic numbers)

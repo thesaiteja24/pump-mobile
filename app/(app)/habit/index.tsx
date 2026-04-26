@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { useCreateHabit, useHabitsQuery, useUpdateHabit } from '@/hooks/queries/useHabits'
+import { useCreateHabit, useHabitsQuery, useUpdateHabit } from '@/hooks/queries/habits'
 import {
   HabitColorScheme,
   HabitFooterType,

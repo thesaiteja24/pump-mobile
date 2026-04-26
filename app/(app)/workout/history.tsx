@@ -1,9 +1,9 @@
 import WorkoutCard from '@/components/engagement/WorkoutCard'
-import { useExercises } from '@/hooks/queries/useExercises'
-import { useUserWorkoutHistoryQuery } from '@/hooks/queries/useWorkoutHistory'
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { useExercises } from '@/hooks/queries/exercises'
+import { useUserWorkoutHistoryQuery } from '@/hooks/queries/workouts'
+import { useThemeColor } from '@/hooks/theme'
 import { ExerciseType } from '@/types/exercises'
-import { WorkoutHistoryItem } from '@/types/workout'
+import { WorkoutHistoryItem } from '@/types/workouts'
 import { router } from 'expo-router'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import {

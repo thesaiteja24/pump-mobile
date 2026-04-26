@@ -2,16 +2,16 @@ import { Button } from '@/components/ui/buttons/Button'
 import ExerciseGroupModal, {
   ExerciseGroupModalHandle,
 } from '@/components/ui/modals/ExerciseGroupModal'
-import { ElapsedTime } from '@/components/workout/ElapsedTime'
-import ExerciseRow from '@/components/workout/ExerciseRow'
-import RestTimerSnack from '@/components/workout/RestTimerSnack'
+import { ElapsedTime } from '@/components/workouts/ElapsedTime'
+import ExerciseRow from '@/components/workouts/ExerciseRow'
+import RestTimerSnack from '@/components/workouts/RestTimerSnack'
 
-import { useExercises } from '@/hooks/queries/useExercises'
-import { useProfileQuery } from '@/hooks/queries/useMe'
-import { useWorkout } from '@/stores/workoutStore'
+import { useExercises } from '@/hooks/queries/exercises'
+import { useProfileQuery } from '@/hooks/queries/me'
+import { useWorkout } from '@/stores/workouts.store'
 import { Exercise, ExerciseType } from '@/types/exercises'
-import { SelfUser } from '@/types/user'
-import { ExerciseGroupType, WorkoutLogGroup } from '@/types/workout'
+import { SelfUser } from '@/types/me'
+import { ExerciseGroupType, WorkoutLogGroup } from '@/types/workouts'
 
 import { convertWeight } from '@/utils/converter'
 import { calculateWorkoutMetrics } from '@/utils/workout'
@@ -24,7 +24,7 @@ import {
   DeleteConfirmModal,
   DeleteConfirmModalHandle,
 } from '@/components/ui/modals/DeleteConfirmModal'
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { useThemeColor } from '@/hooks/theme'
 import { usePreventRemove } from '@react-navigation/native'
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Keyboard, KeyboardAvoidingView, Text, useColorScheme, Vibration, View } from 'react-native'

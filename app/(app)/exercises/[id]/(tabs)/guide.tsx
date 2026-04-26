@@ -1,4 +1,4 @@
-import { useExercises } from '@/hooks/queries/useExercises'
+import { useExercises } from '@/hooks/queries/exercises'
 import { useGlobalSearchParams } from 'expo-router'
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { Dimensions, ScrollView, Text, View } from 'react-native'

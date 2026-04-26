@@ -1,12 +1,12 @@
-import { TemplatePayload, UserPayload } from '@/types/sync'
+import { TemplatePayload, UserPayload } from '@/types/payloads'
 import {
   DraftProgram,
   ProgramCreatePayload,
   ProgramDayPayload,
   ProgramUpdatePayload,
-} from '@/types/program'
-import { DraftTemplate } from '@/types/template'
-import { WorkoutLog } from '@/types/workout'
+} from '@/types/programs'
+import { DraftTemplate } from '@/types/templates'
+import { WorkoutLog } from '@/types/workouts'
 
 /**
  * Serializes a template for API

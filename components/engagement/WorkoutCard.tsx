@@ -1,15 +1,11 @@
 import CommentsModal, { CommentsModalHandle } from '@/components/ui/modals/CommentsModal'
-import {
-  useCommentsQuery,
-  useLikesQuery,
-  useToggleLikeMutation,
-} from '@/hooks/queries/useEngagement'
-import { useProfileQuery } from '@/hooks/queries/useMe'
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { useCommentsQuery, useLikesQuery, useToggleLikeMutation } from '@/hooks/queries/engagement'
+import { useProfileQuery } from '@/hooks/queries/me'
+import { useThemeColor } from '@/hooks/theme'
 import { Comment as AppComment } from '@/types/engagement'
 import { ExerciseType } from '@/types/exercises'
-import { SelfUser } from '@/types/user'
-import { WorkoutHistoryItem } from '@/types/workout'
+import { SelfUser } from '@/types/me'
+import { WorkoutHistoryItem } from '@/types/workouts'
 import { formatDurationFromDates, formatTimeAgo } from '@/utils/time'
 import { calculateWorkoutMetrics } from '@/utils/workout'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
@@ -26,7 +22,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import Toast from 'react-native-toast-message'
-import { VerifiedBadge } from '../ui/VerifiedBadge'
+import { VerifiedBadge } from '../subscriptions/VerifiedBadge'
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 

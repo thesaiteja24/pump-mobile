@@ -1,5 +1,5 @@
-import { useTrainingAnalyticsQuery } from '@/hooks/queries/useMe'
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { useTrainingAnalyticsQuery } from '@/hooks/queries/me'
+import { useThemeColor } from '@/hooks/theme'
 import { Ionicons } from '@expo/vector-icons'
 import { format } from 'date-fns'
 import { router } from 'expo-router'

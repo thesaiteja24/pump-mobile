@@ -1,5 +1,5 @@
 import AuthGuard from '@/components/auth/AuthGuard'
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { useThemeColor } from '@/hooks/theme'
 import { Stack } from 'expo-router'
 import React from 'react'
 

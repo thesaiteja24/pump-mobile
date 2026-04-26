@@ -4,8 +4,8 @@ import {
 } from '@/components/ui/modals/DeleteConfirmModal'
 import MetaModal, { MetaModalHandle } from '@/components/ui/modals/MetaModal'
 
-import { useDeleteExercise, useExercises, useUpdateExercise } from '@/hooks/queries/useExercises'
-import { useEquipment, useMuscleGroups } from '@/hooks/queries/useMeta'
+import { useDeleteExercise, useExercises, useUpdateExercise } from '@/hooks/queries/exercises'
+import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'
 import { ExerciseType } from '@/types/exercises'
 import { MetaItem } from '@/types/meta'
 import { Ionicons } from '@expo/vector-icons'

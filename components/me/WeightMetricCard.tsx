@@ -2,9 +2,9 @@ import {
   useFitnessProfileQuery,
   useMeasurementsQuery,
   useProfileQuery,
-} from '@/hooks/queries/useMe'
-import { useThemeColor } from '@/hooks/useThemeColor'
-import { SelfUser } from '@/types/user'
+} from '@/hooks/queries/me'
+import { useThemeColor } from '@/hooks/theme'
+import { SelfUser } from '@/types/me'
 import { convertWeight } from '@/utils/converter'
 import { router } from 'expo-router'
 import React, { useMemo } from 'react'

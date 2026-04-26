@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { useUserProgram } from '@/hooks/queries/usePrograms'
+import { useUserProgram } from '@/hooks/queries/programs'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useState } from 'react'
@@ -27,7 +27,7 @@ import {
   WorkoutDetailsModalHandle,
 } from '@/components/ui/modals/WorkoutDetailsModal'
 import ShimmerProgramDetails from '@/components/ui/shimmers/ShimmerProgramDetails'
-import { useWorkout } from '@/stores/workoutStore'
+import { useWorkout } from '@/stores/workouts.store'
 
 function SkeletonBlock({
   width = '100%',

@@ -1,4 +1,4 @@
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { useThemeColor } from '@/hooks/theme'
 import React, { forwardRef, useState } from 'react'
 import {
   TextInput as RNTextInput,

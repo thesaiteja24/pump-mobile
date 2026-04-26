@@ -4,7 +4,7 @@ import { router } from 'expo-router'
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
-import { useCountUp } from '@/hooks/useCountUp'
+import { useCountUp } from '@/hooks/ui-utils'
 
 interface NutritionTargetsCardProps {
   nutritionPlan: any

@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/buttons/Button'
 import { GlassView } from '@/components/ui/GlassView'
-import { useThemeColor } from '@/hooks/useThemeColor'
-import { type UpdateState } from '@/types/updates'
+import { useThemeColor } from '@/hooks/theme'
+import { type UpdateState } from '@/types/app-updates'
 import { useRef } from 'react'
 import { Modal, Platform, Text, View } from 'react-native'
 

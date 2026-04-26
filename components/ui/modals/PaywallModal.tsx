@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/buttons/Button'
 import { GlassBackground } from '@/components/ui/GlassBackground'
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { useThemeColor } from '@/hooks/theme'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import { useRouter } from 'expo-router'
 import React, { forwardRef, useCallback, useImperativeHandle, useRef } from 'react'

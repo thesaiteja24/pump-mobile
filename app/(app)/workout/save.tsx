@@ -4,13 +4,13 @@ import VisibilitySelectionModal, {
   VisibilitySelectionModalHandle,
 } from '@/components/ui/modals/VisibilitySelectionModal'
 
-import { useExercises } from '@/hooks/queries/useExercises'
-import { useProfileQuery } from '@/hooks/queries/useMe'
-import { useSaveWorkoutMutation, useUpdateWorkoutMutation } from '@/hooks/queries/useWorkoutHistory'
-import { useWorkout } from '@/stores/workoutStore'
+import { useExercises } from '@/hooks/queries/exercises'
+import { useProfileQuery } from '@/hooks/queries/me'
+import { useSaveWorkoutMutation, useUpdateWorkoutMutation } from '@/hooks/queries/workouts'
+import { useWorkout } from '@/stores/workouts.store'
 import { ExerciseType } from '@/types/exercises'
-import { SelfUser } from '@/types/user'
-import { VisibilityType, WorkoutLog } from '@/types/workout'
+import { SelfUser } from '@/types/me'
+import { VisibilityType, WorkoutLog } from '@/types/workouts'
 
 import { convertWeight } from '@/utils/converter'
 import { buildPruneMessage, calculateWorkoutMetrics } from '@/utils/workout'

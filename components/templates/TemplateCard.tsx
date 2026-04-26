@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { useTemplate } from '@/stores/templateStore'
-import { WorkoutTemplate } from '@/types/template'
+import { useTemplate } from '@/stores/templates.store'
+import { WorkoutTemplate } from '@/types/templates'
 import * as Haptics from 'expo-haptics'
 import { Image } from 'expo-image'
 import { Link, router } from 'expo-router'

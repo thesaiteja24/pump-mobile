@@ -1,4 +1,4 @@
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { useThemeColor } from '@/hooks/theme'
 import { StyleSheet, Text, View } from 'react-native'
 
 export function CustomToast({

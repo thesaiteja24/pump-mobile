@@ -1,5 +1,5 @@
-import { useThemeColor } from '@/hooks/useThemeColor'
-import { WorkoutLogSet } from '@/types/workout'
+import { useThemeColor } from '@/hooks/theme'
+import { WorkoutLogSet } from '@/types/workouts'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'

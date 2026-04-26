@@ -3,15 +3,15 @@ import { Button } from '@/components/ui/buttons/Button'
 import PrivacyPolicyModal, {
   PrivacyPolicyModalHandle,
 } from '@/components/ui/modals/PrivacyPolicyModal'
-import { useGoogleLoginMutation } from '@/hooks/queries/useAuth'
+import { useGoogleLoginMutation } from '@/hooks/queries/auth'
 import {
   updateFitnessProfileService,
   updateMeService,
   updateNutritionPlanService,
-} from '@/services/meService'
-import { useAuth } from '@/stores/authStore'
-import { useOnboarding } from '@/stores/onboardingStore'
-import { SelfUser } from '@/types/user'
+} from '@/services/me.service'
+import { useAuth } from '@/stores/auth.store'
+import { useOnboarding } from '@/stores/me.store'
+import { SelfUser } from '@/types/me'
 import { calculateBMR, calculateDailyTargets, calculateTDEE } from '@/utils/analytics'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { router } from 'expo-router'

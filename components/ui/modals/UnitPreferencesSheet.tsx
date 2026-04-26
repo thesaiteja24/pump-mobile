@@ -1,5 +1,5 @@
-import { useProfileQuery, useUpdateProfileMutation } from '@/hooks/queries/useMe'
-import { SelfUser } from '@/types/user'
+import { useProfileQuery, useUpdateProfileMutation } from '@/hooks/queries/me'
+import { SelfUser } from '@/types/me'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import React, { forwardRef, useEffect, useMemo, useState } from 'react'
 import { BackHandler, Text, TouchableOpacity, useColorScheme, View } from 'react-native'

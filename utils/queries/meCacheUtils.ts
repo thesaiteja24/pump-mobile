@@ -1,5 +1,5 @@
 import { queryKeys } from '@/lib/queryKeys'
-import { LatestMeasurements, Measurements, MeasurementsQueryData, User } from '@/types/user'
+import { LatestMeasurements, Measurements, MeasurementsQueryData, User } from '@/types/me'
 import { QueryClient, QueryKey } from '@tanstack/react-query'
 
 /**

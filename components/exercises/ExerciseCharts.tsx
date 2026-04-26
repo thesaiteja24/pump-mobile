@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { useThemeColor } from '@/hooks/theme'
 import { useState } from 'react'
 import { Dimensions, View } from 'react-native'
 import { LineChart } from 'react-native-chart-kit'

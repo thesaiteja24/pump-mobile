@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/buttons/Button'
 import { GlassView } from '@/components/ui/GlassView'
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { useThemeColor } from '@/hooks/theme'
 import React, { forwardRef, useImperativeHandle, useState } from 'react'
 import { Pressable, Modal as RNModal, Text, View } from 'react-native'
 

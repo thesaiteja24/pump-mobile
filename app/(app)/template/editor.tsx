@@ -7,22 +7,22 @@ import ExerciseGroupModal, {
   ExerciseGroupModalHandle,
 } from '@/components/ui/modals/ExerciseGroupModal'
 import { PaywallModal, PaywallModalHandle } from '@/components/ui/modals/PaywallModal'
-import ExerciseRow from '@/components/workout/ExerciseRow'
+import ExerciseRow from '@/components/workouts/ExerciseRow'
 import { FREE_TIER_LIMITS } from '@/constants/limits'
-import { useExercises } from '@/hooks/queries/useExercises'
-import { useProfileQuery } from '@/hooks/queries/useMe'
+import { useExercises } from '@/hooks/queries/exercises'
+import { useProfileQuery } from '@/hooks/queries/me'
 import {
   useCreateTemplateMutation,
   useTemplateByIdQuery,
   useTemplatesQuery,
   useUpdateTemplateMutation,
-} from '@/hooks/queries/useTemplates'
-import { useProgram } from '@/stores/programStore'
-import { useSubscriptionStore } from '@/stores/subscriptionStore'
-import { useTemplate } from '@/stores/templateStore'
-import { DraftTemplate } from '@/types/template'
-import { SelfUser } from '@/types/user'
-import { ExerciseGroupType } from '@/types/workout'
+} from '@/hooks/queries/templates'
+import { useProgram } from '@/stores/programs.store'
+import { useSubscriptionStore } from '@/stores/subscriptions.store'
+import { useTemplate } from '@/stores/templates.store'
+import { DraftTemplate } from '@/types/templates'
+import { SelfUser } from '@/types/me'
+import { ExerciseGroupType } from '@/types/workouts'
 import { Ionicons } from '@expo/vector-icons'
 import { usePreventRemove } from '@react-navigation/native'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'

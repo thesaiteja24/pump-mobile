@@ -2,8 +2,8 @@ import { Button } from '@/components/ui/buttons/Button'
 import { GlassBackground } from '@/components/ui/GlassBackground'
 import { PaywallModal, PaywallModalHandle } from '@/components/ui/modals/PaywallModal'
 import { SelectableCard } from '@/components/ui/SelectableCard'
-import { useSubscriptionStore } from '@/stores/subscriptionStore'
-import { Program, UserProgram } from '@/types/program'
+import { useSubscriptionStore } from '@/stores/subscriptions.store'
+import { Program, UserProgram } from '@/types/programs'
 import { Ionicons } from '@expo/vector-icons'
 import {
   BottomSheetBackdrop,

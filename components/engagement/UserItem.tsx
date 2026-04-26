@@ -1,9 +1,9 @@
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { useThemeColor } from '@/hooks/theme'
 import { SearchedUser } from '@/types/engagement'
 import { Image } from 'expo-image'
 import { Text, View } from 'react-native'
+import { VerifiedBadge } from '../subscriptions/VerifiedBadge'
 import { Button } from '../ui/buttons/Button'
-import { VerifiedBadge } from '../ui/VerifiedBadge'
 
 export const UserItem = ({
   id,

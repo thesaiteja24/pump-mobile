@@ -1,6 +1,6 @@
 import { BaseTrainingChart } from '@/components/me/BaseTrainingChart'
-import { useProfileQuery } from '@/hooks/queries/useMe'
-import { SelfUser } from '@/types/user'
+import { useProfileQuery } from '@/hooks/queries/me'
+import { SelfUser } from '@/types/me'
 import { convertWeight } from '@/utils/converter'
 import React from 'react'
 

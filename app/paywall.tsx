@@ -1,4 +1,4 @@
-import { Paywall } from '@/components/ui/Paywall'
+import { Paywall } from '@/components/subscriptions/Paywall'
 import { useRouter } from 'expo-router'
 import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'

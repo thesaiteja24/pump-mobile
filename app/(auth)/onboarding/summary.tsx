@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { useThemeColor } from '@/hooks/useThemeColor'
-import { useOnboarding } from '@/stores/onboardingStore'
+import { useThemeColor } from '@/hooks/theme'
+import { useOnboarding } from '@/stores/me.store'
 import {
   calculateBMI,
   calculateBMR,

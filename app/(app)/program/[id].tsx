@@ -8,7 +8,7 @@ import {
   useDeleteProgram,
   useProgramById,
   useStartProgram,
-} from '@/hooks/queries/usePrograms'
+} from '@/hooks/queries/programs'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useMemo, useRef } from 'react'
@@ -25,9 +25,9 @@ import {
 } from '@/components/ui/modals/WorkoutDetailsModal'
 import ShimmerProgramDetails from '@/components/ui/shimmers/ShimmerProgramDetails'
 import { ROLES } from '@/constants/roles'
-import { useProfileQuery } from '@/hooks/queries/useMe'
-import { useAuth } from '@/stores/authStore'
-import { SelfUser } from '@/types/user'
+import { useProfileQuery } from '@/hooks/queries/me'
+import { useAuth } from '@/stores/auth.store'
+import { SelfUser } from '@/types/me'
 
 export default function ProgramTemplateDetails() {
   const params = useLocalSearchParams()

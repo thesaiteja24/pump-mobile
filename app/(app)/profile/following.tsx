@@ -3,9 +3,9 @@ import {
   useFollowUserMutation,
   useUnfollowUserMutation,
   useUserFollowingQuery,
-} from '@/hooks/queries/useEngagement'
-import { useThemeColor } from '@/hooks/useThemeColor'
-import { useAuth } from '@/stores/authStore'
+} from '@/hooks/queries/engagement'
+import { useThemeColor } from '@/hooks/theme'
+import { useAuth } from '@/stores/auth.store'
 import { SearchedUser } from '@/types/engagement'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { router, useLocalSearchParams } from 'expo-router'

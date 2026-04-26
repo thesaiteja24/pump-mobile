@@ -1,8 +1,8 @@
 import WorkoutCard from '@/components/engagement/WorkoutCard'
 import ShimmerDiscoverScreen from '@/components/ui/shimmers/ShimmerDiscoverScreen'
-import { useExercises } from '@/hooks/queries/useExercises'
-import { useDiscoverWorkoutsQuery } from '@/hooks/queries/useWorkoutHistory'
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { useExercises } from '@/hooks/queries/exercises'
+import { useDiscoverWorkoutsQuery } from '@/hooks/queries/workouts'
+import { useThemeColor } from '@/hooks/theme'
 
 import { queryKeys } from '@/lib/queryKeys'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
@@ -112,11 +112,6 @@ export default function DiscoverScreen() {
           refreshControl={<RefreshControl refreshing={discoverLoading} onRefresh={onRefresh} />}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.1}
-          ListEmptyComponent={
-            <View className="mt-10 items-center">
-              <Text className="text-neutral-500 dark:text-neutral-400">No workouts yet.</Text>
-            </View>
-          }
           ListFooterComponent={
             discoverHasMore ? (
               <View className="mb-[20%] items-center justify-center p-4 pb-12 pt-6">
@@ -125,7 +120,7 @@ export default function DiscoverScreen() {
                 )}
               </View>
             ) : (
-              <View className="mb-[20%] items-center justify-center p-4 pb-12 pt-6">
+              <View className="mb-[50%] items-center justify-center p-4 pb-12 pt-6">
                 <Text className="text-neutral-500 dark:text-neutral-400">
                   You&apos;ve conquered all the workouts here 🏆
                 </Text>

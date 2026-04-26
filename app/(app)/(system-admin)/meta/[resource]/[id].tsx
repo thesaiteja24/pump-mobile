@@ -1,9 +1,9 @@
-import EditableAvatar from '@/components/ui/EditableAvatar'
+import EditableAvatar from '@/components/me/EditableAvatar'
 import {
   DeleteConfirmModal,
   DeleteConfirmModalHandle,
 } from '@/components/ui/modals/DeleteConfirmModal'
-import { useDeleteMeta, useMetaById, useUpdateMeta } from '@/hooks/queries/useMeta'
+import { useDeleteMeta, useMetaById, useUpdateMeta } from '@/hooks/queries/meta'
 import { EquipmentType, MetaResource } from '@/types/meta'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import { useLocalSearchParams, useNavigation } from 'expo-router'

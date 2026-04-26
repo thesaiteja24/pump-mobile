@@ -5,7 +5,7 @@ import {
   DeleteConfirmModal,
   DeleteConfirmModalHandle,
 } from '@/components/ui/modals/DeleteConfirmModal'
-import { useCommentsQuery, useDeleteCommentMutation } from '@/hooks/queries/useEngagement'
+import { useCommentsQuery, useDeleteCommentMutation } from '@/hooks/queries/engagement'
 import { Comment } from '@/types/engagement'
 import { Ionicons } from '@expo/vector-icons'
 import {

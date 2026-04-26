@@ -2,7 +2,7 @@ import AnimatedButton from '@/components/ui/buttons/AnimatedButton'
 import CustomHeader from '@/components/ui/CustomHeader'
 import CoachModal, { CoachModalHandle } from '@/components/ui/modals/CoachModal'
 
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { useThemeColor } from '@/hooks/theme'
 import { Ionicons } from '@expo/vector-icons'
 import { BlurView } from 'expo-blur'
 import * as Haptics from 'expo-haptics'

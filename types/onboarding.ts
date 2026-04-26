@@ -1,5 +1,5 @@
-import type { LengthUnits, WeightUnits } from './user'
-import type { FitnessLevel } from './program'
+import type { LengthUnits, WeightUnits } from './me'
+import type { FitnessLevel } from './programs'
 
 export type Gender = 'male' | 'female' | 'other'
 export type WeightUnit = WeightUnits

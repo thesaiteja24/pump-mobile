@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/buttons/Button'
 import DateTimePicker from '@/components/ui/DateTimePicker'
-import EditableAvatar from '@/components/ui/EditableAvatar'
+import EditableAvatar from '@/components/me/EditableAvatar'
 import { GlassBackground } from '@/components/ui/GlassBackground'
 import { SelectableCard } from '@/components/ui/SelectableCard'
 import {
@@ -8,9 +8,9 @@ import {
   useProfileQuery,
   useUpdateProfileMutation,
   useUpdateProfilePicMutation,
-} from '@/hooks/queries/useMe'
-import { useThemeColor } from '@/hooks/useThemeColor'
-import { SelfUser } from '@/types/user'
+} from '@/hooks/queries/me'
+import { useThemeColor } from '@/hooks/theme'
+import { SelfUser } from '@/types/me'
 import { convertLength, convertWeight, displayLength, displayWeight } from '@/utils/converter'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'

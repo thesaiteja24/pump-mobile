@@ -8,9 +8,9 @@ import {
   useProfileQuery,
   useUpdateFitnessProfileMutation,
   useUpdateNutritionPlanMutation,
-} from '@/hooks/queries/useMe'
-import { FitnessLevel } from '@/types/program'
-import { FitnessGoal, SelfUser } from '@/types/user'
+} from '@/hooks/queries/me'
+import { FitnessLevel } from '@/types/programs'
+import { FitnessGoal, SelfUser } from '@/types/me'
 
 import {
   calculateBMR,

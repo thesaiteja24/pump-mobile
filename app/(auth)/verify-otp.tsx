@@ -1,5 +1,5 @@
-import { useThemeColor } from '@/hooks/useThemeColor'
-import { useAuth } from '@/stores/authStore'
+import { useThemeColor } from '@/hooks/theme'
+import { useAuth } from '@/stores/auth.store'
 import { router, useLocalSearchParams } from 'expo-router'
 import React, { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, KeyboardAvoidingView, Text, TouchableOpacity, View } from 'react-native'

@@ -83,8 +83,8 @@ export const queryKeys = {
     detail: (id: string) => ['programs', 'detail', id] as const,
     user: {
       root: ['user-programs'] as const,
-      all: ['user-programs', 'list'] as const,
-      active: ['user-programs', 'active'] as const,
+      all: (userId: string) => ['user-programs', userId, 'list'] as const,
+      active: (userId: string) => ['user-programs', userId, 'active'] as const,
       detail: (id: string) => ['user-programs', 'detail', id] as const,
     },
   },

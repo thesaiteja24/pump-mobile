@@ -1,7 +1,7 @@
 import MetaModal, { MetaModalHandle } from '@/components/ui/modals/MetaModal'
 
-import { useCreateExercise } from '@/hooks/queries/useExercises'
-import { useEquipment, useMuscleGroups } from '@/hooks/queries/useMeta'
+import { useCreateExercise } from '@/hooks/queries/exercises'
+import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'
 import { ExerciseType } from '@/types/exercises'
 import { MetaItem } from '@/types/meta'
 
