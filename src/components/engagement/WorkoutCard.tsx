@@ -1,4 +1,3 @@
-import CommentsModal, { CommentsModalHandle } from '@/components/ui/modals/CommentsModal'
 import { useCommentsQuery, useLikesQuery, useToggleLikeMutation } from '@/hooks/queries/engagement'
 import { useProfileQuery } from '@/hooks/queries/me'
 import { useThemeColor } from '@/hooks/theme'
@@ -30,22 +29,28 @@ function WorkoutCard({
   workout,
   exerciseTypeMap,
   index = 0,
+  onPressComments,
 }: {
   workout: WorkoutHistoryItem
   exerciseTypeMap: Map<string, ExerciseType>
   index?: number
+  onPressComments?: (id: string) => void
 }) {
   const router = useRouter()
-  const duration = formatDurationFromDates(workout.startTime, workout.endTime)
-  const volume = calculateWorkoutMetrics(workout, exerciseTypeMap).tonnage
-  const isDark = useThemeColor().isDark
+  const duration = useMemo(
+    () => formatDurationFromDates(workout.startTime, workout.endTime),
+    [workout.startTime, workout.endTime],
+  )
+  const volume = useMemo(
+    () => calculateWorkoutMetrics(workout, exerciseTypeMap).tonnage,
+    [workout, exerciseTypeMap],
+  )
+  const colors = useThemeColor()
+  const isDark = colors.isDark
 
-  // Guard against missing exercises array
   const exercises = workout.exercises || []
   const previewExercises = exercises.slice(0, 3)
   const remaining = exercises.length - previewExercises.length
-
-  const commentsModalRef = useRef<CommentsModalHandle>(null)
 
   const { data: userData } = useProfileQuery()
   const user = userData as SelfUser | null
@@ -110,11 +115,18 @@ function WorkoutCard({
   const scale = useSharedValue(1)
 
   useEffect(() => {
-    const delay = index * 100 + 500
-    opacity.value = withDelay(delay, withTiming(1, { duration: 500 }))
+    // Only animate if the index is within the first few items to avoid lag on large lists
+    if (index > 10) {
+      opacity.value = 1
+      translateY.value = 0
+      return
+    }
+
+    const delay = index * 50 // Reduced delay
+    opacity.value = withDelay(delay, withTiming(1, { duration: 400 }))
     translateY.value = withDelay(
       delay,
-      withTiming(0, { duration: 500, easing: Easing.out(Easing.quad) }),
+      withTiming(0, { duration: 400, easing: Easing.out(Easing.quad) }),
     )
   }, [index, opacity, translateY])
 
@@ -238,7 +250,7 @@ function WorkoutCard({
           </View>
         </View>
         <View className="flex flex-row items-center justify-center gap-2">
-          <TouchableOpacity onPress={() => commentsModalRef.current?.present()}>
+          <TouchableOpacity onPress={() => onPressComments?.(workout.id)}>
             <Ionicons
               name="chatbubble-outline"
               size={26}
@@ -298,7 +310,7 @@ function WorkoutCard({
       {recentComments.length > 0 && (
         <Pressable
           className="mt-4 rounded-2xl bg-neutral-200 p-4 dark:bg-neutral-800"
-          onPress={() => commentsModalRef.current?.present()}
+          onPress={() => onPressComments?.(workout.id)}
         >
           {recentComments.length > 0 && (
             <View className="flex-col gap-2">
@@ -330,8 +342,6 @@ function WorkoutCard({
           </View>
         </Pressable>
       )}
-
-      <CommentsModal ref={commentsModalRef} workoutId={workout.id} />
     </AnimatedPressable>
   )
 }

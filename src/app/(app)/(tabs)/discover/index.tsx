@@ -1,14 +1,16 @@
 import WorkoutCard from '@/components/engagement/WorkoutCard'
+import CommentsModal, { CommentsModalHandle } from '@/components/ui/modals/CommentsModal'
 import ShimmerDiscoverScreen from '@/components/ui/shimmers/ShimmerDiscoverScreen'
 import { useExercises } from '@/hooks/queries/exercises'
 import { useDiscoverWorkoutsQuery } from '@/hooks/queries/workouts'
 import { useThemeColor } from '@/hooks/theme'
+import { useRef } from 'react'
 
 import { queryKeys } from '@/lib/queryKeys'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native'
 import Animated, {
   Easing,
@@ -36,6 +38,8 @@ export default function DiscoverScreen() {
   const { data: exerciseList = [] } = useExercises()
 
   const [refreshing, setRefreshing] = useState(false)
+  const [activeWorkoutId, setActiveWorkoutId] = useState<string | null>(null)
+  const commentsModalRef = useRef<CommentsModalHandle>(null)
 
   // ───────────────── Derived data ─────────────────
   const exerciseTypeMap = useMemo(() => {
@@ -74,6 +78,21 @@ export default function DiscoverScreen() {
     transform: [{ translateY: headerTranslateY.value }],
   }))
 
+  const renderItem = useCallback(
+    ({ item, index }: { item: any; index: number }) => (
+      <WorkoutCard
+        workout={item}
+        exerciseTypeMap={exerciseTypeMap}
+        index={index}
+        onPressComments={(id: string) => {
+          setActiveWorkoutId(id)
+          commentsModalRef.current?.present()
+        }}
+      />
+    ),
+    [exerciseTypeMap],
+  )
+
   // ───────────────── Render ─────────────────
   return (
     <SafeAreaView className="flex-1 bg-white px-4 pt-4 dark:bg-black" edges={['top']}>
@@ -106,16 +125,18 @@ export default function DiscoverScreen() {
         <FlatList
           data={discoverWorkouts}
           keyExtractor={(item) => item.id}
-          renderItem={({ item, index }) => (
-            <WorkoutCard workout={item} exerciseTypeMap={exerciseTypeMap} index={index} />
-          )}
+          renderItem={renderItem}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={discoverLoading} onRefresh={onRefresh} />}
           onEndReached={onEndReached}
-          onEndReachedThreshold={0.1}
+          onEndReachedThreshold={0.5}
+          initialNumToRender={5}
+          maxToRenderPerBatch={5}
+          windowSize={10}
+          removeClippedSubviews={true}
           ListFooterComponent={
             discoverHasMore ? (
-              <View className="mb-[20%] items-center justify-center p-4 pb-12 pt-6">
+              <View className="mb-[100%] items-center justify-center p-4 pb-12 pt-6">
                 {discoverLoadingNextPage && (
                   <ActivityIndicator size="small" color={colors.primary} />
                 )}
@@ -130,6 +151,12 @@ export default function DiscoverScreen() {
           }
         />
       )}
+
+      <CommentsModal
+        ref={commentsModalRef}
+        workoutId={activeWorkoutId || ''}
+        onClose={() => setActiveWorkoutId(null)}
+      />
     </SafeAreaView>
   )
 }
