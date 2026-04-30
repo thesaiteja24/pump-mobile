@@ -3,7 +3,7 @@ import { TemplateExercise, TemplateSet } from '@/types/templates'
 import { SetType, WorkoutHistoryExercise, WorkoutHistorySet } from '@/types/workouts'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import { Pressable, Text, View } from 'react-native'
 
 /* ───────────────── Group Color Logic ───────────────── */

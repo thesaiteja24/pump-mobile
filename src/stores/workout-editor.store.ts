@@ -11,18 +11,18 @@ import type {
   ActiveWorkoutGroup,
   ActiveWorkoutMetaInput,
   ActiveWorkoutMode,
-  ActiveWorkoutSource,
   ActiveWorkoutSet,
-  ExerciseRestMode,
+  ActiveWorkoutSource,
   ExerciseGroupType,
+  ExerciseRestMode,
   ExerciseTypeMap,
   InitiateWorkoutInput,
   TemplateFinalizeResult,
   WorkoutFinalizeResult,
+  WorkoutHistoryItem,
   WorkoutPayloadDraft,
   WorkoutSaveValidationResult,
-} from '@/types/workout.types'
-import type { WorkoutHistoryItem } from '@/types/workouts'
+} from '@/types/workouts'
 
 type ActiveWorkoutStore = {
   workout: ActiveWorkoutDraft | null

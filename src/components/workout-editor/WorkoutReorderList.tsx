@@ -1,19 +1,19 @@
-import type { ExerciseGroupType } from '@/types/workout.types'
+import type { ExerciseGroupType } from '@/types/workouts'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { Text, View, useColorScheme } from 'react-native'
 import { Gesture, GestureDetector, ScrollView } from 'react-native-gesture-handler'
+import type { SharedValue } from 'react-native-reanimated'
 import Animated, {
   runOnJS,
   scrollTo,
-  useAnimatedRef,
   useAnimatedReaction,
+  useAnimatedRef,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated'
-import type { SharedValue } from 'react-native-reanimated'
 
 const ROW_HEIGHT = 78
 const EDGE_SCROLL_THRESHOLD = 96

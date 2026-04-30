@@ -1,10 +1,10 @@
 import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
-import type { SetType } from '@/types/workout.types'
+import type { SetType } from '@/types/workouts'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
-import React, {
+import {
   forwardRef,
   useCallback,
   useImperativeHandle,

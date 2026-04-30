@@ -4,7 +4,7 @@ import { VisibilityType } from '@/types/workouts'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
-import React, {
+import {
   forwardRef,
   useCallback,
   useImperativeHandle,

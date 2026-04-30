@@ -5,7 +5,7 @@ import { useThemeColor } from '@/hooks/theme'
 import { ExerciseType } from '@/types/exercises'
 import { WorkoutHistoryItem } from '@/types/workouts'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import {
   ActivityIndicator,
   BackHandler,
