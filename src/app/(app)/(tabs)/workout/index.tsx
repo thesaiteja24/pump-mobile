@@ -19,7 +19,7 @@ import { useActiveProgram, usePrograms, useUserPrograms } from '@/hooks/queries/
 import { useTemplatesQuery } from '@/hooks/queries/templates'
 import { useThemeColor } from '@/hooks/theme'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
-import { useWorkout } from '@/stores/workouts.store'
+import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import { SelfUser } from '@/types/me'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
@@ -50,13 +50,14 @@ export default function WorkoutScreen() {
   const [activeProgramIndex, setActiveProgramIndex] = useState(0)
 
   // Workout Store
-  const workout = useWorkout((s) => s.workout)
-  const discardWorkout = useWorkout((s) => s.discardWorkout)
-  const startWorkout = useWorkout((s) => s.startWorkout)
-  const loadProgramDay = useWorkout((s) => s.loadProgramDay)
+  const workout = useWorkoutEditor((s) => s.workout)
+  const workoutMode = useWorkoutEditor((s) => s.mode)
+  const discardWorkout = useWorkoutEditor((s) => s.discardWorkout)
+  const initiateWorkout = useWorkoutEditor((s) => s.initiateWorkout)
   const { data: userData } = useProfileQuery()
   const user = userData as SelfUser | null
   const userRole = user?.role
+  const hasActiveWorkout = Boolean(workout)
 
   // Template Store — draft/write actions only
   // Templates list and loading state come from TanStack Query
@@ -192,11 +193,15 @@ export default function WorkoutScreen() {
         {/* Active Workout Control */}
         <Animated.View style={activeWorkoutStyle} className="mb-4 flex flex-row gap-4">
           <Button
-            title={workout ? 'Continue the Pump' : 'Ready to Get Pumped?'}
+            title={hasActiveWorkout ? 'Continue the Pump' : 'Ready to Get Pumped?'}
             variant="primary"
             onPress={() => {
               if (workout) {
-                router.push('/(app)/workout/start')
+                router.push(
+                  workoutMode === 'template-create' || workoutMode === 'template-edit'
+                    ? '/(app)/template/editor'
+                    : '/(app)/workout/start',
+                )
                 return
               }
 
@@ -204,13 +209,13 @@ export default function WorkoutScreen() {
               if (activeProgram?.progress && !activeProgram.progress.isRestDay) {
                 programPromptRef.current?.present()
               } else {
-                startWorkout()
+                initiateWorkout()
                 router.push('/(app)/workout/start')
               }
             }}
             className="flex-1"
           />
-          {workout && (
+          {hasActiveWorkout && (
             <Button
               title="Discard"
               variant="danger"
@@ -454,18 +459,19 @@ export default function WorkoutScreen() {
             activeProgram?.progress?.userProgramDayId &&
             activeProgram?.progress?.templateSnapshot
           ) {
-            loadProgramDay(
-              activeProgram.progress.userProgramDayId,
-              activeProgram.progress.templateSnapshot,
-            )
+            initiateWorkout({
+              mode: 'program-workout',
+              userProgramDayId: activeProgram.progress.userProgramDayId,
+              templateSnapshot: activeProgram.progress.templateSnapshot,
+            })
             router.push('/(app)/workout/start')
           } else {
-            startWorkout()
+            initiateWorkout()
             router.push('/(app)/workout/start')
           }
         }}
         onSelectEmpty={() => {
-          startWorkout()
+          initiateWorkout()
           router.push('/(app)/workout/start')
         }}
       />

@@ -5,6 +5,7 @@ import * as Haptics from 'expo-haptics'
 import React, {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -14,48 +15,42 @@ import { Text, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { TimerPicker } from 'react-native-timer-picker'
 
-/* --------------------------------------------------
-   Types
--------------------------------------------------- */
-
-export interface RestTimerPickerModalHandle {
+export interface TimerDurationModalHandle {
   present: (initialSeconds: number) => void
   dismiss: () => void
 }
 
-export interface RestTimerPickerModalProps {
-  /**
-   * Called when the modal is dismissed without confirming.
-   */
+export interface TimerDurationModalProps {
+  title: string
+  confirmText?: string
   onClose?: () => void
-
-  /**
-   * Called when the user confirms a duration.
-   *
-   * @param seconds Total selected duration in seconds
-   */
   onConfirm: (seconds: number) => void
+  onReset?: () => void
   persistOnNavigation?: boolean
 }
 
-/* --------------------------------------------------
-   Component
--------------------------------------------------- */
-
-const RestTimerPickerModal = React.memo(
-  forwardRef<RestTimerPickerModalHandle, RestTimerPickerModalProps>(
-    ({ onClose, onConfirm, persistOnNavigation = false }, ref) => {
+const TimerDurationModal = React.memo(
+  forwardRef<TimerDurationModalHandle, TimerDurationModalProps>(
+    (
+      {
+        title,
+        confirmText = 'Save',
+        onClose,
+        onConfirm,
+        onReset,
+        persistOnNavigation = false,
+      },
+      ref,
+    ) => {
       const isDark = useColorScheme() === 'dark'
       const bottomSheetModalRef = useRef<BottomSheetModal>(null)
       const insets = useSafeAreaInsets()
       const [isOpen, setIsOpen] = useState(false)
-
-      // Internal state for the picker
       const [hours, setHours] = useState(0)
       const [minutes, setMinutes] = useState(0)
       const [seconds, setSeconds] = useState(0)
-
       const [pickerKey, setPickerKey] = useState(0)
+      const selectedDurationRef = useRef(0)
 
       const present = useCallback((initialSeconds: number) => {
         const initialHours = Math.floor(initialSeconds / 3600)
@@ -63,13 +58,11 @@ const RestTimerPickerModal = React.memo(
         const initialMinutes = Math.floor(remainingAfterHours / 60)
         const initialSecs = remainingAfterHours % 60
 
+        selectedDurationRef.current = initialSeconds
         setHours(initialHours)
         setMinutes(initialMinutes)
         setSeconds(initialSecs)
-
-        // Force re-mount of picker to apply new initial values
         setPickerKey((prev) => prev + 1)
-
         bottomSheetModalRef.current?.present()
       }, [])
 
@@ -77,36 +70,35 @@ const RestTimerPickerModal = React.memo(
         bottomSheetModalRef.current?.dismiss()
       }, [])
 
-      // Expose methods to parent
       useImperativeHandle(ref, () => ({
         present,
         dismiss,
       }))
 
-      // Shared modal logic
+      useEffect(() => {
+        selectedDurationRef.current = hours * 3600 + minutes * 60 + seconds
+      }, [hours, minutes, seconds])
+
       useModalBackHandler(isOpen, dismiss)
       useModalNavigationSync({
         isOpen,
-        present: () => {
-          const totalSeconds = hours * 3600 + minutes * 60 + seconds
-          present(totalSeconds)
-        },
+        present: () => present(selectedDurationRef.current),
         dismiss,
         persistOnNavigation,
       })
 
       const handleConfirm = () => {
-        const totalSeconds = hours * 3600 + minutes * 60 + seconds
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-        onConfirm(totalSeconds)
+        onConfirm(selectedDurationRef.current)
         dismiss()
       }
 
-      const handlePickerFeedback = () => {
+      const handleReset = () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+        onReset?.()
+        dismiss()
       }
 
-      // Backdrop
       const renderBackdrop = useCallback(
         (props: any) => (
           <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
@@ -122,14 +114,14 @@ const RestTimerPickerModal = React.memo(
           snapPoints={snapPoints}
           backdropComponent={renderBackdrop}
           onDismiss={onClose}
-          enablePanDownToClose={true}
+          enablePanDownToClose={false}
           enableDynamicSizing={false}
           enableContentPanningGesture={false}
+          enableHandlePanningGesture={false}
           onChange={(index) => setIsOpen(index >= 0)}
           handleIndicatorStyle={{
             backgroundColor: isDark ? '#525252' : '#d1d5db',
           }}
-          // Smoother, slightly slower animation
           animationConfigs={{
             duration: 350,
           }}
@@ -141,12 +133,10 @@ const RestTimerPickerModal = React.memo(
               paddingBottom: insets.bottom + 24,
             }}
           >
-            {/* Title */}
             <Text className="mb-6 text-center text-xl font-bold text-black dark:text-white">
-              Rest Timer
+              {title}
             </Text>
 
-            {/* Picker */}
             <View className="flex-1 items-center justify-center">
               <TimerPicker
                 key={pickerKey}
@@ -154,7 +144,9 @@ const RestTimerPickerModal = React.memo(
                 hourLabel="hr"
                 minuteLabel="min"
                 secondLabel="sec"
-                pickerFeedback={handlePickerFeedback}
+                pickerFeedback={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                }}
                 initialValue={{ hours, minutes, seconds }}
                 onDurationChange={({ hours, minutes, seconds }) => {
                   setHours(hours)
@@ -175,13 +167,17 @@ const RestTimerPickerModal = React.memo(
               />
             </View>
 
-            {/* Actions */}
-            <View className="mt-4 flex-row gap-4">
+            <View className="mt-4 flex-row gap-3">
+              {onReset && (
+                <View className="flex-1">
+                  <Button title="Reset" variant="secondary" onPress={handleReset} />
+                </View>
+              )}
               <View className="flex-1">
                 <Button title="Cancel" variant="outline" onPress={dismiss} />
               </View>
               <View className="flex-1">
-                <Button title="Confirm" variant="primary" onPress={handleConfirm} />
+                <Button title={confirmText} variant="primary" onPress={handleConfirm} />
               </View>
             </View>
           </BottomSheetView>
@@ -191,4 +187,4 @@ const RestTimerPickerModal = React.memo(
   ),
 )
 
-export default RestTimerPickerModal
+export default TimerDurationModal

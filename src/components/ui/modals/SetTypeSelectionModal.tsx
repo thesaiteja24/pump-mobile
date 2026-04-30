@@ -1,6 +1,6 @@
 import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
-import { WorkoutLogSet } from '@/types/workouts'
+import type { SetType } from '@/types/workout.types'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
@@ -16,7 +16,7 @@ import { Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const SET_TYPES: {
-  key: WorkoutLogSet['setType']
+  key: SetType
   title: string
   description: string
   titleClass: string
@@ -53,8 +53,8 @@ export interface SetTypeSelectionModalHandle {
 }
 
 type Props = {
-  currentType: WorkoutLogSet['setType']
-  onSelect: (type: WorkoutLogSet['setType']) => void
+  currentType: SetType
+  onSelect: (type: SetType) => void
   onClose?: () => void
   persistOnNavigation?: boolean
 }

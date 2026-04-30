@@ -95,12 +95,9 @@ export const useAuth = create<AuthState>((set, get) => ({
 
       // Reset all related stores
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { useWorkout } = require('./workouts.store')
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { useTemplate } = require('./templates.store')
+      const { useWorkoutEditor } = require('./workout-editor.store')
 
-      useWorkout.getState().resetState()
-      useTemplate.getState().resetState()
+      useWorkoutEditor.getState().discardWorkout()
     }
   },
 }))

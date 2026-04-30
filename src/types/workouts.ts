@@ -1,6 +1,4 @@
 import type { ExerciseType } from './exercises'
-import type { WorkoutTemplate } from './templates'
-
 export type SetType = 'warmup' | 'working' | 'dropSet' | 'failureSet'
 
 export type ExerciseGroupType = 'superSet' | 'giantSet'
@@ -111,44 +109,4 @@ export type WorkoutHistoryItem = {
   } | null
   exerciseGroups: WorkoutHistoryGroup[]
   exercises: WorkoutHistoryExercise[]
-}
-
-export interface RestState {
-  seconds: number | null
-  startedAt: number | null
-  running: boolean
-}
-
-export interface WorkoutState {
-  workoutSaving: boolean
-  workout: WorkoutLog | null
-  rest: RestState
-  startWorkout: () => void
-  loadWorkoutHistory: (historyItem: WorkoutHistoryItem) => void
-  updateWorkout: (patch: Partial<WorkoutLog>) => void
-  prepareWorkoutForSave: () => {
-    workout: WorkoutLog
-    pruneReport: WorkoutPruneReport
-  } | null
-  resetWorkout: () => void
-  discardWorkout: () => void
-  addExercise: (exerciseId: string) => void
-  removeExercise: (exerciseId: string) => void
-  replaceExercise: (oldId: string, newId: string) => void
-  reorderExercises: (ordered: WorkoutLogExercise[]) => void
-  createExerciseGroup: (type: ExerciseGroupType, exerciseIds: string[]) => void
-  removeExerciseFromGroup: (exerciseId: string) => void
-  loadTemplate: (template: WorkoutTemplate) => void
-  loadProgramDay: (userProgramDayId: string, template: any) => void
-  addSet: (exerciseId: string) => void
-  updateSet: (exerciseId: string, setId: string, patch: Partial<WorkoutLogSet>) => void
-  toggleSetCompleted: (exerciseId: string, setId: string) => void
-  removeSet: (exerciseId: string, setId: string) => void
-  startSetTimer: (exerciseId: string, setId: string) => void
-  stopSetTimer: (exerciseId: string, setId: string) => void
-  startRestTimer: (seconds: number) => void
-  stopRestTimer: () => void
-  adjustRestTimer: (deltaSeconds: number) => void
-  saveRestForSet: (exerciseId: string, setId: string, seconds: number) => void
-  resetState: () => void
 }

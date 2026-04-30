@@ -14,8 +14,7 @@ import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'
 import { Exercise } from '@/types/exercises'
 import { SelfUser } from '@/types/me'
 
-import { useTemplate } from '@/stores/templates.store'
-import { useWorkout } from '@/stores/workouts.store'
+import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import { Ionicons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
@@ -34,6 +33,15 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
+
+type NavigationWithRightIcons = {
+  setOptions: (options: {
+    rightIcons?: {
+      name: string
+      onPress: () => void
+    }[]
+  }) => void
+}
 
 /* ───────────────── Chip (UI only) ───────────────── */
 
@@ -60,6 +68,7 @@ function Chip({ label, onRemove }: ChipProps) {
 
 export default function ExercisesScreen() {
   const navigation = useNavigation()
+  const navigationWithRightIcons = navigation as unknown as NavigationWithRightIcons
   const isDark = useColorScheme() === 'dark'
   const lineHeight = Platform.OS === 'ios' ? 0 : 20
 
@@ -68,23 +77,20 @@ export default function ExercisesScreen() {
   const role = user?.role
   const safeAreaInsets = useSafeAreaInsets()
   const params = useLocalSearchParams()
-  const context = (params.context as 'workout' | 'template') || 'workout' // Default to workout
+  const context = (params.context as 'library' | 'builder') || 'library'
+  const isBuilderContext = context === 'builder'
+  const activeWorkoutMode = useWorkoutEditor((s) => s.mode)
+  const replaceInstanceId =
+    typeof params.replaceInstanceId === 'string' ? params.replaceInstanceId : null
 
-  const replaceExerciseId = typeof params.replace === 'string' ? params.replace : null
+  const isSelectionMode = params.mode === 'select' || isBuilderContext
+  const isTemplateMode =
+    activeWorkoutMode === 'template-create' || activeWorkoutMode === 'template-edit'
 
-  const isSelectionMode = params.mode === 'select'
-
-  // Workout Store
-  const addExercise = useWorkout((s) => s.addExercise)
-  const removeExercise = useWorkout((s) => s.removeExercise)
-  const replaceExercise = useWorkout((s) => s.replaceExercise)
-  const workout = useWorkout((s) => s.workout)
-
-  // Template Store
-  const draftTemplate = useTemplate((s) => s.draftTemplate)
-  const addExerciseToDraft = useTemplate((s) => s.addExerciseToDraft)
-  const removeExerciseFromDraft = useTemplate((s) => s.removeExerciseFromDraft)
-  const replaceDraftExercise = useTemplate((s) => s.replaceDraftExercise)
+  const addExerciseToBuilder = useWorkoutEditor((s) => s.addExercise)
+  const replaceExerciseInBuilder = useWorkoutEditor((s) => s.replaceExercise)
+  const deleteExerciseFromBuilder = useWorkoutEditor((s) => s.deleteExercise)
+  const workout = useWorkoutEditor((s) => s.workout)
 
   // Equipment (TanStack Query)
   const { data: equipmentList = [], isLoading: equipmentLoading } = useEquipment()
@@ -97,14 +103,29 @@ export default function ExercisesScreen() {
   const deleteExerciseMutation = useDeleteExercise()
 
   const initialSelectedIds = useMemo(() => {
-    if (context === 'template') {
-      return new Set<string>(draftTemplate?.exercises.map((e) => e.exerciseId) ?? [])
+    if (isBuilderContext) {
+      if (isTemplateMode) {
+        return new Set<string>(
+          workout?.exerciseOrder
+            .map((id) => workout.exercisesById[id]?.exerciseId)
+            .filter((id): id is string => Boolean(id)) ?? [],
+        )
+      }
+      return new Set<string>()
     }
-    return new Set<string>(workout?.exercises.map((e) => e.exerciseId) ?? [])
-  }, [workout?.exercises, draftTemplate?.exercises, context])
+    return new Set<string>()
+  }, [
+    isBuilderContext,
+    isTemplateMode,
+    workout,
+  ])
 
   // Local, temporary selection buffer (UI only)
   const [tempSelectedIds, setTempSelectedIds] = useState<Set<string>>(initialSelectedIds)
+
+  useEffect(() => {
+    setTempSelectedIds(new Set(initialSelectedIds))
+  }, [initialSelectedIds])
 
   const selectedExerciseIds = isSelectionMode ? tempSelectedIds : initialSelectedIds
 
@@ -132,16 +153,16 @@ export default function ExercisesScreen() {
 
   useEffect(() => {
     if (role === roles.systemAdmin) {
-      ;(navigation as any).setOptions({
+      navigationWithRightIcons.setOptions({
         rightIcons: [
           {
             name: 'add',
-            onPress: () => router.push('/(app)/(system-admin)/exercises/create' as any),
+            onPress: () => router.push('/(app)/(system-admin)/exercises/create'),
           },
         ],
       })
     }
-  }, [role, navigation])
+  }, [navigationWithRightIcons, role])
 
   useEffect(() => {
     const onBackPress = () => {
@@ -208,23 +229,44 @@ export default function ExercisesScreen() {
   const handleExercisePress = (exercise: Exercise) => {
     Haptics.selectionAsync()
 
-    if (replaceExerciseId) {
-      if (exercise.id !== replaceExerciseId && initialSelectedIds.has(exercise.id)) {
+    if (replaceInstanceId && isBuilderContext) {
+      const replacingExercise = workout?.exercisesById[replaceInstanceId]
+      if (!replacingExercise) {
+        router.back()
+        return
+      }
+
+      if (
+        isTemplateMode &&
+        exercise.id !== replacingExercise.exerciseId &&
+        initialSelectedIds.has(exercise.id)
+      ) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
         Toast.show({
           type: 'error',
           text1: 'Duplicate Exercise',
-          text2: 'This exercise is already in your workout.',
+          text2: 'This exercise is already in your template.',
         })
         return
       }
 
-      if (context === 'template') {
-        replaceDraftExercise(replaceExerciseId, exercise.id)
-      } else {
-        replaceExercise(replaceExerciseId, exercise.id)
-      }
+      replaceExerciseInBuilder(replaceInstanceId, exercise.id)
       router.back()
+      return
+    }
+
+    if (isBuilderContext) {
+      setTempSelectedIds((prev) => {
+        const next = new Set(prev)
+
+        if (next.has(exercise.id)) {
+          next.delete(exercise.id)
+        } else {
+          next.add(exercise.id)
+        }
+
+        return next
+      })
       return
     }
 
@@ -334,7 +376,7 @@ export default function ExercisesScreen() {
         onLongPress={(exercise) => {
           if (role !== roles.systemAdmin) return
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
-          router.push(`/(app)/(system-admin)/exercises/${exercise.id}` as any)
+          router.push(`/(app)/(system-admin)/exercises/${exercise.id}`)
         }}
       />
 
@@ -359,27 +401,34 @@ export default function ExercisesScreen() {
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
 
-              // Remove exercises that were unselected
-              initialSelectedIds.forEach((id) => {
-                if (!tempSelectedIds.has(id)) {
-                  if (context === 'template') {
-                    removeExerciseFromDraft(id)
-                  } else {
-                    removeExercise(id)
-                  }
-                }
-              })
+              if (isBuilderContext) {
+                if (isTemplateMode && workout) {
+                  initialSelectedIds.forEach((id) => {
+                    if (!tempSelectedIds.has(id)) {
+                      const exerciseInstanceId = workout.exerciseOrder.find(
+                        (instanceId) => workout.exercisesById[instanceId]?.exerciseId === id,
+                      )
 
-              // Add newly selected exercises
-              tempSelectedIds.forEach((id) => {
-                if (!initialSelectedIds.has(id)) {
-                  if (context === 'template') {
-                    addExerciseToDraft(id)
-                  } else {
-                    addExercise(id)
-                  }
+                      if (exerciseInstanceId) {
+                        deleteExerciseFromBuilder(exerciseInstanceId)
+                      }
+                    }
+                  })
+
+                  tempSelectedIds.forEach((id) => {
+                    if (!initialSelectedIds.has(id)) {
+                      addExerciseToBuilder(id)
+                    }
+                  })
+                } else {
+                  tempSelectedIds.forEach((id) => {
+                    addExerciseToBuilder(id)
+                  })
                 }
-              })
+
+                router.back()
+                return
+              }
 
               router.back()
             }}
@@ -460,12 +509,14 @@ export default function ExercisesScreen() {
               type: 'success',
               text1: 'Exercise deleted successfully',
             })
-          } catch (e: any) {
+          } catch (e) {
+            const message =
+              e instanceof Error ? e.message : 'Unexpected error deleting exercise'
             setDeleteExerciseId(null)
             Toast.show({
               type: 'error',
               text1: 'Error deleting exercise',
-              text2: e.message,
+              text2: message,
             })
           }
         }}

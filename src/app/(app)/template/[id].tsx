@@ -4,16 +4,17 @@ import {
   DeleteConfirmModalHandle,
 } from '@/components/ui/modals/DeleteConfirmModal'
 import { useDeleteTemplateMutation, useTemplateByIdQuery } from '@/hooks/queries/templates'
-import { useTemplate } from '@/stores/templates.store'
+import { useWorkoutEditor } from '@/stores/workout-editor.store'
+import { TemplateExerciseGroup } from '@/types/templates'
 import * as Clipboard from 'expo-clipboard'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { BackHandler, ScrollView, Text, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
 import ShimmerTemplateScreen from '@/components/ui/shimmers/ShimmerTemplateScreen'
-import { ReadOnlyExerciseRow } from '@/components/workouts/ReadOnlyExerciseRow'
+import { ReadOnlyExerciseRow } from '@/components/workout-editor/ReadOnlyExerciseRow'
 
 export default function TemplateDetails() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -25,7 +26,8 @@ export default function TemplateDetails() {
   const { data: template, isLoading } = useTemplateByIdQuery(id)
 
   const deleteMutation = useDeleteTemplateMutation()
-  const startWorkoutFromTemplate = useTemplate((s) => s.startWorkoutFromTemplate)
+  const initiateWorkout = useWorkoutEditor((state) => state.initiateWorkout)
+  const discardWorkout = useWorkoutEditor((state) => state.discardWorkout)
   const handleEdit = useCallback(() => {
     router.push(`/(app)/template/editor?id=${id}`)
   }, [id])
@@ -85,7 +87,7 @@ export default function TemplateDetails() {
   }, [])
 
   const groupMap = useMemo(() => {
-    const map = new Map<string, any>()
+    const map = new Map<string, TemplateExerciseGroup>()
     template?.exerciseGroups.forEach((g) => map.set(g.id, g))
     return map
   }, [template?.exerciseGroups])
@@ -154,10 +156,10 @@ export default function TemplateDetails() {
             title="Start Workout"
             className="w-2/3"
             onPress={() => {
-              if (id) startWorkoutFromTemplate(id)
+              discardWorkout()
+              initiateWorkout({ template })
               router.push('/(app)/workout/start')
             }}
-            
           />
           <Button
             title="Delete"
@@ -166,7 +168,6 @@ export default function TemplateDetails() {
             onPress={() => {
               deleteModalRef.current?.present()
             }}
-            
           />
         </View>
       </View>

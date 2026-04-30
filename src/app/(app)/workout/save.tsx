@@ -1,332 +1,286 @@
 import { Button } from '@/components/ui/buttons/Button'
 import DateTimePicker from '@/components/ui/DateTimePicker'
+import TimerDurationModal, {
+  TimerDurationModalHandle,
+} from '@/components/ui/modals/TimerDurationModal'
 import VisibilitySelectionModal, {
   VisibilitySelectionModalHandle,
 } from '@/components/ui/modals/VisibilitySelectionModal'
-
 import { useExercises } from '@/hooks/queries/exercises'
-import { useProfileQuery } from '@/hooks/queries/me'
-import { useSaveWorkoutMutation, useUpdateWorkoutMutation } from '@/hooks/queries/workouts'
-import { useWorkout } from '@/stores/workouts.store'
-import { ExerciseType } from '@/types/exercises'
-import { SelfUser } from '@/types/me'
-import { VisibilityType, WorkoutLog } from '@/types/workouts'
-
-import { convertWeight } from '@/utils/converter'
-import { buildPruneMessage, calculateWorkoutMetrics } from '@/utils/workout'
-
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
-import { useRouter } from 'expo-router'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Platform, Text, TextInput, useColorScheme, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import {
+  useCreateWorkoutPayloadMutation,
+  useUpdateWorkoutPayloadMutation,
+} from '@/hooks/queries/workouts'
+import {
+  finalizeWorkoutForSave,
+  getWorkoutDurationSeconds,
+  getWorkoutSaveState,
+  useWorkoutEditor,
+} from '@/stores/workout-editor.store'
+import type { ExerciseType } from '@/types/exercises'
+import type { WorkoutPayload } from '@/types/payloads'
+import { formatSeconds } from '@/utils/time'
+import { Stack, router } from 'expo-router'
+import { useMemo, useRef } from 'react'
+import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-export default function SaveWorkout() {
-  const router = useRouter()
-  /* Local State */
-  const lineHeight = Platform.OS === 'ios' ? undefined : 28
+export default function WorkoutSaveScreen() {
   const insets = useSafeAreaInsets()
-
-  const isDark = useColorScheme() === 'dark'
-
-  const [pendingSave, setPendingSave] = useState<WorkoutLog | null>(null)
-  const [pruneMessage, setPruneMessage] = useState<string | null>(null)
-  const [visibility, setVisibility] = useState<VisibilityType>('public')
-
-  const confirmModalRef = useRef<BottomSheetModal>(null)
+  const durationModalRef = useRef<TimerDurationModalHandle>(null)
   const visibilityModalRef = useRef<VisibilitySelectionModalHandle>(null)
 
-  // Workout Store
-  const workoutSaving = useWorkout((s) => s.workoutSaving)
-  const workout = useWorkout((s) => s.workout)
-  const updateWorkout = useWorkout((s) => s.updateWorkout)
-  const discardWorkout = useWorkout((s) => s.discardWorkout)
+  const workout = useWorkoutEditor((state) => state.workout)
+  const mode = useWorkoutEditor((state) => state.mode)
+  const source = useWorkoutEditor((state) => state.source)
+  const updateWorkoutMeta = useWorkoutEditor((state) => state.updateWorkoutMeta)
+  const discardWorkout = useWorkoutEditor((state) => state.discardWorkout)
+  const createWorkoutMutation = useCreateWorkoutPayloadMutation()
+  const updateWorkoutMutation = useUpdateWorkoutPayloadMutation()
 
-  // TanStack Query mutations
-  const saveMutation = useSaveWorkoutMutation()
-  const updateMutation = useUpdateWorkoutMutation()
-
-  // Reference data (TanStack Query)
   const { data: exerciseList = [] } = useExercises()
 
-  const { data: userData } = useProfileQuery()
-  const user = userData as SelfUser | null
-  const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
-
-  /* Derived State */
-  // Derived Map of exerciseId -> exerciseType
   const exerciseTypeMap = useMemo(() => {
     const map = new Map<string, ExerciseType>()
-    exerciseList.forEach((ex) => {
-      map.set(ex.id, ex.exerciseType)
+    exerciseList.forEach((exercise) => {
+      map.set(exercise.id, exercise.exerciseType)
     })
     return map
   }, [exerciseList])
 
-  // Workout summary
-  const summary = useMemo(() => {
-    if (!workout) {
-      return {
-        volume: 0,
-        sets: 0,
-        startTime: new Date(),
-        endTime: new Date(),
-      }
-    }
-
-    const { tonnage, completedSets } = calculateWorkoutMetrics(workout, exerciseTypeMap)
-
-    return {
-      volume: tonnage,
-      sets: completedSets,
-      startTime: new Date(workout.startTime),
-      endTime: new Date(workout.endTime),
-    }
-  }, [workout, exerciseTypeMap])
-
-  /* Handlers */
-  const commitSave = async (workoutToSave: WorkoutLog) => {
-    try {
-      if (workoutToSave.id) {
-        await updateMutation.mutateAsync({ id: workoutToSave.id, prepared: workoutToSave })
-      } else {
-        await saveMutation.mutateAsync(workoutToSave)
-      }
-      Toast.show({ type: 'success', text1: 'Workout saved!' })
-      discardWorkout()
-      router.replace('/(app)/(tabs)/workout')
-    } catch (err: any) {
-      Toast.show({ type: 'error', text1: 'Error', text2: err?.message || 'Failed to save workout' })
-    }
-  }
-
-  const handleConfirmSave = async () => {
-    const startTime = workout?.startTime
-    const endTime = workout?.endTime
-
-    if (!startTime || !endTime) {
-      Toast.show({
-        type: 'error',
-        text1: 'Invalid workout time',
-        text2: 'Start time and end time must be set.',
-      })
-      return
-    }
-
-    if (new Date(startTime) > new Date(endTime)) {
-      Toast.show({
-        type: 'error',
-        text1: 'Invalid workout time',
-        text2: 'Workout cannot end before it starts.',
-      })
-      return
-    }
-
-    const prepared = useWorkout.getState().prepareWorkoutForSave()
-    if (!prepared) return
-
-    if (prepared.workout.exercises.length === 0) {
-      Toast.show({
-        type: 'error',
-        text1: 'No valid exercises',
-        text2: 'Add at least one completed set to save.',
-      })
-      return
-    }
-
-    const message = buildPruneMessage(prepared.pruneReport)
-
-    if (message) {
-      setPendingSave(prepared.workout)
-      setPruneMessage(message)
-      confirmModalRef.current?.present()
-      return // stop here, wait for confirmation
-    }
-
-    // no pruning → save immediately
-    await commitSave(prepared.workout)
-  }
-
-  /* Effects */
-  const hasSetEndTime = useRef(false)
-
-  // Set end time to now on mount ONLY if creating a new workout
-  useEffect(() => {
-    if (workout && !workout.id && !hasSetEndTime.current) {
-      hasSetEndTime.current = true
-      updateWorkout({ endTime: new Date() })
-    }
-  }, [workout, updateWorkout])
-
-  /* UI Rendering */
   if (!workout) {
-    return <View className="flex-1 bg-white dark:bg-black" />
+    return (
+      <SafeAreaView className="flex-1 bg-white dark:bg-black">
+        <Stack.Screen options={{ headerShown: false }} />
+      </SafeAreaView>
+    )
   }
 
-  const isEditing = !!workout.id
+  const durationSeconds = getWorkoutDurationSeconds(workout, mode, Date.now())
+
+  const handleUpdateStartTime = (date: Date) => {
+    const nextStartTime = date.toISOString()
+
+    if (mode === 'edit-history') {
+      updateWorkoutMeta({
+        startTime: nextStartTime,
+      })
+      return
+    }
+
+    updateWorkoutMeta({
+      startTime: nextStartTime,
+      endTime: null,
+    })
+  }
+
+  const handleUpdateDuration = (seconds: number) => {
+    if (mode === 'edit-history') {
+      const effectiveEndTime = new Date(workout.endTime ?? new Date().toISOString()).getTime()
+      const nextStartTime = new Date(effectiveEndTime - seconds * 1000).toISOString()
+
+      updateWorkoutMeta({
+        startTime: nextStartTime,
+      })
+      return
+    }
+
+    const effectiveNow = workout.pausedAt ?? Date.now()
+    const nextStartTime = new Date(
+      effectiveNow - (seconds + workout.accumulatedPauseSeconds) * 1000,
+    ).toISOString()
+
+    updateWorkoutMeta({
+      startTime: nextStartTime,
+      endTime: null,
+    })
+  }
+
+  const handleSaveWorkout = async () => {
+    const validation = getWorkoutSaveState(workout, exerciseTypeMap)
+
+    if (!validation.canSave) {
+      const invalidCompletedSetCount = validation.invalidCompletedSetIds.length
+      const hasOnlyInvalidCompletedSets =
+        invalidCompletedSetCount > 0 && validation.validSetIds.length === 0
+
+      Toast.show({
+        type: 'error',
+        text1: hasOnlyInvalidCompletedSets
+          ? 'Completed sets need fixes'
+          : 'Workout cannot be saved',
+        text2:
+          invalidCompletedSetCount > 0
+            ? `${invalidCompletedSetCount} completed set${invalidCompletedSetCount === 1 ? ' is' : 's are'} missing required values. Fix them or uncheck them before saving.`
+            : validation.reasons.join(' '),
+      })
+      return
+    }
+
+    const finalized = finalizeWorkoutForSave(workout, exerciseTypeMap, source)
+
+    if (finalized.warnings.length > 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'Workout finalized',
+        text2: finalized.warnings.join(' '),
+      })
+    }
+
+    // console.log('[workout payload]', JSON.stringify(finalized.payload, null, 2))
+
+    if (mode === 'edit-history') {
+      if (!workout.id) {
+        Toast.show({
+          type: 'error',
+          text1: 'Missing workout id',
+          text2: 'This history workout cannot be updated because its id is missing.',
+        })
+        return
+      }
+
+      try {
+        await updateWorkoutMutation.mutateAsync({
+          id: workout.id,
+          payload: finalized.payload as WorkoutPayload,
+        })
+
+        Toast.show({
+          type: 'success',
+          text1: 'Workout updated',
+          text2: 'The updated workout payload was logged and sent to the API.',
+        })
+
+        discardWorkout()
+        router.replace({
+          pathname: '/(app)/workout/[id]',
+          params: { id: workout.id },
+        } as const)
+        return
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'The workout update request failed.'
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to update workout',
+          text2: message,
+        })
+        return
+      }
+    }
+
+    try {
+      const response = await createWorkoutMutation.mutateAsync(finalized.payload as WorkoutPayload)
+      const createdWorkoutId =
+        response.data && typeof response.data === 'object' && 'id' in response.data
+          ? String(response.data.id)
+          : null
+
+      Toast.show({
+        type: 'success',
+        text1: mode === 'program-workout' ? 'Program workout saved' : 'Workout saved',
+        text2: 'The workout payload was logged and sent to the API.',
+      })
+
+      discardWorkout()
+
+      if (createdWorkoutId) {
+        router.replace({
+          pathname: '/(app)/workout/[id]',
+          params: { id: createdWorkoutId },
+        } as const)
+        return
+      }
+
+      router.replace('/(app)/(tabs)/workout')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'The workout save request failed.'
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to save workout',
+        text2: message,
+      })
+    }
+  }
 
   return (
-    <View style={{ paddingBottom: insets.bottom }} className="flex-1 bg-white p-4 dark:bg-black">
-      {/* ───── Title ───── */}
-      <Text className="mb-1 text-neutral-500">Workout title</Text>
-      <TextInput
-        value={workout.title ?? ''}
-        onChangeText={(text) => updateWorkout({ title: text })}
-        className="rounded-xl border border-neutral-300 px-4 py-3 text-lg text-black dark:border-neutral-700 dark:text-white"
-        style={{ lineHeight }}
-      />
+    <SafeAreaView style={{ paddingBottom: insets.bottom }} className="flex-1 bg-white dark:bg-black">
+      <Stack.Screen options={{ headerShown: false }} />
 
-      {/* ───── Summary ───── */}
-      <View className="mt-6 flex-col gap-4">
-        <Text className="text-lg font-semibold text-black dark:text-white">Summary</Text>
+      <ScrollView
+        className="flex-1 px-4 pt-4"
+        contentContainerStyle={{ paddingBottom: 24 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text className="mb-1 text-neutral-500">Workout title</Text>
+        <TextInput
+          value={workout.title}
+          onChangeText={(title) => updateWorkoutMeta({ title })}
+          className="rounded-xl border border-neutral-300 px-4 py-3 text-lg text-black dark:border-neutral-700 dark:text-white"
+        />
 
-        <View className="rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
-          <View className="flex-row justify-between">
-            {/* LEFT */}
-            <View className="flex-1 gap-4">
-              <View className="gap-1">
-                <Text className="text-sm text-neutral-500">Started</Text>
-                <DateTimePicker
-                  title="Workout Started"
-                  value={summary.startTime}
-                  onUpdate={(date) => updateWorkout({ startTime: date })}
-                />
-              </View>
+        <View className="mt-6 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
+          <Text className="text-sm text-neutral-500 dark:text-neutral-400">Visibility</Text>
+          <TouchableOpacity className="mt-1" onPress={() => visibilityModalRef.current?.present()}>
+            <Text className="text-base font-medium text-primary">
+              {workout.visibility.slice(0, 1).toUpperCase() + workout.visibility.slice(1)}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-              <View className="gap-1">
-                <Text className="text-sm text-neutral-500">Ended</Text>
-                <DateTimePicker
-                  title="Workout Ended"
-                  value={summary.endTime}
-                  onUpdate={(date) => updateWorkout({ endTime: date })}
-                />
-              </View>
-            </View>
-
-            {/* RIGHT */}
-            <View className="flex-1 items-end gap-4">
-              <View className="items-end gap-1">
-                <Text className="text-sm text-neutral-500">Volume</Text>
-                <Text className="text-base font-medium text-black dark:text-white">
-                  {convertWeight(summary.volume)} {preferredWeightUnit}
-                </Text>
-              </View>
-
-              <View className="items-end gap-1">
-                <Text className="text-sm text-neutral-500">Sets</Text>
-                <Text className="text-base font-medium text-black dark:text-white">
-                  {summary.sets}
-                </Text>
-              </View>
-            </View>
+        <View className="mt-4 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
+          <Text className="text-sm text-neutral-500 dark:text-neutral-400">Start Time</Text>
+          <View className="mt-1 self-start">
+            <DateTimePicker
+              value={new Date(workout.startTime)}
+              onUpdate={handleUpdateStartTime}
+              title="Edit Start Time"
+              textClassName="text-base font-medium text-primary"
+            />
           </View>
         </View>
 
-        <View className="rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
-          <View className="flex-row justify-between">
-            {/* LEFT */}
-            <View className="flex-1 gap-4">
-              <View className="gap-1">
-                <Text className="text-base font-medium text-black dark:text-white">Visibility</Text>
-              </View>
-            </View>
-
-            {/* RIGHT */}
-            <View className="flex-1 items-end gap-4">
-              <Text
-                onPress={() => visibilityModalRef.current?.present()}
-                className="text-base font-semibold text-blue-500"
-              >
-                {visibility.slice(0, 1).toUpperCase() + visibility.slice(1)}
-              </Text>
-            </View>
-          </View>
+        <View className="mt-4 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
+          <Text className="text-sm text-neutral-500 dark:text-neutral-400">Duration</Text>
+          <TouchableOpacity
+            className="mt-1"
+            onPress={() => durationModalRef.current?.present(durationSeconds)}
+          >
+            <Text className="text-base font-medium text-primary">{formatSeconds(durationSeconds)}</Text>
+          </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
 
-      {/* ───── Actions ───── */}
-      <View className="mt-auto gap-3">
+      <View className="gap-3 px-4 pb-4">
         <Button
-          title={isEditing ? 'Save Edits' : 'Save Workout'}
+          title={
+            mode === 'edit-history'
+              ? 'Update Workout'
+              : mode === 'program-workout'
+                ? 'Save Program Workout'
+                : 'Save Workout'
+          }
           variant="primary"
-          loading={saveMutation.isPending || updateMutation.isPending}
-          onPress={handleConfirmSave}
+          onPress={() => {
+            void handleSaveWorkout()
+          }}
         />
-        <Button
-          title={isEditing ? 'Discard Changes' : 'Back to Workout'}
-          variant="secondary"
-          disabled={workoutSaving}
-          onPress={() => router.back()}
-        />
+        <Button title="Back to Workout" variant="secondary" onPress={() => router.back()} />
       </View>
+
+      <TimerDurationModal
+        ref={durationModalRef}
+        title="Edit Duration"
+        confirmText="Confirm"
+        onConfirm={handleUpdateDuration}
+      />
 
       <VisibilitySelectionModal
         ref={visibilityModalRef}
-        currentType={visibility}
-        onSelect={(type) => {
-          setVisibility(type)
-          updateWorkout({ visibility: type })
-        }}
+        currentType={workout.visibility}
+        onSelect={(visibility) => updateWorkoutMeta({ visibility })}
         onClose={() => visibilityModalRef.current?.dismiss()}
       />
-
-      {/* Confirm save modal */}
-      <BottomSheetModal
-        ref={confirmModalRef}
-        index={0}
-        enableDynamicSizing={true}
-        backdropComponent={(props) => (
-          <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
-        )}
-        backgroundStyle={{
-          backgroundColor: isDark ? '#171717' : 'white',
-        }}
-        handleIndicatorStyle={{
-          backgroundColor: isDark ? '#525252' : '#d1d5db',
-        }}
-        onDismiss={() => {
-          setPendingSave(null)
-          setPruneMessage(null)
-        }}
-        // Smoother, slightly slower animation
-        animationConfigs={{ duration: 350 }}
-      >
-        <BottomSheetView
-          style={{ paddingBottom: insets.bottom + 24 }}
-          className="px-6 pt-2 dark:bg-neutral-900"
-        >
-          <Text className="text-lg font-semibold text-black dark:text-white">Before saving</Text>
-
-          <Text className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
-            {pruneMessage}
-          </Text>
-
-          <View className="mt-6 flex-row gap-3">
-            <View className="flex-1">
-              <Button
-                title="Cancel"
-                variant="secondary"
-                onPress={() => {
-                  confirmModalRef.current?.dismiss()
-                }}
-              />
-            </View>
-
-            <View className="flex-1">
-              <Button
-                title="Save anyway"
-                variant="primary"
-                onPress={() => {
-                  const workout = pendingSave!
-                  confirmModalRef.current?.dismiss()
-                  commitSave(workout)
-                }}
-              />
-            </View>
-          </View>
-        </BottomSheetView>
-      </BottomSheetModal>
-    </View>
+    </SafeAreaView>
   )
 }

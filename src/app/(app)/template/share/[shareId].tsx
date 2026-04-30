@@ -10,7 +10,7 @@ import React, { useEffect, useMemo } from 'react'
 import { Alert, ScrollView, Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { ReadOnlyExerciseRow } from '@/components/workouts/ReadOnlyExerciseRow'
+import { ReadOnlyExerciseRow } from '@/components/workout-editor/ReadOnlyExerciseRow'
 
 export default function TemplateDetails() {
   const { shareId } = useLocalSearchParams<{ shareId: string }>()

@@ -1,4 +1,4 @@
-import { TemplatePayload } from '@/types/payloads'
+import { TemplatePayload, WorkoutPayload } from '@/types/payloads'
 import {
   DraftProgram,
   ProgramCreatePayload,
@@ -75,7 +75,7 @@ export function serializeTemplateForApi(
  * @param workout - The workout to serialize
  * @returns The serialized workout
  */
-export function serializeWorkoutForApi(workout: WorkoutLog) {
+export function serializeWorkoutForApi(workout: WorkoutLog): WorkoutPayload {
   return {
     title: workout.title ?? null,
     startTime: workout.startTime?.toISOString() ?? null,

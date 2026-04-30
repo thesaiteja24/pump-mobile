@@ -4,23 +4,21 @@ import {
   DeleteConfirmModalHandle,
 } from '@/components/ui/modals/DeleteConfirmModal'
 import { useExercises } from '@/hooks/queries/exercises'
-import { useTemplate } from '@/stores/templates.store'
-import { useWorkout } from '@/stores/workouts.store'
+import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import { ExerciseType } from '@/types/exercises'
-import { TemplateExercise, TemplateExerciseGroup } from '@/types/templates'
 import { WorkoutHistoryExercise, WorkoutHistorySet, WorkoutLogGroup } from '@/types/workouts'
 import { formatDate, formatDurationFromDates } from '@/utils/time'
 import { calculateWorkoutMetrics } from '@/utils/workout'
 import * as Crypto from 'expo-crypto'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { BackHandler, ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
 import { VerifiedBadge } from '@/components/subscriptions/VerifiedBadge'
 import ShimmerWorkoutScreen from '@/components/ui/shimmers/ShimmerWorkoutScreen'
-import { ReadOnlyExerciseRow } from '@/components/workouts/ReadOnlyExerciseRow'
+import { ReadOnlyExerciseRow } from '@/components/workout-editor/ReadOnlyExerciseRow'
 import {
   useDeleteWorkoutMutation,
   useDiscoverWorkoutsQuery,
@@ -75,7 +73,7 @@ export default function WorkoutDetails() {
   })
 
   const workout =
-    workoutFromStore ?? workoutFromHistory ?? workoutFromDiscover ?? (workoutFromNetwork as any)
+    workoutFromStore ?? workoutFromHistory ?? workoutFromDiscover ?? workoutFromNetwork
   const isLoading = !workout && (isDiscoverLoading || isHistoryLoading || isByIdLoading)
 
   const isAuthrized = currentUserId === workout?.user?.id
@@ -89,10 +87,15 @@ export default function WorkoutDetails() {
   const handleEdit = useCallback(() => {
     if (!workout) return
 
-    const activeWorkout = useWorkout.getState().workout
+    const {
+      workout: activeWorkout,
+      mode: activeMode,
+      source,
+      initiateWorkout,
+    } = useWorkoutEditor.getState()
 
     if (activeWorkout) {
-      if (activeWorkout.id === workout.id) {
+      if (activeMode === 'edit-history' && source?.workoutHistoryId === workout.id) {
         // Resuming same edit
         router.push('/(app)/workout/start')
         return
@@ -100,15 +103,15 @@ export default function WorkoutDetails() {
       // Warn about overwriting
       discardModalRef.current?.present()
     } else {
-      useWorkout.getState().loadWorkoutHistory(workout)
+      initiateWorkout({ mode: 'edit-history', historyItem: workout })
       router.push('/(app)/workout/start')
     }
   }, [workout, discardModalRef])
 
   const handleDiscardConfirm = () => {
     if (!workout) return
-    useWorkout.getState().discardWorkout()
-    useWorkout.getState().loadWorkoutHistory(workout)
+    useWorkoutEditor.getState().discardWorkout()
+    useWorkoutEditor.getState().initiateWorkout({ mode: 'edit-history', historyItem: workout })
     // Modal auto dismisses on confirm
     router.push('/(app)/workout/start')
   }
@@ -125,8 +128,6 @@ export default function WorkoutDetails() {
   const handleSaveAsTemplate = () => {
     if (!workout) return
 
-    const { startDraftTemplate } = useTemplate.getState()
-
     // 1. Create ID Mappings for Groups
     // We Map <OldDBGroupId, NewDraftGroupUUID>
     const groupIdMap = new Map<string, string>()
@@ -135,46 +136,48 @@ export default function WorkoutDetails() {
     })
 
     // 2. Clone Groups with New IDs
-    const exerciseGroups: TemplateExerciseGroup[] = workout.exerciseGroups.map(
-      (g: WorkoutLogGroup, gIdx: number) => ({
-        id: groupIdMap.get(g.id)!, // Use the mapped new UUID
-        groupIndex: gIdx,
-        groupType: g.groupType,
-        restSeconds: g.restSeconds ?? undefined,
-      }),
-    )
+    const exerciseGroups = workout.exerciseGroups.map((g: WorkoutLogGroup, gIdx: number) => ({
+      id: groupIdMap.get(g.id)!, // Use the mapped new UUID
+      groupIndex: gIdx,
+      groupType: g.groupType,
+      restSeconds: g.restSeconds ?? undefined,
+    }))
 
     // 3. Clone Exercises & Sets with New IDs
-    const exercises: TemplateExercise[] = workout.exercises.map(
-      (ex: WorkoutHistoryExercise, exIdx: number) => {
-        // Resolve new Group ID if applicable
-        const newGroupId = ex.exerciseGroupId ? groupIdMap.get(ex.exerciseGroupId) : undefined
+    const exercises = workout.exercises.map((ex: WorkoutHistoryExercise, exIdx: number) => {
+      // Resolve new Group ID if applicable
+      const newGroupId = ex.exerciseGroupId ? groupIdMap.get(ex.exerciseGroupId) : undefined
 
-        return {
-          id: Crypto.randomUUID(), // New Draft Item UUID
-          exerciseId: ex.exercise.id,
-          exerciseIndex: exIdx,
-          exerciseGroupId: newGroupId,
-          sets: ex.sets.map((s: WorkoutHistorySet, sIdx: number) => ({
-            id: Crypto.randomUUID(), // New Set UUID
-            setIndex: sIdx,
-            setType: s.setType,
-            weight: s.weight ?? undefined,
-            reps: s.reps ?? undefined,
-            note: s.note ?? undefined,
-            rpe: s.rpe ?? undefined,
-            durationSeconds: s.durationSeconds ?? undefined,
-            restSeconds: s.restSeconds ?? undefined,
-          })),
-        }
+      return {
+        id: Crypto.randomUUID(), // New Draft Item UUID
+        exerciseId: ex.exercise.id,
+        exerciseIndex: exIdx,
+        exerciseGroupId: newGroupId,
+        sets: ex.sets.map((s: WorkoutHistorySet, sIdx: number) => ({
+          id: Crypto.randomUUID(), // New Set UUID
+          setIndex: sIdx,
+          setType: s.setType,
+          weight: s.weight ?? undefined,
+          reps: s.reps ?? undefined,
+          note: s.note ?? undefined,
+          rpe: s.rpe ?? undefined,
+          durationSeconds: s.durationSeconds ?? undefined,
+          restSeconds: s.restSeconds ?? undefined,
+        })),
+      }
+    })
+
+    useWorkoutEditor.getState().discardWorkout()
+    useWorkoutEditor.getState().initiateWorkout({
+      mode: 'template-create',
+      template: {
+        clientId: Crypto.randomUUID(),
+        userId: '',
+        title: workout.title || 'Untitled Workout',
+        notes: 'Created from workout history',
+        exercises,
+        exerciseGroups,
       },
-    )
-
-    startDraftTemplate({
-      title: workout.title || 'Untitled Workout',
-      notes: 'Created from workout history',
-      exercises: exercises,
-      exerciseGroups: exerciseGroups,
     })
 
     router.push('/(app)/template/editor')
@@ -272,7 +275,7 @@ export default function WorkoutDetails() {
         </View>
 
         {/* Exercises */}
-        {workout.exercises.map((ex: any) => {
+        {workout.exercises.map((ex: WorkoutHistoryExercise) => {
           const groupDetails = ex.exerciseGroupId ? groupMap.get(ex.exerciseGroupId) : null
 
           return <ReadOnlyExerciseRow key={ex.id} exercise={ex} group={groupDetails} />
@@ -285,14 +288,14 @@ export default function WorkoutDetails() {
           <Button
             variant="primary"
             title="Save as Template"
-            className="w-2/3"
+            className="w-2/3 rounded-full"
             onPress={handleSaveAsTemplate}
           />
 
           {isAuthrized && (
             <Button
               title="Delete"
-              className="w-1/3"
+              className="w-1/3 rounded-full"
               variant="danger"
               onPress={() => deleteModalRef.current?.present()}
             />

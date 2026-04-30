@@ -8,7 +8,7 @@ export async function googleLoginService(
   privacyPolicyVersion?: string | null,
 ) {
   try {
-    console.log(idToken, privacyAccepted, privacyPolicyVersion)
+    // console.log(idToken, privacyAccepted, privacyPolicyVersion)
     const res = await client.post(GOOGLE_LOGIN_ENDPOINT, {
       idToken,
       privacyAccepted,

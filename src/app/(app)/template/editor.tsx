@@ -3,14 +3,11 @@ import {
   DeleteConfirmModal,
   DeleteConfirmModalHandle,
 } from '@/components/ui/modals/DeleteConfirmModal'
-import ExerciseGroupModal, {
-  ExerciseGroupModalHandle,
-} from '@/components/ui/modals/ExerciseGroupModal'
 import { PaywallModal, PaywallModalHandle } from '@/components/ui/modals/PaywallModal'
-import ExerciseRow from '@/components/workouts/ExerciseRow'
+import ExerciseRow from '@/components/workout-editor/ExerciseRow'
+import WorkoutReorderList from '@/components/workout-editor/WorkoutReorderList'
 import { FREE_TIER_LIMITS } from '@/constants/limits'
 import { useExercises } from '@/hooks/queries/exercises'
-import { useProfileQuery } from '@/hooks/queries/me'
 import {
   useCreateTemplateMutation,
   useTemplateByIdQuery,
@@ -19,235 +16,76 @@ import {
 } from '@/hooks/queries/templates'
 import { useProgram } from '@/stores/programs.store'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
-import { useTemplate } from '@/stores/templates.store'
-import { DraftTemplate } from '@/types/templates'
-import { SelfUser } from '@/types/me'
-import { ExerciseGroupType } from '@/types/workouts'
-import { Ionicons } from '@expo/vector-icons'
+import {
+  finalizeTemplateForSave,
+  useWorkoutEditor,
+} from '@/stores/workout-editor.store'
 import { usePreventRemove } from '@react-navigation/native'
-import { router, useLocalSearchParams, useNavigation } from 'expo-router'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { KeyboardAvoidingView, Platform, Text, TextInput, View, useColorScheme } from 'react-native'
-import DraggableFlatList from 'react-native-draggable-flatlist'
+import { Stack, router, useLocalSearchParams } from 'expo-router'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ScrollView, Text, TextInput, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
 export default function TemplateEditor() {
-  const isDark = useColorScheme() === 'dark'
-  const safeAreaInsets = useSafeAreaInsets()
-  const navigation = useNavigation()
-  const params = useLocalSearchParams()
-  const { data: userData } = useProfileQuery()
-  const user = userData as SelfUser | null
-  const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
+  const insets = useSafeAreaInsets()
+  const params = useLocalSearchParams<{
+    id?: string
+    context?: string
+    weekIndex?: string
+    dayIndex?: string
+  }>()
+
+  const isEditing = typeof params.id === 'string' && params.id.length > 0
+  const programWeekIndex =
+    params.context === 'program' && typeof params.weekIndex === 'string'
+      ? Number(params.weekIndex)
+      : undefined
+  const programDayIndex =
+    params.context === 'program' && typeof params.dayIndex === 'string'
+      ? Number(params.dayIndex)
+      : undefined
+
+  const {
+    data: templates = [],
+  } = useTemplatesQuery()
+  const { data: templateFromQuery, isLoading: templateLoading } = useTemplateByIdQuery(
+    isEditing ? params.id : null,
+  )
   const { data: exerciseList = [] } = useExercises()
-
-  const isEditing = params.mode === 'edit'
-
-  // TQ queries and mutations
-  const { data: templates = [] } = useTemplatesQuery()
-  const { data: templateFromQuery } = useTemplateByIdQuery(isEditing ? (params.id as string) : null)
   const createMutation = useCreateTemplateMutation()
   const updateMutation = useUpdateTemplateMutation()
 
-  // Draft state
-  const draftTemplate = useTemplate((s) => s.draftTemplate)
-  const startDraftTemplate = useTemplate((s) => s.startDraftTemplate)
-  const updateDraftTemplate = useTemplate((s) => s.updateDraftTemplate)
-  const discardDraftTemplate = useTemplate((s) => s.discardDraftTemplate)
   const isPro = useSubscriptionStore((s) => s.isPro)
-  const reorderDraftExercises = useTemplate((s) => s.reorderDraftExercises)
-  const removeExerciseFromDraft = useTemplate((s) => s.removeExerciseFromDraft)
-  const addSetToDraft = useTemplate((s) => s.addSetToDraft)
-  const updateDraftSet = useTemplate((s) => s.updateDraftSet)
-  const removeSetFromDraft = useTemplate((s) => s.removeSetFromDraft)
-  const createDraftExerciseGroup = useTemplate((s) => s.createDraftExerciseGroup)
-  const removeDraftExerciseGroup = useTemplate((s) => s.removeDraftExerciseGroup)
-  const prepareTemplateForSave = useTemplate((s) => s.prepareTemplateForSave)
+  const workout = useWorkoutEditor((s) => s.workout)
+  const mode = useWorkoutEditor((s) => s.mode)
+  const source = useWorkoutEditor((s) => s.source)
+  const initiateWorkout = useWorkoutEditor((s) => s.initiateWorkout)
+  const updateWorkoutMeta = useWorkoutEditor((s) => s.updateWorkoutMeta)
+  const reorderExercises = useWorkoutEditor((s) => s.reorderExercises)
+  const discardWorkout = useWorkoutEditor((s) => s.discardWorkout)
 
-  /* ───── Grouping State ───── */
-  // const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false); // Removed
-  const deleteModalRef = useRef<DeleteConfirmModalHandle>(null)
-  const pruneConfirmModalRef = useRef<DeleteConfirmModalHandle>(null)
-  const paywallModalRef = useRef<PaywallModalHandle>(null)
-
-  const [groupingMode, setGroupingMode] = useState<{
-    type: ExerciseGroupType
-    sourceExerciseId: string
-  } | null>(null)
-  const [selectedGroupExerciseIds, setSelectedGroupExerciseIds] = useState<Set<string>>(new Set())
-  // const [isMuscleGroupModalVisible, setIsMuscleGroupModalVisible] =
-  //   useState(false); // Removed
-  const exerciseGroupModalRef = useRef<ExerciseGroupModalHandle>(null)
-
-  // Derive group map
-  const groupMap = React.useMemo(() => {
-    const map = new Map()
-    draftTemplate?.exerciseGroups.forEach((g) => map.set(g.id, g))
-    return map
-  }, [draftTemplate?.exerciseGroups])
-
-  // Derived Map of exerciseId -> Exercise
-  const exerciseMap = useMemo(() => new Map(exerciseList.map((e) => [e.id, e])), [exerciseList])
-
-  // Derived exercises for grouping modal
-  const templateExercisesForGrouping = useMemo(() => {
-    if (!draftTemplate || !groupingMode) return []
-
-    return draftTemplate.exercises
-      .map((we) => {
-        const ex = exerciseMap.get(we.exerciseId)
-        if (!ex) return null
-
-        return {
-          id: we.id, // Use Template Item ID (UUID)
-          title: ex.title,
-          thumbnailUrl: ex.thumbnailUrl,
-          selected: selectedGroupExerciseIds.has(we.id),
-          disabled: Boolean(we.exerciseGroupId) && !selectedGroupExerciseIds.has(we.id),
-        }
-      })
-      .filter((item): item is NonNullable<typeof item> => item !== null)
-  }, [draftTemplate, groupingMode, selectedGroupExerciseIds, exerciseMap])
-
-  const handleCreateGroup = (currentExerciseId: string, type: ExerciseGroupType) => {
-    setGroupingMode({
-      type,
-      sourceExerciseId: currentExerciseId,
-    })
-    setSelectedGroupExerciseIds(new Set([currentExerciseId]))
-    exerciseGroupModalRef.current?.present()
-  }
-
-  const handleConfirmExerciseGroup = () => {
-    if (!groupingMode || selectedGroupExerciseIds.size < 2) return
-
-    createDraftExerciseGroup(
-      Array.from(selectedGroupExerciseIds),
-      groupingMode.type, // Pass the type here to match store signature
-    )
-
-    setGroupingMode(null)
-    setSelectedGroupExerciseIds(new Set())
-    exerciseGroupModalRef.current?.dismiss()
-  }
-
-  const [saving, setSaving] = useState(false)
+  const [isReorderMode, setIsReorderMode] = useState(false)
+  const [pendingPrunedTemplate, setPendingPrunedTemplate] = useState<ReturnType<
+    typeof finalizeTemplateForSave
+  >['template'] | null>(null)
   const [pruneMessage, setPruneMessage] = useState<string | null>(null)
-  const [pendingSave, setPendingSave] = useState<any | null>(null)
 
-  const buildPruneMessage = (pruneReport: {
-    droppedExercises: number
-    droppedGroups: number
-  }): string | null => {
-    const parts: string[] = []
-
-    if (pruneReport.droppedExercises > 0) {
-      parts.push(
-        `${pruneReport.droppedExercises} exercise${pruneReport.droppedExercises > 1 ? 's' : ''} (not found)`,
-      )
-    }
-
-    if (pruneReport.droppedGroups > 0) {
-      parts.push(
-        `${pruneReport.droppedGroups} group${pruneReport.droppedGroups > 1 ? 's' : ''} (invalid)`,
-      )
-    }
-
-    if (parts.length === 0) return null
-
-    return `The following will be removed:\n• ${parts.join('\n• ')}`
-  }
-
-  const commitSave = useCallback(
-    async (templateToSave: DraftTemplate) => {
-      setSaving(true)
-      try {
-        let res: any
-        if (isEditing && templateToSave.id) {
-          res = await updateMutation.mutateAsync({ id: templateToSave.id, draft: templateToSave })
-        } else {
-          res = await createMutation.mutateAsync(templateToSave)
-        }
-
-        if (res?.success) {
-          Toast.show({
-            type: 'success',
-            text1: isEditing ? 'Template updated' : 'Template created',
-          })
-
-          if (
-            params.context === 'program' &&
-            params.weekIndex !== undefined &&
-            params.dayIndex !== undefined
-          ) {
-            const draftProgram = useProgram.getState().draftProgram
-            if (draftProgram && draftProgram.weeks) {
-              const wIndex = Number(params.weekIndex)
-              const dIndex = Number(params.dayIndex)
-              const newWeeks = [...draftProgram.weeks]
-              if (newWeeks[wIndex]?.days[dIndex]) {
-                newWeeks[wIndex].days[dIndex].templateId = res.data?.id || templateToSave.clientId
-                useProgram.getState().updateDraftProgram({ weeks: newWeeks })
-              }
-            }
-          }
-
-          discardDraftTemplate()
-          router.back()
-        } else {
-          Toast.show({
-            type: 'error',
-            text1: 'Error',
-            text2: 'Failed to save template',
-          })
-        }
-      } catch (error: any) {
-        console.error(error)
-        Toast.show({
-          type: 'error',
-          text1: 'Error',
-          text2: error?.message || 'Unexpected error occurred',
-        })
-      } finally {
-        setSaving(false)
-        setPruneMessage(null)
-        setPendingSave(null)
-      }
-    },
-    [
-      isEditing,
-      updateMutation,
-      createMutation,
-      discardDraftTemplate,
-      params.context,
-      params.weekIndex,
-      params.dayIndex,
-    ],
-  )
-
-  const hasUnsavedChanges = (!!draftTemplate &&
-    (draftTemplate.title.trim().length > 0 ||
-      draftTemplate.notes?.trim().length ||
-      draftTemplate.exercises.length > 0)) as boolean
-
-  usePreventRemove(hasUnsavedChanges, () => {
-    deleteModalRef.current?.present()
-  })
+  const discardModalRef = useRef<DeleteConfirmModalHandle>(null)
+  const pruneModalRef = useRef<DeleteConfirmModalHandle>(null)
+  const paywallModalRef = useRef<PaywallModalHandle>(null)
 
   const isLimitHit =
     !isEditing && !isPro && templates.length >= FREE_TIER_LIMITS.MAX_CUSTOM_TEMPLATES
 
-  // Present the paywall immediately if a user bypasses the UI gate
   useEffect(() => {
-    if (isLimitHit) {
-      requestAnimationFrame(() => {
-        paywallModalRef.current?.present()
-      })
-    }
+    if (!isLimitHit) return
+
+    requestAnimationFrame(() => {
+      paywallModalRef.current?.present()
+    })
   }, [isLimitHit])
 
-  // Initialize draft on mount
   useEffect(() => {
     if (isEditing) {
       if (!params.id) {
@@ -255,35 +93,215 @@ export default function TemplateEditor() {
         router.back()
         return
       }
-      // Use TQ query result (already fetched) or fall back to templates list
-      const existing = templateFromQuery ?? templates.find((t) => t.id === params.id)
-      if (existing) {
-        startDraftTemplate(JSON.parse(JSON.stringify(existing)))
-      } else {
+
+      if (templateLoading) return
+
+      if (!templateFromQuery) {
         Toast.show({ type: 'error', text1: 'Error', text2: 'Template not found' })
         router.back()
         return
       }
-    } else {
-      if (!draftTemplate) {
-        startDraftTemplate()
-      }
-    }
-  }, [isEditing, params.id, templateFromQuery, templates, startDraftTemplate, draftTemplate])
 
-  const handleCancel = useCallback(() => {
-    if (draftTemplate && (draftTemplate.title || draftTemplate.exercises.length > 0)) {
-      deleteModalRef.current?.present()
-    } else {
-      discardDraftTemplate()
-      router.back()
+      if (mode === 'template-edit' && source?.templateId === templateFromQuery.id && workout) {
+        return
+      }
+
+      discardWorkout()
+      initiateWorkout({
+        mode: 'template-edit',
+        template: templateFromQuery,
+        programWeekIndex,
+        programDayIndex,
+      })
+      return
     }
-  }, [draftTemplate, discardDraftTemplate])
+
+    const currentProgramWeekIndex = source?.programWeekIndex ?? null
+    const currentProgramDayIndex = source?.programDayIndex ?? null
+    const nextProgramWeekIndex = programWeekIndex ?? null
+    const nextProgramDayIndex = programDayIndex ?? null
+
+    if (
+      workout &&
+      mode === 'template-create' &&
+      currentProgramWeekIndex === nextProgramWeekIndex &&
+      currentProgramDayIndex === nextProgramDayIndex
+    ) {
+      return
+    }
+
+    if (workout) {
+      discardWorkout()
+    }
+
+    initiateWorkout({
+      mode: 'template-create',
+      programWeekIndex,
+      programDayIndex,
+    })
+  }, [
+    discardWorkout,
+    initiateWorkout,
+    isEditing,
+    mode,
+    params.id,
+    programDayIndex,
+    programWeekIndex,
+    source?.programDayIndex,
+    source?.programWeekIndex,
+    source?.templateId,
+    templateFromQuery,
+    templateLoading,
+    workout,
+  ])
+
+  useEffect(() => {
+    if (!pruneMessage) return
+    pruneModalRef.current?.present()
+  }, [pruneMessage])
+
+  useEffect(() => {
+    if (!workout) {
+      setIsReorderMode(false)
+    }
+  }, [workout])
+
+  const hasUnsavedChanges = Boolean(
+    workout &&
+      (workout.title.trim().length > 0 ||
+        (workout.notes?.trim().length ?? 0) > 0 ||
+        workout.exerciseOrder.length > 0),
+  )
+
+  usePreventRemove(hasUnsavedChanges, () => {
+    discardModalRef.current?.present()
+  })
+
+  const validExerciseIds = useMemo(() => new Set(exerciseList.map((exercise) => exercise.id)), [
+    exerciseList,
+  ])
+
+  const reorderItems = useMemo(() => {
+    if (!workout) return []
+
+    return workout.exerciseOrder
+      .map((exerciseInstanceId) => {
+        const exercise = workout.exercisesById[exerciseInstanceId]
+        if (!exercise) return null
+
+        const details = exerciseList.find((item) => item.id === exercise.exerciseId)
+        if (!details) return null
+
+        const group = exercise.groupId ? workout.groupsById[exercise.groupId] ?? null : null
+
+        return {
+          id: exercise.id,
+          title: details.title,
+          thumbnailUrl: details.thumbnailUrl,
+          instanceLabel: null,
+          groupLabel: group
+            ? `${group.groupType.toUpperCase()} ${String.fromCharCode('A'.charCodeAt(0) + group.groupIndex)}`
+            : null,
+          groupColor: group
+            ? [
+                '#4C1D95',
+                '#7C2D12',
+                '#14532D',
+                '#7F1D1D',
+                '#1E3A8A',
+                '#581C87',
+                '#0F766E',
+                '#1F2937',
+              ][
+                Math.abs(
+                  [...group.id].reduce((hash, char) => {
+                    const next = (hash << 5) - hash + char.charCodeAt(0)
+                    return next | 0
+                  }, 0),
+                ) % 8
+              ]
+            : null,
+        }
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null)
+  }, [exerciseList, workout])
+
+  const commitSave = useCallback(
+    async (templateToSave: ReturnType<typeof finalizeTemplateForSave>['template']) => {
+      try {
+        const response =
+          mode === 'template-edit' && source?.templateId
+            ? await updateMutation.mutateAsync({
+                id: source.templateId,
+                draft: templateToSave,
+              })
+            : await createMutation.mutateAsync(templateToSave)
+
+        const savedId = response?.data?.id || source?.templateId || templateToSave.id
+
+        if (
+          source?.programWeekIndex != null &&
+          source?.programDayIndex != null
+        ) {
+          const draftProgram = useProgram.getState().draftProgram
+
+          if (draftProgram?.weeks) {
+            const nextWeeks = [...draftProgram.weeks]
+            if (nextWeeks[source.programWeekIndex]?.days[source.programDayIndex]) {
+              nextWeeks[source.programWeekIndex].days[source.programDayIndex].templateId =
+                savedId || templateToSave.clientId
+              useProgram.getState().updateDraftProgram({ weeks: nextWeeks })
+            }
+          }
+        }
+
+        Toast.show({
+          type: 'success',
+          text1: mode === 'template-edit' ? 'Template updated' : 'Template created',
+        })
+
+        discardWorkout()
+        setPendingPrunedTemplate(null)
+        setPruneMessage(null)
+
+        if (source?.programWeekIndex != null && source?.programDayIndex != null) {
+          router.back()
+          return
+        }
+
+        if (savedId) {
+          router.replace({
+            pathname: '/(app)/template/[id]',
+            params: { id: savedId },
+          })
+          return
+        }
+
+        router.replace('/(app)/(tabs)/workout')
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'The template request failed.'
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to save template',
+          text2: message,
+        })
+      }
+    },
+    [
+      createMutation,
+      discardWorkout,
+      mode,
+      source?.programDayIndex,
+      source?.programWeekIndex,
+      source?.templateId,
+      updateMutation,
+    ],
+  )
 
   const handleSave = useCallback(async () => {
-    if (!draftTemplate) return
+    if (!workout) return
 
-    if (!draftTemplate.title.trim()) {
+    if (!workout.title.trim()) {
       Toast.show({
         type: 'error',
         text1: 'Title required',
@@ -292,8 +310,7 @@ export default function TemplateEditor() {
       return
     }
 
-    const exerciseCount = draftTemplate.exercises.length
-    if (exerciseCount === 0) {
+    if (workout.exerciseOrder.length === 0) {
       Toast.show({
         type: 'error',
         text1: 'No exercises',
@@ -302,213 +319,180 @@ export default function TemplateEditor() {
       return
     }
 
-    // Prepare template for save (validate and prune)
-    const prepared = prepareTemplateForSave()
-    if (!prepared) return
+    const finalized = finalizeTemplateForSave(workout, validExerciseIds, source)
 
-    const message = buildPruneMessage(prepared.pruneReport)
-
-    if (message) {
-      setPendingSave(prepared.template)
-      setPruneMessage(message)
-      return // Stop here, wait for confirmation
+    if (finalized.template.exercises.length === 0) {
+      Toast.show({
+        type: 'error',
+        text1: 'No valid exercises',
+        text2: 'All exercises in this template are unavailable. Add valid exercises and try again.',
+      })
+      return
     }
 
-    // No pruning → save immediately
-    await commitSave(prepared.template as any)
-  }, [draftTemplate, prepareTemplateForSave, commitSave])
-
-  // Configure navigation header
-  useEffect(() => {
-    navigation.setOptions({
-      title: isEditing ? 'Edit Template' : 'New Template',
-      onLeftPress: () => {
-        handleCancel()
-      },
-      headerBackButtonMenuEnabled: false,
-
-      rightIcons: [
-        {
-          name: 'checkmark-done',
-          onPress: saving ? undefined : handleSave,
-          disabled: saving,
-          color: 'green',
-        },
-      ],
-    })
-  }, [navigation, draftTemplate, saving, isEditing, handleSave, handleCancel])
-
-  useEffect(() => {
-    if (pruneMessage) {
-      pruneConfirmModalRef.current?.present()
+    if (finalized.warnings.length > 0) {
+      setPendingPrunedTemplate(finalized.template)
+      setPruneMessage(finalized.warnings.join(' '))
+      return
     }
-  }, [pruneMessage])
 
-  if (!draftTemplate)
+    await commitSave(finalized.template)
+  }, [commitSave, source, validExerciseIds, workout])
+
+  const handleCancel = useCallback(() => {
+    if (hasUnsavedChanges) {
+      discardModalRef.current?.present()
+      return
+    }
+
+    discardWorkout()
+    router.back()
+  }, [discardWorkout, hasUnsavedChanges])
+
+  if (!workout || (isEditing && templateLoading && mode !== 'template-edit')) {
     return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
-        <Text className="text-neutral-500">Loading...</Text>
-      </View>
+      <SafeAreaView className="flex-1 bg-white dark:bg-black">
+        <Stack.Screen options={{ headerShown: false }} />
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-neutral-500 dark:text-neutral-400">Loading template...</Text>
+        </View>
+      </SafeAreaView>
     )
+  }
 
   return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-black" edges={['bottom']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-        keyboardVerticalOffset={100}
-      >
-        {/* Header Inputs */}
-        <View className="border-b border-neutral-200 p-4 dark:border-neutral-800">
+    <SafeAreaView className="flex-1 bg-white dark:bg-black">
+      <Stack.Screen options={{ headerShown: false }} />
+      <View className="border-b border-neutral-200 px-4 py-4 dark:border-neutral-800">
+        <Text className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+          {mode === 'template-edit' ? 'Edit Template' : 'New Template'}
+        </Text>
+
+        {/* Title + Actions */}
+        <View className="mt-1 flex-row items-center gap-2">
           <TextInput
-            value={draftTemplate.title}
-            onChangeText={(t) => updateDraftTemplate({ title: t })}
-            placeholder="Template Name e.g. Upper Body A"
+            value={workout.title}
+            onChangeText={(title) => updateWorkoutMeta({ title })}
+            placeholder="Template Name"
             placeholderTextColor="#9ca3af"
-            className="mb-2 text-xl font-semibold text-black dark:text-white"
+            className="flex-1 text-xl font-bold text-black dark:text-white"
           />
-          <TextInput
-            value={draftTemplate.notes}
-            onChangeText={(t) => updateDraftTemplate({ notes: t || undefined })}
-            placeholder="Notes (optional)"
-            placeholderTextColor="#9ca3af"
-            multiline
-            className="max-h-20 text-base text-neutral-600 dark:text-neutral-400"
-          />
+
+          <View className="flex-row gap-4">
+            <Button
+              title="Cancel"
+              variant="danger"
+              onPress={handleCancel}
+              className=''
+
+            />
+            <Button
+              title={isReorderMode ? 'Done' : 'Save'}
+              variant="primary"
+              onPress={() => {
+                if (isReorderMode) {
+                  setIsReorderMode(false)
+                  return
+                }
+                void handleSave()
+              }}
+            />
+          </View>
         </View>
 
-        <DraggableFlatList
-          data={draftTemplate.exercises}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ marginBottom: safeAreaInsets.bottom }}
-          onDragEnd={({ data }) => reorderDraftExercises(data)}
-          activationDistance={20}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item, drag, isActive }) => {
-            const details = exerciseMap.get(item.exerciseId)
-            if (!details) return null
-
-            return (
-              <ExerciseRow
-                exercise={item}
-                exerciseDetails={details}
-                preferredWeightUnit={preferredWeightUnit}
-                isTemplate
-                isActive={isActive}
-                isDragging={isActive}
-                drag={drag}
-                groupDetails={item.exerciseGroupId ? groupMap.get(item.exerciseGroupId) : null}
-                onDeleteExercise={() => removeExerciseFromDraft(item.exerciseId)}
-                onAddSet={addSetToDraft}
-                onUpdateSet={updateDraftSet}
-                onDeleteSet={removeSetFromDraft}
-                onCreateSuperSet={() => handleCreateGroup(item.id, 'superSet')}
-                onCreateGiantSet={() => handleCreateGroup(item.id, 'giantSet')}
-                onRemoveExerciseGroup={() => {
-                  if (item.exerciseGroupId) removeDraftExerciseGroup(item.exerciseGroupId)
-                }}
-                onReplaceExercise={() => {
-                  router.push({
-                    pathname: '/(app)/exercises',
-                    params: {
-                      mode: 'select',
-                      context: 'template',
-                      replace: item.exerciseId,
-                    },
-                  })
-                }}
-                onSaveRestPreset={(exerciseId, setId, seconds) =>
-                  updateDraftSet(exerciseId, setId, {
-                    restSeconds: seconds,
-                  })
-                }
-              />
-            )
-          }}
-          ListEmptyComponent={
-            <View className="items-center justify-center p-8">
-              <Text className="text-lg text-neutral-400">No exercises added yet.</Text>
-            </View>
-          }
-          ListFooterComponent={
-            <View className="mb-[50%] p-4">
-              <Button
-                title="Add Exercises"
-                variant="outline"
-                onPress={() => {
-                  router.push({
-                    pathname: '/(app)/exercises',
-                    params: { mode: 'select', context: 'template' },
-                  })
-                }}
-                leftIcon={<Ionicons name="add" size={20} color={isDark ? 'white' : 'black'} />}
-              />
-            </View>
-          }
+        {/* Notes */}
+        <TextInput
+          value={workout.notes ?? ''}
+          onChangeText={(notes) => updateWorkoutMeta({ notes })}
+          placeholder="Notes (optional)"
+          placeholderTextColor="#9ca3af"
+          multiline
+          className=" max-h-24 text-sm text-neutral-600 dark:text-neutral-400"
         />
-      </KeyboardAvoidingView>
 
-      <ExerciseGroupModal
-        ref={exerciseGroupModalRef}
-        exercises={templateExercisesForGrouping}
-        onSelect={(exercise) => {
-          if (!exercise || exercise.disabled) return
+        {/* Meta */}
+        <Text className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
+          {workout.exerciseOrder.length} exercises • {Object.keys(workout.setsById).length} sets
+        </Text>
+      </View>
+      {isReorderMode ? (
+        <View className="flex-1 px-4 pb-4 pt-3">
+          <Text className="mb-3 text-sm text-neutral-500 dark:text-neutral-400">
+            Drag exercises to reorder the template.
+          </Text>
+          <WorkoutReorderList
+            items={reorderItems}
+            onReorder={(orderedIds) => {
+              reorderExercises(orderedIds)
+            }}
+          />
+        </View>
+      ) : (
+        <ScrollView
+          className="flex-1"
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: insets.bottom + 132 }}
+        >
+          {workout.exerciseOrder.length === 0 ? (
+            <View className="px-4 py-8">
+              <Text className="text-center text-neutral-500 dark:text-neutral-400">
+                No exercises added yet. Tap &quot;Add Exercise&quot; to begin.
+              </Text>
+            </View>
+          ) : (
+            workout.exerciseOrder.map((exerciseInstanceId) => (
+              <ExerciseRow
+                key={exerciseInstanceId}
+                exerciseInstanceId={exerciseInstanceId}
+                onEnterReorder={() => setIsReorderMode(true)}
+              />
+            ))
+          )}
 
-          setSelectedGroupExerciseIds((prev) => {
-            const next = new Set(prev)
-
-            // Deselect if already selected
-            if (next.has(exercise.id)) {
-              if (exercise.id === groupingMode?.sourceExerciseId) {
-                return prev
-              }
-              next.delete(exercise.id)
-              return next
-            }
-
-            // For supersets, limit to 2 exercises
-            if (groupingMode?.type === 'superSet' && next.size >= 2) {
-              return prev
-            }
-
-            // Select exercise
-            next.add(exercise.id)
-            return next
-          })
-        }}
-        onConfirm={handleConfirmExerciseGroup}
-        onClose={() => {
-          setGroupingMode(null)
-          setSelectedGroupExerciseIds(new Set())
-        }}
-      />
+          <View className="px-4 pb-2 pt-4">
+            <View className="flex-row gap-3">
+              <Button
+                title="Add Exercise"
+                variant="primary"
+                className="flex-1"
+                onPress={() => router.push('/(app)/exercises?context=builder')}
+              />
+              <Button
+                title="Discard Template"
+                variant="danger"
+                className="flex-1"
+                onPress={() => discardModalRef.current?.present()}
+              />
+            </View>
+          </View>
+        </ScrollView>
+      )}
 
       <DeleteConfirmModal
-        ref={deleteModalRef}
+        ref={discardModalRef}
         title="Discard Changes?"
         description="You have unsaved changes. Are you sure you want to discard them?"
         onConfirm={() => {
-          discardDraftTemplate()
+          discardWorkout()
           router.back()
         }}
         confirmText="Discard"
         onCancel={() => {}}
       />
 
-      {/* Prune Confirmation Modal */}
       <DeleteConfirmModal
-        ref={pruneConfirmModalRef}
+        ref={pruneModalRef}
         title="Confirm Save"
         description={pruneMessage || ''}
-        onConfirm={async () => {
-          if (pendingSave) {
-            await commitSave(pendingSave)
+        onConfirm={() => {
+          if (pendingPrunedTemplate) {
+            void commitSave(pendingPrunedTemplate)
           }
         }}
         confirmText="Save Anyway"
         onCancel={() => {
+          setPendingPrunedTemplate(null)
           setPruneMessage(null)
-          setPendingSave(null)
         }}
       />
 
@@ -519,12 +503,11 @@ export default function TemplateEditor() {
         continueText="View Plans"
         cancelText="Go Back"
         onContinue={() => {
-          discardDraftTemplate() // Cleanup in case they were drafting
+          discardWorkout()
           router.replace('/paywall')
         }}
         onCancel={() => {
-          // Discard the draft and navigate back when limit is enforced
-          discardDraftTemplate()
+          discardWorkout()
           router.back()
         }}
       />

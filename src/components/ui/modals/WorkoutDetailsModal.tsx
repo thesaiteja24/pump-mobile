@@ -1,19 +1,12 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { ReadOnlyExerciseRow } from '@/components/workouts/ReadOnlyExerciseRow'
+import { ReadOnlyExerciseRow } from '@/components/workout-editor/ReadOnlyExerciseRow'
 import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { ProgramDay, UserProgramDay } from '@/types/programs'
 import { TemplateExerciseGroup } from '@/types/templates'
 import { FontAwesome6 } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { useRouter } from 'expo-router'
-import React, {
-  forwardRef,
-  useCallback,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { Text, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 

@@ -195,14 +195,14 @@ export default function ProgramTemplateDetails() {
         ))}
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 bg-transparent p-4">
+      <View className="flex items-center absolute bottom-0 left-0 right-0 bg-transparent p-4">
         <Button
           title="Start This Program"
           variant="primary"
           onPress={() => {
             startProgramSheetRef.current?.present()
           }}
-          className="mb-4"
+          className="mb-4 rounded-full"
         />
       </View>
       <DeleteConfirmModal

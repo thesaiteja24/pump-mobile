@@ -27,7 +27,7 @@ import {
   WorkoutDetailsModalHandle,
 } from '@/components/ui/modals/WorkoutDetailsModal'
 import ShimmerProgramDetails from '@/components/ui/shimmers/ShimmerProgramDetails'
-import { useWorkout } from '@/stores/workouts.store'
+import { useWorkoutEditor } from '@/stores/workout-editor.store'
 
 function SkeletonBlock({
   width = '100%',
@@ -91,8 +91,7 @@ export default function UserProgramDashboard() {
   const navigation = useNavigation()
   const userProgramId = params.id as string
 
-  const loadProgramDay = useWorkout((s) => s.loadProgramDay)
-  const startWorkout = useWorkout((s) => s.startWorkout)
+  const initiateWorkout = useWorkoutEditor((s) => s.initiateWorkout)
 
   // Track the week requested from the API separately from the week highlighted in the UI.
   const [requestedWeekIndex, setRequestedWeekIndex] = useState<number | null>(null)
@@ -282,7 +281,7 @@ export default function UserProgramDashboard() {
                   activeOpacity={0.7}
                   onPress={() =>
                     workoutDetailsModalRef.current?.present(
-                      day as any,
+                      day,
                       isToday && !day.isRestDay && !isCompleted,
                     )
                   }
@@ -346,7 +345,7 @@ export default function UserProgramDashboard() {
         )}
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 bg-transparent p-4">
+      <View className="absolute bottom-0 left-0 right-0 bg-transparent p-4 flex items-center">
         {
           <Button
             title={
@@ -357,17 +356,21 @@ export default function UserProgramDashboard() {
                   : 'No Workout Today'
             }
             variant="primary"
-            className="mb-4"
+            className="mb-4 rounded-full"
             onPress={() => {
               if (!todayDay) return
 
               if (isRestDay) {
                 workoutDetailsModalRef.current?.present(todayDay, false)
               } else if (todayDay.templateSnapshot) {
-                loadProgramDay(todayDay.id, todayDay.templateSnapshot)
+                initiateWorkout({
+                  mode: 'program-workout',
+                  userProgramDayId: todayDay.id,
+                  templateSnapshot: todayDay.templateSnapshot,
+                })
                 router.push('/(app)/workout/start')
               } else {
-                startWorkout()
+                initiateWorkout()
                 router.push('/(app)/workout/start')
               }
             }}
@@ -378,7 +381,11 @@ export default function UserProgramDashboard() {
         ref={workoutDetailsModalRef}
         onStartWorkout={(day) => {
           if (day.templateSnapshot) {
-            loadProgramDay(day.id, day.templateSnapshot)
+            initiateWorkout({
+              mode: 'program-workout',
+              userProgramDayId: day.id,
+              templateSnapshot: day.templateSnapshot,
+            })
           }
         }}
       />

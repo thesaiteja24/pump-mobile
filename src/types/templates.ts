@@ -55,30 +55,3 @@ export interface DraftTemplate {
   exercises: TemplateExercise[]
   exerciseGroups: TemplateExerciseGroup[]
 }
-
-export interface TemplateState {
-  /** Transient draft being edited in the template editor. Not persisted. */
-  draftTemplate: DraftTemplate | null
-
-  startWorkoutFromTemplate: (templateId: string, template?: WorkoutTemplate) => void
-  prepareTemplateForSave: () => {
-    template: DraftTemplate
-    pruneReport: {
-      droppedExercises: number
-      droppedGroups: number
-    }
-  } | null
-  startDraftTemplate: (initialData?: Partial<DraftTemplate>) => void
-  updateDraftTemplate: (patch: Partial<DraftTemplate>) => void
-  discardDraftTemplate: () => void
-  addExerciseToDraft: (exerciseId: string) => void
-  removeExerciseFromDraft: (exerciseId: string) => void
-  replaceDraftExercise: (oldId: string, newId: string) => void
-  reorderDraftExercises: (ordered: TemplateExercise[]) => void
-  addSetToDraft: (exerciseId: string) => void
-  updateDraftSet: (exerciseId: string, setId: string, patch: Partial<TemplateSet>) => void
-  removeSetFromDraft: (exerciseId: string, setId: string) => void
-  createDraftExerciseGroup: (exerciseIds: string[], type: ExerciseGroupType) => void
-  removeDraftExerciseGroup: (groupId: string) => void
-  resetState: () => void
-}

@@ -2,11 +2,9 @@ import * as Haptics from 'expo-haptics'
 import React from 'react'
 import {
   ActivityIndicator,
-  StyleSheet,
   Text,
   TouchableOpacity,
   TouchableOpacityProps,
-  View,
   useColorScheme,
 } from 'react-native'
 import { twMerge } from 'tailwind-merge'
@@ -147,7 +145,7 @@ export function Button({
   const isDark = useColorScheme() === 'dark'
 
   const widthClass = props.fullWidth ? 'w-full' : ''
-  const baseClass = 'min-h-[42px] flex-row items-center justify-center gap-2 rounded-2xl px-4 py-2'
+  const baseClass = 'flex-row items-center justify-center gap-2 rounded-xl px-4 py-1.5'
 
   const variantClass: Record<ButtonVariant, string> = {
     primary: 'bg-[#3b82f6]',

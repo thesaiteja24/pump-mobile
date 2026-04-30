@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { useTemplate } from '@/stores/templates.store'
+import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import { WorkoutTemplate } from '@/types/templates'
 import * as Haptics from 'expo-haptics'
 import { Image } from 'expo-image'
@@ -7,13 +7,15 @@ import { Link, router } from 'expo-router'
 import { Pressable, Text, View } from 'react-native'
 
 export default function TemplateCard({ template }: { template: WorkoutTemplate }) {
-  const { startWorkoutFromTemplate } = useTemplate()
+  const initiateWorkout = useWorkoutEditor((state) => state.initiateWorkout)
+  const discardWorkout = useWorkoutEditor((state) => state.discardWorkout)
 
   const previewExercises = template.exercises.slice(0, 3)
   const remaining = template.exercises.length - previewExercises.length
 
   const handleStart = () => {
-    startWorkoutFromTemplate(template.id, template)
+    discardWorkout()
+    initiateWorkout({ template })
     router.push('/(app)/workout/start')
   }
 

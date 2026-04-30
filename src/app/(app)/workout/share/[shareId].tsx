@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { ReadOnlyExerciseRow } from '@/components/workouts/ReadOnlyExerciseRow'
+import { ReadOnlyExerciseRow } from '@/components/workout-editor/ReadOnlyExerciseRow'
 import { useSaveWorkoutMutation } from '@/hooks/queries/workouts'
 import { getWorkoutByShareIdService } from '@/services/workouts.service'
 import { WorkoutHistoryItem } from '@/types/workouts'
 import * as Crypto from 'expo-crypto'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
-import React, { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Alert, ScrollView, Text, useColorScheme, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 

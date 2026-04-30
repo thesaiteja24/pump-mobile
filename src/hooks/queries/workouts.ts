@@ -9,11 +9,25 @@ import {
   updateWorkoutService,
 } from '@/services/workouts.service'
 import { useAuth } from '@/stores/auth.store'
+import { WorkoutPayload } from '@/types/payloads'
 import { WorkoutHistoryItem, WorkoutLog } from '@/types/workouts'
 import { serializeWorkoutForApi } from '@/utils/serializeForApi'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 const PAGE_LIMIT = 2
+
+type WorkoutHistoryPage = {
+  workouts: WorkoutHistoryItem[]
+  meta: {
+    hasMore?: boolean
+    currentPage?: number
+  } | null
+}
+
+type WorkoutHistoryInfiniteData = {
+  pages: WorkoutHistoryPage[]
+  pageParams: unknown[]
+}
 
 // ─────────────────────────────────────────────────────
 // READ — workout history (paginated, infinite scroll)
@@ -105,10 +119,7 @@ export function useSaveWorkoutMutation() {
 
   return useMutation({
     mutationFn: (prepared: WorkoutLog) => {
-      const payload = {
-        ...serializeWorkoutForApi(prepared),
-      }
-      return createWorkoutService(payload as any)
+      return createWorkoutService(serializeWorkoutForApi(prepared))
     },
     onSuccess: () => {
       // Invalidate user history so it refetches
@@ -139,13 +150,55 @@ export function useUpdateWorkoutMutation() {
   return useMutation({
     mutationFn: ({ id, prepared }: { id: string; prepared: WorkoutLog }) => {
       const payload = serializeWorkoutForApi(prepared)
-      return updateWorkoutService(id, payload as any)
+      return updateWorkoutService(id, payload)
     },
     onSuccess: (_res, { id }) => {
       qc.invalidateQueries({ queryKey: queryKeys.workouts.byId(id) })
       qc.invalidateQueries({ queryKey: queryKeys.workouts.all })
       if (userId) {
         qc.invalidateQueries({ queryKey: queryKeys.habits.logs(userId) })
+        qc.invalidateQueries({ queryKey: queryKeys.me.userAnalytics })
+        qc.invalidateQueries({ queryKey: ['trainingAnalytics', userId] })
+      }
+    },
+  })
+}
+
+export function useUpdateWorkoutPayloadMutation() {
+  const userId = useAuth((s) => s.userId)
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: WorkoutPayload }) => {
+      return updateWorkoutService(id, payload)
+    },
+    onSuccess: (_res, { id }) => {
+      qc.invalidateQueries({ queryKey: queryKeys.workouts.byId(id) })
+      qc.invalidateQueries({ queryKey: queryKeys.workouts.all })
+      if (userId) {
+        qc.invalidateQueries({ queryKey: queryKeys.habits.logs(userId) })
+        qc.invalidateQueries({ queryKey: queryKeys.me.userAnalytics })
+        qc.invalidateQueries({ queryKey: ['trainingAnalytics', userId] })
+      }
+    },
+  })
+}
+
+export function useCreateWorkoutPayloadMutation() {
+  const userId = useAuth((s) => s.userId)
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: WorkoutPayload) => {
+      return createWorkoutService(payload)
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.workouts.all })
+      if (userId) {
+        qc.invalidateQueries({ queryKey: queryKeys.habits.logs(userId) })
+        qc.invalidateQueries({ queryKey: queryKeys.programs.user.active(userId) })
+        qc.invalidateQueries({ queryKey: queryKeys.programs.user.all(userId) })
+        qc.invalidateQueries({ queryKey: ['userPrograms', 'detail', userId] })
         qc.invalidateQueries({ queryKey: queryKeys.me.userAnalytics })
         qc.invalidateQueries({ queryKey: ['trainingAnalytics', userId] })
       }
@@ -165,13 +218,13 @@ export function useDeleteWorkoutMutation() {
     onMutate: async (id: string) => {
       // Optimistically remove from all pages in the infinite query
       await qc.cancelQueries({ queryKey: queryKeys.workouts.all })
-      const previousData = qc.getQueryData(queryKeys.workouts.all)
+      const previousData = qc.getQueryData<WorkoutHistoryInfiniteData>(queryKeys.workouts.all)
 
-      qc.setQueryData<any>(queryKeys.workouts.all, (old: any) => {
+      qc.setQueryData<WorkoutHistoryInfiniteData>(queryKeys.workouts.all, (old) => {
         if (!old) return old
         return {
           ...old,
-          pages: old.pages.map((page: any) => ({
+          pages: old.pages.map((page) => ({
             ...page,
             workouts: page.workouts.filter((w: WorkoutHistoryItem) => w.id !== id),
           })),
@@ -180,7 +233,7 @@ export function useDeleteWorkoutMutation() {
 
       return { previousData }
     },
-    onError: (_err, _id, ctx: any) => {
+    onError: (_err, _id, ctx) => {
       if (ctx?.previousData) {
         qc.setQueryData(queryKeys.workouts.all, ctx.previousData)
       }
