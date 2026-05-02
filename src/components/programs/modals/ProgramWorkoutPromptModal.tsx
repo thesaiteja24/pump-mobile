@@ -3,7 +3,7 @@ import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
-import React, { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react'
+import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react'
 import { Text, useColorScheme, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -57,6 +57,7 @@ const ProgramWorkoutPromptModal = forwardRef<ProgramWorkoutPromptHandle, Program
         backdropComponent={renderBackdrop}
         onChange={(index) => setIsOpen(index >= 0)}
         handleIndicatorStyle={{ backgroundColor: isDark ? '#525252' : '#d1d5db' }}
+        backgroundStyle={{ backgroundColor: colors.background }}
         animationConfigs={{ duration: 350 }}
       >
         <BottomSheetView style={{ paddingBottom: insets.bottom + 24 }} className="flex-1 px-6">

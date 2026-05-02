@@ -1,7 +1,8 @@
+import { PaywallModal, PaywallModalHandle } from '@/components/subscriptions/PaywallModal'
 import { Button } from '@/components/ui/buttons/Button'
-import { PaywallModal, PaywallModalHandle } from '@/components/ui/modals/PaywallModal'
 import { SelectableCard } from '@/components/ui/SelectableCard'
 import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
+import { useThemeColor } from '@/hooks/theme'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
 import { Program, UserProgram } from '@/types/programs'
 import { Ionicons } from '@expo/vector-icons'
@@ -11,7 +12,7 @@ import {
   BottomSheetScrollView,
   BottomSheetView,
 } from '@gorhom/bottom-sheet'
-import React, { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react'
+import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react'
 import { Text, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -32,6 +33,7 @@ export const StartProgramSheet = forwardRef<StartProgramSheetHandle, StartProgra
   ({ program, activeProgram, onConfirm, isLoading, persistOnNavigation = false }, ref) => {
     const isDark = useColorScheme() === 'dark'
     const insets = useSafeAreaInsets()
+    const colors = useThemeColor()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const paywallModalRef = useRef<PaywallModalHandle>(null)
     const comingSoonRef = useRef<BottomSheetModal>(null)
@@ -93,6 +95,7 @@ export const StartProgramSheet = forwardRef<StartProgramSheetHandle, StartProgra
           handleIndicatorStyle={{
             backgroundColor: isDark ? '#525252' : '#d1d5db',
           }}
+          backgroundStyle={{ backgroundColor: colors.background }}
           animationConfigs={{ duration: 350 }}
         >
           <BottomSheetScrollView

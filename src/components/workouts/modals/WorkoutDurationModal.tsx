@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/buttons/Button'
 import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
+import { useThemeColor } from '@/hooks/theme'
 import { formatSeconds } from '@/utils/time'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
@@ -59,6 +60,7 @@ const WorkoutDurationModal = React.memo(
       ref,
     ) => {
       const isDark = useColorScheme() === 'dark'
+      const colors = useThemeColor()
       const bottomSheetModalRef = useRef<BottomSheetModal>(null)
       const insets = useSafeAreaInsets()
       const [isOpen, setIsOpen] = useState(false)
@@ -114,6 +116,7 @@ const WorkoutDurationModal = React.memo(
           handleIndicatorStyle={{
             backgroundColor: isDark ? '#525252' : '#d1d5db',
           }}
+          backgroundStyle={{ backgroundColor: colors.background }}
           animationConfigs={{ duration: 350 }}
         >
           <BottomSheetView

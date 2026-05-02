@@ -87,6 +87,7 @@ const MetaModal = forwardRef<MetaModalHandle, Props>(
         handleIndicatorStyle={{
           backgroundColor: colors.isDark ? '#525252' : '#d1d5db',
         }}
+        backgroundStyle={{ backgroundColor: colors.background }}
         enableDynamicSizing={false}
         animationConfigs={{ duration: 350 }}
       >

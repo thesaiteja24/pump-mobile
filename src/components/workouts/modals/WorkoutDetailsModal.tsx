@@ -189,6 +189,7 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
         handleIndicatorStyle={{
           backgroundColor: isDark ? '#525252' : '#d1d5db',
         }}
+        backgroundStyle={{ backgroundColor: colors.background }}
         animationConfigs={{ duration: 350 }}
       >
         <BottomSheetScrollView

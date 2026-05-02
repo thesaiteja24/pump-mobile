@@ -18,11 +18,11 @@ import Toast from 'react-native-toast-message'
 import {
   StartProgramSheet,
   StartProgramSheetHandle,
-} from '@/components/ui/modals/StartProgramSheet'
+} from '@/components/programs/modals/StartProgramSheet'
 import {
   WorkoutDetailsModal,
   WorkoutDetailsModalHandle,
-} from '@/components/ui/modals/WorkoutDetailsModal'
+} from '@/components/workouts/modals/WorkoutDetailsModal'
 import ShimmerProgramDetails from '@/components/ui/shimmers/ShimmerProgramDetails'
 import { ROLES } from '@/constants/roles'
 import { useProfileQuery } from '@/hooks/queries/me'

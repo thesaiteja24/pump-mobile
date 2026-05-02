@@ -4,7 +4,7 @@ import {
   DeleteConfirmModal,
   DeleteConfirmModalHandle,
 } from '@/components/ui/modals/DeleteConfirmModal'
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
+import { useModalNavigationSync } from '@/hooks/modal'
 import { useCommentsQuery, useDeleteCommentMutation } from '@/hooks/queries/engagement'
 import { Comment } from '@/types/engagement'
 import { Ionicons } from '@expo/vector-icons'
@@ -14,7 +14,7 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet'
-import React, {
+import {
   forwardRef,
   useCallback,
   useEffect,
@@ -279,6 +279,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(
           onDismiss={handleClose}
           onChange={(index) => setIsOpen(index >= 0)}
           handleIndicatorStyle={{ backgroundColor: isDark ? '#525252' : '#d1d5db' }}
+          backgroundStyle={{ backgroundColor: colors.background }}
           keyboardBehavior="extend"
           enableDynamicSizing={false}
         >
@@ -300,6 +301,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(
           enableDynamicSizing={true}
           backdropComponent={renderBackdrop}
           handleIndicatorStyle={{ backgroundColor: isDark ? '#525252' : '#d1d5db' }}
+          backgroundStyle={{ backgroundColor: isDark ? '#171717' : '#ffffff' }}
           animationConfigs={{ duration: 550 }}
         >
           <BottomSheetView style={{ paddingBottom: insets.bottom + 16 }}>

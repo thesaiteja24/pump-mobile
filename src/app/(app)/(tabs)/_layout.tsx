@@ -1,12 +1,12 @@
+import CoachModal, { CoachModalHandle } from '@/components/coach/CoachModal'
 import AnimatedButton from '@/components/ui/buttons/AnimatedButton'
 import CustomHeader from '@/components/ui/CustomHeader'
-import CoachModal, { CoachModalHandle } from '@/components/ui/modals/CoachModal'
 
 import { useThemeColor } from '@/hooks/theme'
 import { Ionicons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { Tabs } from 'expo-router'
-import React, { useRef } from 'react'
+import { useRef } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -243,7 +243,12 @@ export default function TabsLayout() {
           }}
         />
       </View>
-      <CoachModal ref={coachModalRef} />
+      <CoachModal
+        ref={coachModalRef}
+        onClose={() => {
+          coachModalRef.current?.dismiss()
+        }}
+      />
     </>
   )
 }

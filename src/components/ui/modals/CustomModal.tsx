@@ -183,6 +183,7 @@ export const CustomModal = forwardRef<ModalHandle, Props>(
         onChange={(index) => setIsOpen(index >= 0)}
         enablePanDownToClose
         handleIndicatorStyle={{ backgroundColor: colors.isDark ? '#525252' : '#d1d5db' }}
+        backgroundStyle={{ backgroundColor: colors.background }}
         enableDynamicSizing={true}
         animationConfigs={{ duration: 350 }}
       >

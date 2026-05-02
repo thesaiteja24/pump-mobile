@@ -1,8 +1,9 @@
 import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useProfileQuery, useUpdateProfileMutation } from '@/hooks/queries/me'
+import { useThemeColor } from '@/hooks/theme'
 import { SelfUser } from '@/types/me'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
-import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react'
 import { Text, TouchableOpacity, useColorScheme, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -21,6 +22,7 @@ export const UnitPreferencesSheet = forwardRef<BottomSheetModal, Props>(
     const updateUserDataMutation = useUpdateProfileMutation()
     const isDarkMode = useColorScheme() === 'dark'
     const insets = useSafeAreaInsets()
+    const colors = useThemeColor()
     const [isOpen, setIsOpen] = useState(false)
 
     const storedWeightUnit: WeightUnit = user?.preferredWeightUnit ?? 'kg'
@@ -85,6 +87,7 @@ export const UnitPreferencesSheet = forwardRef<BottomSheetModal, Props>(
         }}
         onDismiss={onDismiss}
         onChange={(index) => setIsOpen(index >= 0)}
+        backgroundStyle={{ backgroundColor: colors.background }}
         animationConfigs={{ duration: 350 }}
       >
         <BottomSheetView

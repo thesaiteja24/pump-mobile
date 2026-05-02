@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
-import React, {
+import { useModalBackHandler } from '@/hooks/modal'
+import { useThemeColor } from '@/hooks/theme'
+import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet'
+import {
   forwardRef,
   useCallback,
   useImperativeHandle,
@@ -29,6 +30,7 @@ const PrivacyPolicyModal = forwardRef<PrivacyPolicyModalHandle, Props>(
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
     const isDark = useColorScheme() === 'dark'
+    const colors = useThemeColor()
     const [isOpen, setIsOpen] = useState(false)
 
     const [policyVersion, setPolicyVersion] = useState<string | null>(null)
@@ -66,9 +68,8 @@ const PrivacyPolicyModal = forwardRef<PrivacyPolicyModalHandle, Props>(
 
     // Shared modal logic
     useModalBackHandler(isOpen, dismiss)
-    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
-    const snapPoints = useMemo(() => ['95%'], [])
+    const snapPoints = useMemo(() => ['90%'], [])
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -84,6 +85,7 @@ const PrivacyPolicyModal = forwardRef<PrivacyPolicyModalHandle, Props>(
         snapPoints={snapPoints}
         backdropComponent={renderBackdrop}
         enablePanDownToClose
+        enableDynamicSizing={false}
         onDismiss={() => {
           setIsOpen(false)
           onClose?.()
@@ -92,12 +94,12 @@ const PrivacyPolicyModal = forwardRef<PrivacyPolicyModalHandle, Props>(
         handleIndicatorStyle={{
           backgroundColor: isDark ? '#525252' : '#d1d5db',
         }}
+        backgroundStyle={{ backgroundColor: colors.background }}
         animationConfigs={{ duration: 350 }}
       >
-        <BottomSheetView
+        <View
           style={{
             flex: 1,
-            height: '100%',
             paddingBottom: insets.bottom,
           }}
         >
@@ -120,8 +122,11 @@ const PrivacyPolicyModal = forwardRef<PrivacyPolicyModalHandle, Props>(
             />
           </View>
 
-          <View className="flex flex-row items-center justify-center gap-4 border-t border-gray-200 px-4 pb-4 pt-2 dark:border-gray-800">
-            <View>
+          <View
+            className="flex flex-row items-center justify-center gap-4 border-t px-4 pb-4 pt-2"
+            style={{ borderTopColor: colors.border }}
+          >
+            <View className="flex-1">
               <Button
                 title="I Agree"
                 fullWidth
@@ -130,21 +135,20 @@ const PrivacyPolicyModal = forwardRef<PrivacyPolicyModalHandle, Props>(
                   onAgree(policyVersion || undefined)
                   dismiss()
                 }}
-                
               />
             </View>
-            <View>
+            <View className="flex-1">
               <Button
                 title="Close"
+                fullWidth
                 variant="danger"
                 onPress={() => {
                   dismiss()
                 }}
-                
               />
             </View>
           </View>
-        </BottomSheetView>
+        </View>
       </BottomSheetModal>
     )
   },

@@ -9,6 +9,7 @@ import {
   useUpdateFitnessProfileMutation,
   useUpdateNutritionPlanMutation,
 } from '@/hooks/queries/me'
+import { useThemeColor } from '@/hooks/theme'
 import { FitnessGoal, SelfUser } from '@/types/me'
 import { FitnessLevel } from '@/types/programs'
 
@@ -19,7 +20,7 @@ import {
   calculateTDEE,
 } from '@/utils/analytics'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
-import React, { forwardRef, useCallback, useMemo, useState } from 'react'
+import { forwardRef, useCallback, useMemo, useState } from 'react'
 import {
   Keyboard,
   Pressable,
@@ -44,6 +45,7 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal, Props>(
     const [isOpen, setIsOpen] = useState(false)
     const isDarkMode = useColorScheme() === 'dark'
     const insets = useSafeAreaInsets()
+    const colors = useThemeColor()
 
     const { data: userData } = useProfileQuery()
     const user = userData as SelfUser | null
@@ -264,6 +266,7 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal, Props>(
           <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
         )}
         handleIndicatorStyle={{ backgroundColor: isDarkMode ? '#525252' : '#d1d5db' }}
+        backgroundStyle={{ backgroundColor: colors.background }}
         onChange={(index) => setIsOpen(index >= 0)}
         animationConfigs={{ duration: 350 }}
       >

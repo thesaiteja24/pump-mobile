@@ -1,11 +1,11 @@
-import ProgramCard from '@/components/programs/ProgramCard'
-import UserProgramCard from '@/components/programs/UserProgramCard'
-import TemplateCard from '@/components/templates/TemplateCard'
-import { Button } from '@/components/ui/buttons/Button'
-import { PaywallModal, PaywallModalHandle } from '@/components/ui/modals/PaywallModal'
 import ProgramWorkoutPromptModal, {
   ProgramWorkoutPromptHandle,
-} from '@/components/ui/modals/ProgramWorkoutPromptModal'
+} from '@/components/programs/modals/ProgramWorkoutPromptModal'
+import ProgramCard from '@/components/programs/ProgramCard'
+import UserProgramCard from '@/components/programs/UserProgramCard'
+import { PaywallModal, PaywallModalHandle } from '@/components/subscriptions/PaywallModal'
+import TemplateCard from '@/components/templates/TemplateCard'
+import { Button } from '@/components/ui/buttons/Button'
 import {
   SkeletonProgramCard,
   SkeletonUserProgramCard,

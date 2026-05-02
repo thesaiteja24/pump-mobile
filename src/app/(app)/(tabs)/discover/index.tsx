@@ -1,5 +1,5 @@
+import CommentsModal, { CommentsModalHandle } from '@/components/engagement/CommentsModal'
 import WorkoutCard from '@/components/engagement/WorkoutCard'
-import CommentsModal, { CommentsModalHandle } from '@/components/ui/modals/CommentsModal'
 import ShimmerDiscoverScreen from '@/components/ui/shimmers/ShimmerDiscoverScreen'
 import { useExercises } from '@/hooks/queries/exercises'
 import { useDiscoverWorkoutsQuery } from '@/hooks/queries/workouts'

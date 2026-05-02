@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/buttons/Button'
 import WorkoutDurationModal, {
   WorkoutDurationModalHandle,
-} from '@/components/ui/modals/WorkoutDurationModal'
+} from '@/components/workouts/modals/WorkoutDurationModal'
 import { useExercises } from '@/hooks/queries/exercises'
 import {
   getWorkoutDurationSeconds,

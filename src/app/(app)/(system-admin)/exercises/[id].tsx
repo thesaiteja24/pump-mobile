@@ -1,8 +1,8 @@
+import MetaModal, { MetaModalHandle } from '@/components/meta/MetaModal'
 import {
   DeleteConfirmModal,
   DeleteConfirmModalHandle,
 } from '@/components/ui/modals/DeleteConfirmModal'
-import MetaModal, { MetaModalHandle } from '@/components/ui/modals/MetaModal'
 
 import { useDeleteExercise, useExercises, useUpdateExercise } from '@/hooks/queries/exercises'
 import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'
@@ -11,7 +11,7 @@ import { MetaItem } from '@/types/meta'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Keyboard,
   Platform,

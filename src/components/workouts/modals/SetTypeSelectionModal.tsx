@@ -1,6 +1,6 @@
 import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
-import { VisibilityType } from '@/types/workouts'
+import type { SetType } from '@/types/workouts'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
@@ -16,38 +16,50 @@ import { Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const SET_TYPES: {
-  key: 'public' | 'private'
+  key: SetType
   title: string
   description: string
   titleClass: string
 }[] = [
   {
-    key: 'public',
-    title: 'Public',
-    description: 'Everyone on the PUMP can see this workout.',
-    titleClass: 'text-blue-500',
+    key: 'warmup',
+    title: 'Warm Up',
+    description: 'Prepare muscles and joints before working sets.',
+    titleClass: 'text-yellow-500',
   },
   {
-    key: 'private',
-    title: 'Private',
-    description: 'Only you can see this workout.',
+    key: 'working',
+    title: 'Working',
+    description: 'Primary sets counted toward training volume.',
+    titleClass: 'text-black dark:text-white',
+  },
+  {
+    key: 'failureSet',
+    title: 'Failure',
+    description: 'Performed until no further reps are possible.',
     titleClass: 'text-red-600',
+  },
+  {
+    key: 'dropSet',
+    title: 'Drop Set',
+    description: 'Reduce weight and continue immediately after failure.',
+    titleClass: 'text-primary font-semibold',
   },
 ]
 
-export interface VisibilitySelectionModalHandle {
+export interface SetTypeSelectionModalHandle {
   present: () => void
   dismiss: () => void
 }
 
 type Props = {
-  currentType: VisibilityType
-  onSelect: (type: VisibilityType) => void
+  currentType: SetType
+  onSelect: (type: SetType) => void
   onClose?: () => void
   persistOnNavigation?: boolean
 }
 
-const VisibilitySelectionModal = forwardRef<VisibilitySelectionModalHandle, Props>(
+const SetTypeSelectionModal = forwardRef<SetTypeSelectionModalHandle, Props>(
   ({ currentType, onSelect, onClose, persistOnNavigation = false }, ref) => {
     const colors = useThemeColor()
     const isDark = useColorScheme() === 'dark'
@@ -91,6 +103,7 @@ const VisibilitySelectionModal = forwardRef<VisibilitySelectionModalHandle, Prop
         handleIndicatorStyle={{
           backgroundColor: isDark ? '#525252' : '#d1d5db',
         }}
+        backgroundStyle={{ backgroundColor: colors.background }}
         // Smoother, slightly slower animation
         animationConfigs={{ duration: 350 }}
       >
@@ -98,12 +111,10 @@ const VisibilitySelectionModal = forwardRef<VisibilitySelectionModalHandle, Prop
           <View className="flex-1 px-6">
             {/* Header */}
             <View className="mb-6 flex-row items-center justify-between">
-              <Text className="text-xl font-bold" style={{ color: colors.text }}>
-                Set Visibility
-              </Text>
+              <Text className="text-xl font-bold text-black dark:text-white">Set Type</Text>
 
               <TouchableOpacity onPress={dismiss}>
-                <Ionicons name="close" size={24} color={colors.icon} />
+                <Ionicons name="close" size={24} color={isDark ? 'white' : 'gray'} />
               </TouchableOpacity>
             </View>
 
@@ -120,21 +131,17 @@ const VisibilitySelectionModal = forwardRef<VisibilitySelectionModalHandle, Prop
                       onSelect(type.key)
                       dismiss()
                     }}
-                    style={{
-                      backgroundColor: selected
-                        ? colors.isDark
-                          ? 'rgba(59, 130, 246, 0.1)'
-                          : '#eff6ff'
-                        : 'transparent',
-                      borderColor: selected ? colors.primary : colors.border,
-                    }}
-                    className="rounded-xl border p-4"
+                    className={`rounded-xl border p-4 ${
+                      selected
+                        ? 'border-primary bg-blue-50 dark:bg-blue-950'
+                        : 'border-neutral-300 dark:border-neutral-700'
+                    }`}
                   >
                     <View className="flex-row items-start justify-between">
                       <View className="flex-1 pr-4">
                         <Text className={`text-lg font-bold ${type.titleClass}`}>{type.title}</Text>
 
-                        <Text className="mt-1 text-sm" style={{ color: colors.neutral[500] }}>
+                        <Text className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
                           {type.description}
                         </Text>
                       </View>
@@ -154,6 +161,6 @@ const VisibilitySelectionModal = forwardRef<VisibilitySelectionModalHandle, Prop
   },
 )
 
-VisibilitySelectionModal.displayName = 'VisibilitySelectionModal'
+SetTypeSelectionModal.displayName = 'SetTypeSelectionModal'
 
-export default VisibilitySelectionModal
+export default SetTypeSelectionModal

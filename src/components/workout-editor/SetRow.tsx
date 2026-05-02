@@ -1,12 +1,12 @@
 import RPESelectionModal, {
   RPESelectionModalHandle,
-} from '@/components/ui/modals/RPESelectionModal'
+} from '@/components/workouts/modals/RPESelectionModal'
 import SetTypeSelectionModal, {
   SetTypeSelectionModalHandle,
-} from '@/components/ui/modals/SetTypeSelectionModal'
+} from '@/components/workouts/modals/SetTypeSelectionModal'
 import TimerDurationModal, {
   TimerDurationModalHandle,
-} from '@/components/ui/modals/TimerDurationModal'
+} from '@/components/workouts/modals/TimerDurationModal'
 import { useThemeColor } from '@/hooks/theme'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import type { ExerciseType } from '@/types/exercises'

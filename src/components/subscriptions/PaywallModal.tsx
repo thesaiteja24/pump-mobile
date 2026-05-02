@@ -96,6 +96,7 @@ export const PaywallModal = forwardRef<PaywallModalHandle, Props>(
         handleIndicatorStyle={{
           backgroundColor: isDark ? '#525252' : '#d1d5db',
         }}
+        backgroundStyle={{ backgroundColor: colors.background }}
         animationConfigs={{ duration: 350 }}
       >
         <BottomSheetView style={{ paddingBottom: insets.bottom + 24 }} className="px-6 pt-2">

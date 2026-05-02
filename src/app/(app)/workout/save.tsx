@@ -2,10 +2,10 @@ import { Button } from '@/components/ui/buttons/Button'
 import DateTimePicker from '@/components/ui/DateTimePicker'
 import TimerDurationModal, {
   TimerDurationModalHandle,
-} from '@/components/ui/modals/TimerDurationModal'
+} from '@/components/workouts/modals/TimerDurationModal'
 import VisibilitySelectionModal, {
   VisibilitySelectionModalHandle,
-} from '@/components/ui/modals/VisibilitySelectionModal'
+} from '@/components/workouts/modals/VisibilitySelectionModal'
 import { useExercises } from '@/hooks/queries/exercises'
 import {
   useCreateWorkoutPayloadMutation,

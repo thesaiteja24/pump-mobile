@@ -1,12 +1,12 @@
-import { Button } from '@/components/ui/buttons/Button'
 import TemplateSelectionModal, {
   TemplateSelectionModalHandle,
-} from '@/components/ui/modals/TemplateSelectionModal'
+} from '@/components/templates/TemplateSelectionModal'
+import { Button } from '@/components/ui/buttons/Button'
 import { useCreateProgram, useProgramById, useUpdateProgram } from '@/hooks/queries/programs'
 import { useTemplatesQuery } from '@/hooks/queries/templates'
 import { useProgram } from '@/stores/programs.store'
-import { WorkoutTemplate } from '@/types/templates'
 import { DraftProgramDay, DraftProgramWeek } from '@/types/programs'
+import { WorkoutTemplate } from '@/types/templates'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import * as Crypto from 'expo-crypto'

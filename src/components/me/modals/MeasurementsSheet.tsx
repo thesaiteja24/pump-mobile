@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { useAddMeasurementMutation, useProfileQuery } from '@/hooks/queries/me'
 import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
+import { useAddMeasurementMutation, useProfileQuery } from '@/hooks/queries/me'
 import { useThemeColor } from '@/hooks/theme'
 import { SelfUser } from '@/types/me'
 import { calculateBodyFat, calculateComposition } from '@/utils/analytics'
@@ -14,7 +14,7 @@ import {
   BottomSheetTextInput,
 } from '@gorhom/bottom-sheet'
 import * as ImagePicker from 'expo-image-picker'
-import React, { forwardRef, useCallback, useEffect, useState } from 'react'
+import React, { forwardRef, useCallback, useState } from 'react'
 import {
   Image,
   Keyboard,
@@ -331,6 +331,7 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal, Props>(
         )}
         handleIndicatorStyle={{ backgroundColor: isDarkMode ? '#525252' : '#d1d5db' }}
         animationConfigs={{ duration: 350 }}
+        backgroundStyle={{ backgroundColor: colors.background }}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         style={{ marginTop: insets.top }}

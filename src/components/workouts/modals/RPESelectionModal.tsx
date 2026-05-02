@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/buttons/Button'
 import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
-import React, {
+import {
   forwardRef,
   useCallback,
   useImperativeHandle,
@@ -96,6 +96,7 @@ const RPESelectionModal = forwardRef<RPESelectionModalHandle, Props>(
         handleIndicatorStyle={{
           backgroundColor: isDark ? '#525252' : '#d1d5db',
         }}
+        backgroundStyle={{ backgroundColor: colors.background }}
         // Smoother, slightly slower animation
         animationConfigs={{ duration: 350 }}
       >

@@ -1,7 +1,5 @@
+import PrivacyPolicyModal, { PrivacyPolicyModalHandle } from '@/components/auth/PrivacyPolicyModal'
 import { Button } from '@/components/ui/buttons/Button'
-import PrivacyPolicyModal, {
-  PrivacyPolicyModalHandle,
-} from '@/components/ui/modals/PrivacyPolicyModal'
 import { useGoogleLoginMutation } from '@/hooks/queries/auth'
 import {
   updateFitnessProfileService,
@@ -14,7 +12,7 @@ import { SelfUser } from '@/types/me'
 import { calculateBMR, calculateDailyTargets, calculateTDEE } from '@/utils/analytics'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { useRouter } from 'expo-router'
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { KeyboardAvoidingView, Pressable, Text, View } from 'react-native'
 import Animated, {
   Easing,
@@ -263,6 +261,9 @@ export default function Login() {
             isGooglePending.current = false
             onGoogleButtonPress(v)
           }
+        }}
+        onClose={() => {
+          privacyModalRef.current?.dismiss()
         }}
       />
     </SafeAreaView>

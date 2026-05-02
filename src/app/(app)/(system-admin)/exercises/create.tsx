@@ -1,4 +1,4 @@
-import MetaModal, { MetaModalHandle } from '@/components/ui/modals/MetaModal'
+import MetaModal, { MetaModalHandle } from '@/components/meta/MetaModal'
 
 import { useCreateExercise } from '@/hooks/queries/exercises'
 import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'
@@ -8,7 +8,7 @@ import { MetaItem } from '@/types/meta'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
 import { useNavigation } from 'expo-router'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Keyboard,
   Platform,

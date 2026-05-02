@@ -43,6 +43,12 @@ export function useModalNavigationSync({
   persistOnNavigation?: boolean
 }) {
   const shouldReopenRef = useRef(false)
+  const isOpenRef = useRef(isOpen)
+
+  // Keep ref in sync
+  useEffect(() => {
+    isOpenRef.current = isOpen
+  }, [isOpen])
 
   useFocusEffect(
     useCallback(() => {
@@ -54,13 +60,14 @@ export function useModalNavigationSync({
 
       return () => {
         // On Blur: Close and potentially mark for re-opening
-        if (isOpen) {
+        // We use the ref here to check the LATEST state without re-running the effect when isOpen changes
+        if (isOpenRef.current) {
           if (persistOnNavigation) {
             shouldReopenRef.current = true
           }
           dismiss()
         }
       }
-    }, [isOpen, present, dismiss, persistOnNavigation]),
+    }, [present, dismiss, persistOnNavigation]), // Removed isOpen from dependencies
   )
 }

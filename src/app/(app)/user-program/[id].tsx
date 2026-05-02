@@ -25,7 +25,7 @@ import Toast from 'react-native-toast-message'
 import {
   WorkoutDetailsModal,
   WorkoutDetailsModalHandle,
-} from '@/components/ui/modals/WorkoutDetailsModal'
+} from '@/components/workouts/modals/WorkoutDetailsModal'
 import ShimmerProgramDetails from '@/components/ui/shimmers/ShimmerProgramDetails'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 

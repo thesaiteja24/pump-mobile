@@ -1,10 +1,10 @@
-import { Button } from '@/components/ui/buttons/Button'
 import ExerciseGroupModal, {
   ExerciseGroupModalHandle,
-} from '@/components/ui/modals/ExerciseGroupModal'
+} from '@/components/exercises/ExerciseGroupModal'
+import { Button } from '@/components/ui/buttons/Button'
 import TimerDurationModal, {
   TimerDurationModalHandle,
-} from '@/components/ui/modals/TimerDurationModal'
+} from '@/components/workouts/modals/TimerDurationModal'
 import { useExercises } from '@/hooks/queries/exercises'
 import { useProfileQuery } from '@/hooks/queries/me'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'

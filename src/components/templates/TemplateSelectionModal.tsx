@@ -1,9 +1,10 @@
 import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
+import { useThemeColor } from '@/hooks/theme'
 import { WorkoutTemplate } from '@/types/templates'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
-import React, {
+import {
   forwardRef,
   useCallback,
   useImperativeHandle,
@@ -29,6 +30,7 @@ type Props = {
 const TemplateSelectionModal = forwardRef<TemplateSelectionModalHandle, Props>(
   ({ templates, onSelect, onClose, persistOnNavigation = false }, ref) => {
     const isDark = useColorScheme() === 'dark'
+    const colors = useThemeColor()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
     const [isOpen, setIsOpen] = useState(false)
@@ -62,6 +64,7 @@ const TemplateSelectionModal = forwardRef<TemplateSelectionModalHandle, Props>(
         onDismiss={onClose}
         onChange={(index) => setIsOpen(index >= 0)}
         handleIndicatorStyle={{ backgroundColor: isDark ? '#525252' : '#d1d5db' }}
+        backgroundStyle={{ backgroundColor: colors.background }}
         animationConfigs={{ duration: 350 }}
       >
         <BottomSheetScrollView style={{ flex: 1, paddingBottom: insets.bottom + 24 }}>

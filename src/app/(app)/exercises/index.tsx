@@ -1,5 +1,5 @@
 import ExerciseList from '@/components/exercises/ExerciseList'
-import MetaModal, { MetaModalHandle } from '@/components/ui/modals/MetaModal'
+import MetaModal, { MetaModalHandle } from '@/components/meta/MetaModal'
 
 import { Button } from '@/components/ui/buttons/Button'
 import {
@@ -114,11 +114,7 @@ export default function ExercisesScreen() {
       return new Set<string>()
     }
     return new Set<string>()
-  }, [
-    isBuilderContext,
-    isTemplateMode,
-    workout,
-  ])
+  }, [isBuilderContext, isTemplateMode, workout])
 
   // Local, temporary selection buffer (UI only)
   const [tempSelectedIds, setTempSelectedIds] = useState<Set<string>>(initialSelectedIds)
@@ -510,8 +506,7 @@ export default function ExercisesScreen() {
               text1: 'Exercise deleted successfully',
             })
           } catch (e) {
-            const message =
-              e instanceof Error ? e.message : 'Unexpected error deleting exercise'
+            const message = e instanceof Error ? e.message : 'Unexpected error deleting exercise'
             setDeleteExerciseId(null)
             Toast.show({
               type: 'error',

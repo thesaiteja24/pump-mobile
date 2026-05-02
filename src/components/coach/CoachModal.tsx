@@ -1,13 +1,17 @@
 import { Button } from '@/components/ui/buttons/Button'
 import { useCoach } from '@/hooks/coach'
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
+import { useModalBackHandler } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
 import { CoachMessage } from '@/types/coach'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetScrollView,
+} from '@gorhom/bottom-sheet'
 import { useRouter } from 'expo-router'
-import React, {
+import {
   forwardRef,
   useCallback,
   useEffect,
@@ -17,7 +21,6 @@ import React, {
   useState,
 } from 'react'
 import { Text, View, useColorScheme } from 'react-native'
-import { ScrollView } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export interface CoachModalHandle {
@@ -66,7 +69,7 @@ const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose, persistOnNavi
   const colors = useThemeColor()
   const isDark = useColorScheme() === 'dark'
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-  const scrollViewRef = useRef<ScrollView>(null)
+  const scrollViewRef = useRef<any>(null)
 
   const insets = useSafeAreaInsets()
   const router = useRouter()
@@ -100,7 +103,6 @@ const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose, persistOnNavi
 
   // Shared modal logic
   useModalBackHandler(isOpen, dismiss)
-  useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -117,10 +119,6 @@ const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose, persistOnNavi
     }
   }, [isOpen, messages.length, initializeConversation, isPro])
 
-  useEffect(() => {
-    scrollViewRef.current?.scrollToEnd({ animated: true })
-  }, [messages])
-
   return (
     <BottomSheetModal
       ref={bottomSheetModalRef}
@@ -132,25 +130,21 @@ const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose, persistOnNavi
       }}
       onChange={(index) => setIsOpen(index >= 0)}
       enablePanDownToClose
+      enableDynamicSizing={false}
       handleIndicatorStyle={{
         backgroundColor: isDark ? '#525252' : '#d1d5db',
       }}
+      backgroundStyle={{ backgroundColor: colors.background }}
       animationConfigs={{
         duration: 350,
       }}
     >
-      <BottomSheetView
-        style={{
-          height: '100%',
-          flex: 1,
-          paddingBottom: insets.bottom,
-        }}
-      >
+      <View style={{ flex: 1, paddingBottom: insets.bottom }}>
         {isPro ? (
-          <View className="flex-1 flex-col gap-4">
-            <ScrollView
-              ref={scrollViewRef}
-              className="flex-col gap-4"
+          <View className="flex-1 flex-col">
+            <BottomSheetScrollView
+              ref={scrollViewRef as any}
+              className="flex-1"
               contentContainerStyle={{ padding: 16 }}
               showsVerticalScrollIndicator={false}
               onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
@@ -158,7 +152,7 @@ const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose, persistOnNavi
               {messages.map((message) => (
                 <ChatBubble key={message.id} message={message} />
               ))}
-            </ScrollView>
+            </BottomSheetScrollView>
 
             <View className="flex-row items-center justify-center gap-4 px-2 pb-4">
               {recorderState.isRecording ? (
@@ -195,7 +189,7 @@ const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose, persistOnNavi
                 leftIcon={<MaterialCommunityIcons name="trash-can" size={24} color="red" />}
                 onPress={() => {
                   clearMessages()
-                  setIsOpen(false)
+                  dismiss()
                 }}
               />
             </View>
@@ -228,7 +222,7 @@ const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose, persistOnNavi
             </View>
           </View>
         )}
-      </BottomSheetView>
+      </View>
     </BottomSheetModal>
   )
 })

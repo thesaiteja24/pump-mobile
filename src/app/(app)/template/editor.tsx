@@ -1,9 +1,9 @@
+import { PaywallModal, PaywallModalHandle } from '@/components/subscriptions/PaywallModal'
 import { Button } from '@/components/ui/buttons/Button'
 import {
   DeleteConfirmModal,
   DeleteConfirmModalHandle,
 } from '@/components/ui/modals/DeleteConfirmModal'
-import { PaywallModal, PaywallModalHandle } from '@/components/ui/modals/PaywallModal'
 import ExerciseRow from '@/components/workout-editor/ExerciseRow'
 import WorkoutReorderList from '@/components/workout-editor/WorkoutReorderList'
 import { FREE_TIER_LIMITS } from '@/constants/limits'
@@ -16,10 +16,7 @@ import {
 } from '@/hooks/queries/templates'
 import { useProgram } from '@/stores/programs.store'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
-import {
-  finalizeTemplateForSave,
-  useWorkoutEditor,
-} from '@/stores/workout-editor.store'
+import { finalizeTemplateForSave, useWorkoutEditor } from '@/stores/workout-editor.store'
 import { usePreventRemove } from '@react-navigation/native'
 import { Stack, router, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -46,9 +43,7 @@ export default function TemplateEditor() {
       ? Number(params.dayIndex)
       : undefined
 
-  const {
-    data: templates = [],
-  } = useTemplatesQuery()
+  const { data: templates = [] } = useTemplatesQuery()
   const { data: templateFromQuery, isLoading: templateLoading } = useTemplateByIdQuery(
     isEditing ? params.id : null,
   )
@@ -66,9 +61,9 @@ export default function TemplateEditor() {
   const discardWorkout = useWorkoutEditor((s) => s.discardWorkout)
 
   const [isReorderMode, setIsReorderMode] = useState(false)
-  const [pendingPrunedTemplate, setPendingPrunedTemplate] = useState<ReturnType<
-    typeof finalizeTemplateForSave
-  >['template'] | null>(null)
+  const [pendingPrunedTemplate, setPendingPrunedTemplate] = useState<
+    ReturnType<typeof finalizeTemplateForSave>['template'] | null
+  >(null)
   const [pruneMessage, setPruneMessage] = useState<string | null>(null)
 
   const discardModalRef = useRef<DeleteConfirmModalHandle>(null)
@@ -168,18 +163,19 @@ export default function TemplateEditor() {
 
   const hasUnsavedChanges = Boolean(
     workout &&
-      (workout.title.trim().length > 0 ||
-        (workout.notes?.trim().length ?? 0) > 0 ||
-        workout.exerciseOrder.length > 0),
+    (workout.title.trim().length > 0 ||
+      (workout.notes?.trim().length ?? 0) > 0 ||
+      workout.exerciseOrder.length > 0),
   )
 
   usePreventRemove(hasUnsavedChanges, () => {
     discardModalRef.current?.present()
   })
 
-  const validExerciseIds = useMemo(() => new Set(exerciseList.map((exercise) => exercise.id)), [
-    exerciseList,
-  ])
+  const validExerciseIds = useMemo(
+    () => new Set(exerciseList.map((exercise) => exercise.id)),
+    [exerciseList],
+  )
 
   const reorderItems = useMemo(() => {
     if (!workout) return []
@@ -192,7 +188,7 @@ export default function TemplateEditor() {
         const details = exerciseList.find((item) => item.id === exercise.exerciseId)
         if (!details) return null
 
-        const group = exercise.groupId ? workout.groupsById[exercise.groupId] ?? null : null
+        const group = exercise.groupId ? (workout.groupsById[exercise.groupId] ?? null) : null
 
         return {
           id: exercise.id,
@@ -239,10 +235,7 @@ export default function TemplateEditor() {
 
         const savedId = response?.data?.id || source?.templateId || templateToSave.id
 
-        if (
-          source?.programWeekIndex != null &&
-          source?.programDayIndex != null
-        ) {
+        if (source?.programWeekIndex != null && source?.programDayIndex != null) {
           const draftProgram = useProgram.getState().draftProgram
 
           if (draftProgram?.weeks) {
@@ -379,13 +372,7 @@ export default function TemplateEditor() {
           />
 
           <View className="flex-row gap-4">
-            <Button
-              title="Cancel"
-              variant="danger"
-              onPress={handleCancel}
-              className=''
-
-            />
+            <Button title="Cancel" variant="danger" onPress={handleCancel} className="" />
             <Button
               title={isReorderMode ? 'Done' : 'Save'}
               variant="primary"
@@ -407,7 +394,7 @@ export default function TemplateEditor() {
           placeholder="Notes (optional)"
           placeholderTextColor="#9ca3af"
           multiline
-          className=" max-h-24 text-sm text-neutral-600 dark:text-neutral-400"
+          className="max-h-24 text-sm text-neutral-600 dark:text-neutral-400"
         />
 
         {/* Meta */}
