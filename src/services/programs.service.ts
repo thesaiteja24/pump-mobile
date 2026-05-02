@@ -5,6 +5,11 @@ import {
   ProgramUpdatePayload,
   UserProgram,
   UserProgramStartPayload,
+  ProgramResponse,
+  UserProgramsResponse,
+  ActiveUserProgramResponse,
+  UserProgramResponse,
+  StartProgramResponse,
 } from '@/types/programs'
 import { handleApiResponse } from '@/utils/handleApiResponse'
 import {
@@ -37,7 +42,7 @@ export const getAllProgramsService = async (
 export const getProgramByIdService = async (programId: string): Promise<Program> => {
   try {
     const response = await client.get(PROGRAM_ITEM_ENDPOINT(programId))
-    const handled = handleApiResponse<{ program: Program }>(response)
+    const handled = handleApiResponse<ProgramResponse>(response)
     if (!handled.success) throw new Error(handled.message || 'Failed to fetch program detail')
     return handled.data!.program
   } catch (error: any) {
@@ -49,7 +54,7 @@ export const getProgramByIdService = async (programId: string): Promise<Program>
 export const createProgramService = async (data: ProgramCreatePayload): Promise<Program> => {
   try {
     const response = await client.post(PROGRAMS_ENDPOINT, data)
-    const handled = handleApiResponse<{ program: Program }>(response)
+    const handled = handleApiResponse<ProgramResponse>(response)
     if (!handled.success) throw new Error(handled.message || 'Failed to create program')
     return handled.data!.program
   } catch (error: any) {
@@ -64,7 +69,7 @@ export const updateProgramService = async (
 ): Promise<Program> => {
   try {
     const response = await client.put(PROGRAM_ITEM_ENDPOINT(programId), data)
-    const handled = handleApiResponse<{ program: Program }>(response)
+    const handled = handleApiResponse<ProgramResponse>(response)
     if (!handled.success) throw new Error(handled.message || 'Failed to update program')
     return handled.data!.program
   } catch (error: any) {
@@ -89,7 +94,7 @@ export const deleteProgramService = async (programId: string): Promise<void> => 
 export const listUserProgramsService = async (): Promise<UserProgram[]> => {
   try {
     const response = await client.get(MY_PROGRAMS_ENDPOINT)
-    const handled = handleApiResponse<{ programs: UserProgram[] }>(response)
+    const handled = handleApiResponse<UserProgramsResponse>(response)
     if (!handled.success) throw new Error(handled.message || 'Failed to fetch user programs')
     return handled.data!.programs
   } catch (error: any) {
@@ -101,7 +106,7 @@ export const listUserProgramsService = async (): Promise<UserProgram[]> => {
 export const getActiveUserProgramService = async (): Promise<UserProgram | null> => {
   try {
     const response = await client.get(MY_ACTIVE_PROGRAM_ENDPOINT)
-    const handled = handleApiResponse<{ program: UserProgram | null }>(response)
+    const handled = handleApiResponse<ActiveUserProgramResponse>(response)
     if (!handled.success) throw new Error(handled.message || 'Failed to fetch active program')
     return handled.data!.program
   } catch (error: any) {
@@ -118,7 +123,7 @@ export const getUserProgramService = async (
     const response = await client.get(MY_PROGRAM_ITEM_ENDPOINT(userProgramId), {
       params: { weekIndex },
     })
-    const handled = handleApiResponse<{ program: UserProgram }>(response)
+    const handled = handleApiResponse<UserProgramResponse>(response)
     if (!handled.success) throw new Error(handled.message || 'Failed to fetch user program detail')
     return handled.data!.program
   } catch (error: any) {
@@ -133,7 +138,7 @@ export const startProgramService = async (
 ): Promise<UserProgram> => {
   try {
     const response = await client.post(START_PROGRAM_ENDPOINT(programId), payload)
-    const handled = handleApiResponse<{ userProgram: UserProgram }>(response)
+    const handled = handleApiResponse<StartProgramResponse>(response)
     if (!handled.success) throw new Error(handled.message || 'Failed to start program')
     return handled.data!.userProgram
   } catch (error: any) {

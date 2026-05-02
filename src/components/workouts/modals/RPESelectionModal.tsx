@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/buttons/Button'
 import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
+import { useThemeColor } from '@/hooks/theme'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
 import {
@@ -48,6 +49,7 @@ const RPESelectionModal = forwardRef<RPESelectionModalHandle, Props>(
     const isDark = useColorScheme() === 'dark'
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
+    const colors = useThemeColor()
     const [isOpen, setIsOpen] = useState(false)
 
     const present = useCallback(() => {

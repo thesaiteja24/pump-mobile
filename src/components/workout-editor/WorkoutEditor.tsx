@@ -29,7 +29,6 @@ export default function Workout() {
 
   const workout = useWorkoutEditor((state) => state.workout)
   const mode = useWorkoutEditor((state) => state.mode)
-  const initiateWorkout = useWorkoutEditor((state) => state.initiateWorkout)
   const updateWorkoutMeta = useWorkoutEditor((state) => state.updateWorkoutMeta)
   const reorderExercises = useWorkoutEditor((state) => state.reorderExercises)
   const discardWorkout = useWorkoutEditor((state) => state.discardWorkout)

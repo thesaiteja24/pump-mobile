@@ -15,6 +15,7 @@ import {
 } from '@/services/me.service'
 import { useAuth } from '@/stores/auth.store'
 import {
+  AddMeasurementPayload,
   Measurements,
   UpdateFitnessProfileBody,
   UpdateNutritionPlanBody,
@@ -191,11 +192,7 @@ export function useAddMeasurementMutation() {
   const userId = useAuth((s) => s.userId)
 
   return useMutation({
-    mutationFn: async (
-      data: Partial<Measurements> & {
-        progressPics?: { uri: string; name?: string; type?: string }[]
-      },
-    ) => {
+    mutationFn: async (data: AddMeasurementPayload) => {
       let payload: FormData | Partial<Measurements> = data
       if (data.progressPics && data.progressPics.length > 0) {
         const formData = new FormData()

@@ -5,6 +5,7 @@ import {
   DeleteConfirmModalHandle,
 } from '@/components/ui/modals/DeleteConfirmModal'
 import { useModalNavigationSync } from '@/hooks/modal'
+import { useThemeColor } from '@/hooks/theme'
 import { useCommentsQuery, useDeleteCommentMutation } from '@/hooks/queries/engagement'
 import { Comment } from '@/types/engagement'
 import { Ionicons } from '@expo/vector-icons'
@@ -51,6 +52,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(
   ({ workoutId, onClose, persistOnNavigation = false }, ref) => {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
+    const colors = useThemeColor()
     const isDark = useColorScheme() === 'dark'
     const screenWidth = Dimensions.get('window').width
 

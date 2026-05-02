@@ -185,7 +185,7 @@ const History = () => {
     const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
 
     return () => subscription.remove()
-  }, [])
+  }, [router])
 
   return (
     <View className="flex-1 bg-white px-4 pt-4 dark:bg-black">

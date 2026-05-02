@@ -150,3 +150,7 @@ export type UpdateUserBody = {
   weight?: number
   gender?: Gender
 }
+
+export type AddMeasurementPayload = Partial<Measurements> & {
+  progressPics?: { uri: string; name?: string; type?: string }[]
+}

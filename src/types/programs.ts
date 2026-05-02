@@ -176,3 +176,10 @@ export interface DraftProgram {
   durationOptions: number[]
   weeks: DraftProgramWeek[]
 }
+
+// SECTION: API RESPONSES
+export type ProgramResponse = { program: Program }
+export type UserProgramsResponse = { programs: UserProgram[] }
+export type ActiveUserProgramResponse = { program: UserProgram | null }
+export type UserProgramResponse = { program: UserProgram }
+export type StartProgramResponse = { userProgram: UserProgram }

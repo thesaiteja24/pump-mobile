@@ -171,10 +171,7 @@ export default function WorkoutSaveScreen() {
 
     try {
       const response = await createWorkoutMutation.mutateAsync(finalized.payload as WorkoutPayload)
-      const createdWorkoutId =
-        response.data && typeof response.data === 'object' && 'id' in response.data
-          ? String(response.data.id)
-          : null
+      const createdWorkoutId = response?.id ?? null
 
       Toast.show({
         type: 'success',

@@ -10,24 +10,15 @@ import {
 } from '@/services/workouts.service'
 import { useAuth } from '@/stores/auth.store'
 import { WorkoutPayload } from '@/types/payloads'
-import { WorkoutHistoryItem, WorkoutLog } from '@/types/workouts'
+import {
+  WorkoutHistoryInfiniteData,
+  WorkoutHistoryItem,
+  WorkoutLog,
+} from '@/types/workouts'
 import { serializeWorkoutForApi } from '@/utils/serializeForApi'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 const PAGE_LIMIT = 2
-
-type WorkoutHistoryPage = {
-  workouts: WorkoutHistoryItem[]
-  meta: {
-    hasMore?: boolean
-    currentPage?: number
-  } | null
-}
-
-type WorkoutHistoryInfiniteData = {
-  pages: WorkoutHistoryPage[]
-  pageParams: unknown[]
-}
 
 // ─────────────────────────────────────────────────────
 // READ — workout history (paginated, infinite scroll)
@@ -36,11 +27,9 @@ export function useUserWorkoutHistoryQuery() {
   const query = useInfiniteQuery({
     queryKey: queryKeys.workouts.all,
     queryFn: async ({ pageParam = 1 }) => {
-      const res = await getUserWorkoutsService(pageParam as number, PAGE_LIMIT)
-      if (!res.success || !res.data) return { workouts: [] as WorkoutHistoryItem[], meta: null }
-
-      const workouts = (res.data.workouts || []) as WorkoutHistoryItem[]
-      return { workouts, meta: res.data.meta }
+      const data = await getUserWorkoutsService(pageParam as number, PAGE_LIMIT)
+      const workouts = data.workouts || []
+      return { workouts, meta: data.meta }
     },
     getNextPageParam: (lastPage) => {
       if (!lastPage.meta?.hasMore) return undefined
@@ -67,12 +56,10 @@ export function useDiscoverWorkoutsQuery() {
   const query = useInfiniteQuery({
     queryKey: queryKeys.workouts.discover,
     queryFn: async ({ pageParam = 1 }) => {
-      const res = await getDiscoverWorkoutsService(pageParam as number, PAGE_LIMIT)
-      if (!res.success || !res.data) return { workouts: [] as WorkoutHistoryItem[], meta: null }
-
+      const data = await getDiscoverWorkoutsService(pageParam as number, PAGE_LIMIT)
       return {
-        workouts: (res.data.workouts || []) as WorkoutHistoryItem[],
-        meta: res.data.meta,
+        workouts: data.workouts || [],
+        meta: data.meta,
       }
     },
     getNextPageParam: (lastPage) => {
@@ -99,9 +86,7 @@ export function useWorkoutByIdQuery(id: string, options?: { enabled?: boolean })
   const query = useQuery({
     queryKey: queryKeys.workouts.byId(id),
     queryFn: async () => {
-      const res = await getWorkoutByIdService(id)
-      if (!res.success || !res.data) return null
-      return res.data as WorkoutHistoryItem
+      return getWorkoutByIdService(id)
     },
     staleTime: Infinity,
     ...options,

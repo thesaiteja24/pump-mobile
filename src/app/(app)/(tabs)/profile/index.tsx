@@ -104,7 +104,7 @@ export default function ProfileScreen() {
     const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
 
     return () => subscription.remove()
-  }, [])
+  }, [router])
 
   const lightIconRef = useRef<View>(null)
   const darkIconRef = useRef<View>(null)

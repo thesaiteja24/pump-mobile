@@ -290,3 +290,26 @@ export type ActiveWorkoutSummary = {
 }
 
 export type ExerciseTypeMap = Map<string, ExerciseType>
+
+export type WorkoutsPaginatedResponse = {
+  workouts: WorkoutHistoryItem[]
+  meta: {
+    hasMore: boolean
+    currentPage: number
+    totalPages: number
+    totalItems: number
+  }
+}
+
+export type WorkoutHistoryPage = {
+  workouts: WorkoutHistoryItem[]
+  meta: {
+    hasMore?: boolean
+    currentPage?: number
+  } | null
+}
+
+export type WorkoutHistoryInfiniteData = {
+  pages: WorkoutHistoryPage[]
+  pageParams: unknown[]
+}

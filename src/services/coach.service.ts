@@ -10,6 +10,8 @@ import { handleApiResponse } from '@/utils/handleApiResponse'
 import * as FileSystem from 'expo-file-system/legacy'
 import client, { getAccessToken } from './api'
 
+import { ConversationResponse } from '@/types/coach'
+
 export async function startConversationService(): Promise<{
   id: string
   text: string
@@ -17,9 +19,13 @@ export async function startConversationService(): Promise<{
 }> {
   try {
     const res = await client.post(COACH_CONVERSATIONS_ENDPOINT)
-    const handled = handleApiResponse(res)
+    const handled = handleApiResponse<{
+      id: string
+      text: string
+      ttsId: string
+    }>(res)
     if (!handled.success) throw new Error(handled.message || 'Request failed')
-    return handled.data
+    return handled.data!
   } catch (error: any) {
     const errData = error.response?.data
     throw new Error(errData?.message || error.message || 'Network error')
@@ -29,7 +35,7 @@ export async function startConversationService(): Promise<{
 export async function deleteConversationService(id: string): Promise<void> {
   try {
     const res = await client.delete(COACH_CONVERSATION_ENDPOINT(id))
-    const handled = handleApiResponse(res)
+    const handled = handleApiResponse<void>(res)
     if (!handled.success) throw new Error(handled.message || 'Request failed')
   } catch (error: any) {
     const errData = error.response?.data
@@ -75,9 +81,9 @@ export async function transcribeMessageService(data: FormData): Promise<{ text: 
       headers: { 'Content-Type': 'multipart/form-data' },
     })
 
-    const handled = handleApiResponse(res)
+    const handled = handleApiResponse<{ text: string }>(res)
     if (!handled.success) throw new Error(handled.message || 'Request failed')
-    return handled.data
+    return handled.data!
   } catch (error: any) {
     const errData = error.response?.data
     throw new Error(errData?.message || error.message || 'Network error')
@@ -93,24 +99,21 @@ export async function sendMessageService(
       question,
     })
 
-    const handled = handleApiResponse(res)
+    const handled = handleApiResponse<{ text: string; ttsId: string }>(res)
     if (!handled.success) throw new Error(handled.message || 'Request failed')
-    return handled.data
+    return handled.data!
   } catch (error: any) {
     const errData = error.response?.data
     throw new Error(errData?.message || error.message || 'Network error')
   }
 }
 
-export async function getActiveConversationService(): Promise<{
-  id: string
-  messages: any[]
-} | null> {
+export async function getActiveConversationService(): Promise<ConversationResponse | null> {
   try {
     const res = await client.get(COACH_ACTIVE_CONVERSATION_ENDPOINT)
-    const handled = handleApiResponse(res)
+    const handled = handleApiResponse<ConversationResponse>(res)
     if (!handled.success) return null
-    return handled.data
+    return handled.data!
   } catch (error: any) {
     const errData = error.response?.data
     throw new Error(errData?.message || error.message || 'Network error')

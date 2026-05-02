@@ -4,20 +4,24 @@ import { WorkoutTemplate } from '@/types/templates'
 import { handleApiResponse } from '@/utils/handleApiResponse'
 import client from './api'
 
-export async function getAllTemplatesService() {
+export async function getAllTemplatesService(): Promise<WorkoutTemplate[]> {
   try {
     const res = await client.get(TEMPLATES_ENDPOINT)
-    return handleApiResponse(res)
+    const handled = handleApiResponse<WorkoutTemplate[]>(res)
+    if (!handled.success) throw new Error(handled.message || 'Request failed')
+    return handled.data ?? []
   } catch (error: any) {
     const errData = error.response?.data
     throw new Error(errData?.message || error.message || 'Network error')
   }
 }
 
-export async function getTemplateByIdService(id: string) {
+export async function getTemplateByIdService(id: string): Promise<WorkoutTemplate> {
   try {
     const res = await client.get(TEMPLATE_ITEM_ENDPOINT(id))
-    return handleApiResponse(res)
+    const handled = handleApiResponse<WorkoutTemplate>(res)
+    if (!handled.success) throw new Error(handled.message || 'Request failed')
+    return handled.data!
   } catch (error: any) {
     const errData = error.response?.data
     throw new Error(errData?.message || error.message || 'Network error')
@@ -28,20 +32,25 @@ export async function getTemplateByIdService(id: string) {
  * Create a new template.
  * Accepts TemplatePayload for queue or Partial<WorkoutTemplate> for direct calls.
  */
-export async function createTemplateService(data: TemplatePayload | Partial<WorkoutTemplate>) {
+export async function createTemplateService(
+  data: TemplatePayload | Partial<WorkoutTemplate>,
+): Promise<WorkoutTemplate> {
   try {
     const res = await client.post(TEMPLATES_ENDPOINT, data)
-    return handleApiResponse(res)
+    const handled = handleApiResponse<WorkoutTemplate>(res)
+    if (!handled.success) throw new Error(handled.message || 'Request failed')
+    return handled.data!
   } catch (error: any) {
     const errData = error.response?.data
     throw new Error(errData?.message || error.message || 'Network error')
   }
 }
 
-export async function deleteTemplateService(id: string) {
+export async function deleteTemplateService(id: string): Promise<void> {
   try {
     const res = await client.delete(TEMPLATE_ITEM_ENDPOINT(id))
-    return handleApiResponse(res)
+    const handled = handleApiResponse<void>(res)
+    if (!handled.success) throw new Error(handled.message || 'Request failed')
   } catch (error: any) {
     const errData = error.response?.data
     throw new Error(errData?.message || error.message || 'Network error')
@@ -54,20 +63,24 @@ export async function deleteTemplateService(id: string) {
 export async function updateTemplateService(
   id: string,
   data: TemplatePayload | Partial<WorkoutTemplate>,
-) {
+): Promise<WorkoutTemplate> {
   try {
     const res = await client.put(TEMPLATE_ITEM_ENDPOINT(id), data)
-    return handleApiResponse(res)
+    const handled = handleApiResponse<WorkoutTemplate>(res)
+    if (!handled.success) throw new Error(handled.message || 'Request failed')
+    return handled.data!
   } catch (error: any) {
     const errData = error.response?.data
     throw new Error(errData?.message || error.message || 'Network error')
   }
 }
 
-export async function getTemplateByShareIdService(shareId: string) {
+export async function getTemplateByShareIdService(shareId: string): Promise<WorkoutTemplate> {
   try {
     const res = await client.get(`${TEMPLATES_ENDPOINT}/share/${shareId}`)
-    return handleApiResponse(res)
+    const handled = handleApiResponse<WorkoutTemplate>(res)
+    if (!handled.success) throw new Error(handled.message || 'Request failed')
+    return handled.data!
   } catch (error: any) {
     const errData = error.response?.data
     throw new Error(errData?.message || error.message || 'Network error')

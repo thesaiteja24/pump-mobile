@@ -233,7 +233,7 @@ export default function TemplateEditor() {
               })
             : await createMutation.mutateAsync(templateToSave)
 
-        const savedId = response?.data?.id || source?.templateId || templateToSave.id
+        const savedId = response?.id || source?.templateId || templateToSave.id
 
         if (source?.programWeekIndex != null && source?.programDayIndex != null) {
           const draftProgram = useProgram.getState().draftProgram

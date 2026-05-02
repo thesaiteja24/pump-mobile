@@ -4,13 +4,13 @@ import ShimmerDiscoverScreen from '@/components/ui/shimmers/ShimmerDiscoverScree
 import { useExercises } from '@/hooks/queries/exercises'
 import { useDiscoverWorkoutsQuery } from '@/hooks/queries/workouts'
 import { useThemeColor } from '@/hooks/theme'
-import { useRef } from 'react'
+
 
 import { queryKeys } from '@/lib/queryKeys'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'expo-router'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native'
 import Animated, {
   Easing,

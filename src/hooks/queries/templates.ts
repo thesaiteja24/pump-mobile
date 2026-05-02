@@ -23,10 +23,8 @@ export function useTemplatesQuery() {
   return useQuery({
     queryKey: queryKeys.templates.all(userId ?? ''),
     queryFn: async () => {
-      if (!userId) return [] as WorkoutTemplate[]
-      const res = await getAllTemplatesService()
-      if (!res.success || !res.data) return [] as WorkoutTemplate[]
-      return res.data as WorkoutTemplate[]
+      if (!userId) return []
+      return getAllTemplatesService()
     },
     enabled: !!userId,
     staleTime: 7 * 24 * 60 * 60 * 1000,
@@ -40,9 +38,7 @@ export function useTemplateByIdQuery(id: string | null | undefined) {
   return useQuery({
     queryKey: queryKeys.templates.byId(id ?? ''),
     queryFn: async () => {
-      const res = await getTemplateByIdService(id!)
-      if (!res.success || !res.data) return null
-      return res.data as WorkoutTemplate
+      return getTemplateByIdService(id!)
     },
     enabled: Boolean(id),
     staleTime: 7 * 24 * 60 * 60 * 1000,
@@ -56,9 +52,7 @@ export function useTemplateByShareIdQuery(shareId: string | null | undefined) {
   return useQuery({
     queryKey: queryKeys.templates.byShareId(shareId ?? ''),
     queryFn: async () => {
-      const res = await getTemplateByShareIdService(shareId!)
-      if (!res.success || !res.data) return null
-      return res.data as WorkoutTemplate
+      return getTemplateByShareIdService(shareId!)
     },
     enabled: Boolean(shareId),
     staleTime: 7 * 24 * 60 * 60 * 1000,

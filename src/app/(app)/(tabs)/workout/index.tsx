@@ -179,7 +179,7 @@ export default function WorkoutScreen() {
     const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
 
     return () => subscription.remove()
-  }, [])
+  }, [router])
 
   return (
     <ScrollView

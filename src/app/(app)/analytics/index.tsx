@@ -151,7 +151,7 @@ const AnalyticsScreen = () => {
     const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
 
     return () => subscription.remove()
-  }, [])
+  }, [router])
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>

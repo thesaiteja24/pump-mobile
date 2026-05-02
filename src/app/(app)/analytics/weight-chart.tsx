@@ -106,7 +106,7 @@ const WeightChart = () => {
     const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
 
     return () => subscription.remove()
-  }, [])
+  }, [router])
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-black" edges={['bottom']}>

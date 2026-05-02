@@ -56,6 +56,14 @@ export const WORKOUT_SHARE_ENDPOINT = (id: string) => `/workouts/share/${id}`
 export const TEMPLATES_ENDPOINT = `/templates`
 export const TEMPLATE_ITEM_ENDPOINT = (id: string) => `/templates/${id}`
 
+// HABITS
+export const HABITS_ENDPOINT = (userId: string) => `/habits/${userId}`
+export const HABIT_ITEM_ENDPOINT = (userId: string, habitId: string) =>
+  `/habits/${userId}/${habitId}`
+export const HABIT_LOG_ENDPOINT = (userId: string, habitId: string) =>
+  `/habits/${userId}/${habitId}/log`
+export const HABIT_LOGS_ENDPOINT = (userId: string) => `/habits/${userId}/logs`
+
 // PROGRAMS (GLOBAL)
 export const PROGRAMS_ENDPOINT = `/programs`
 export const PROGRAM_ITEM_ENDPOINT = (id: string) => `/programs/${id}`

@@ -65,7 +65,7 @@ export default function Search() {
     const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
 
     return () => subscription.remove()
-  }, [])
+  }, [router])
 
   // 🔄 Pull to refresh
   const onRefresh = useCallback(async () => {

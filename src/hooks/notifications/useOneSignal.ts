@@ -60,7 +60,7 @@ export const useOneSignal = () => {
       OneSignal.Notifications.removeEventListener('click', clickListener)
       OneSignal.Notifications.removeEventListener('foregroundWillDisplay', foregroundListener)
     }
-  }, [isInitialized])
+  }, [isInitialized, router])
 
   const requestPermission = useCallback(async () => {
     const granted = await OneSignal.Notifications.requestPermission(true)

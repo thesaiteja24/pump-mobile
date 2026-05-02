@@ -5,7 +5,6 @@ import {
   Text,
   TouchableOpacity,
   TouchableOpacityProps,
-  useColorScheme,
 } from 'react-native'
 import { twMerge } from 'tailwind-merge'
 
@@ -142,7 +141,6 @@ export function Button({
   ...props
 }: ButtonProps) {
   const isDisabled = disabled || loading
-  const isDark = useColorScheme() === 'dark'
 
   const widthClass = props.fullWidth ? 'w-full' : ''
   const baseClass = 'flex-row items-center justify-center gap-2 rounded-xl px-4 py-1.5'

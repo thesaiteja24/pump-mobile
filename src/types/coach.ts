@@ -10,3 +10,13 @@ export interface CoachMessage {
   text: string
   thinking: boolean
 }
+
+export type ConversationResponse = {
+  id: string
+  messages: {
+    id: string
+    role: 'assistant' | 'user'
+    content: string
+    createdAt?: string
+  }[]
+}

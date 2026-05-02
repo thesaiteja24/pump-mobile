@@ -21,7 +21,7 @@ export function useCoachConversation() {
       const active = await getActiveConversationService()
       if (!active) return null
 
-      const messages: CoachMessage[] = active.messages.map((m: any) => ({
+      const messages: CoachMessage[] = active.messages.map((m) => ({
         id: Crypto.randomUUID(),
         role: m.role === 'assistant' ? 'coach' : 'user',
         text: m.content,

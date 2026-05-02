@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/buttons/Button'
 import { ReadOnlyExerciseRow } from '@/components/workout-editor/ReadOnlyExerciseRow'
 import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
+import { useThemeColor } from '@/hooks/theme'
 import { ProgramDay, UserProgramDay } from '@/types/programs'
 import { TemplateExerciseGroup } from '@/types/templates'
 import { FontAwesome6 } from '@expo/vector-icons'
@@ -28,6 +29,7 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
     const [isStartable, setIsStartable] = useState(false)
     const isDark = useColorScheme() === 'dark'
     const insets = useSafeAreaInsets()
+    const colors = useThemeColor()
     const [isOpen, setIsOpen] = useState(false)
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const dynamicSizing = selectedDay?.isRestDay ? true : false
