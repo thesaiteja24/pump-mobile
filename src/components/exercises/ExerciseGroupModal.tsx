@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { Ionicons } from '@expo/vector-icons'
 import {
@@ -15,7 +14,6 @@ import React, {
   useImperativeHandle,
   useMemo,
   useRef,
-  useState,
 } from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -38,15 +36,13 @@ type Props = {
   onSelect: (exercise: GroupExerciseItem) => void
   onClose?: () => void
   onConfirm?: () => void
-  persistOnNavigation?: boolean
 }
 
 const ExerciseGroupModal = forwardRef<ExerciseGroupModalHandle, Props>(
-  ({ exercises, onSelect, onClose, onConfirm, persistOnNavigation = false }, ref) => {
+  ({ exercises, onSelect, onClose, onConfirm }, ref) => {
     const colors = useThemeColor()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
-    const [isOpen, setIsOpen] = useState(false)
 
     const present = useCallback(() => {
       bottomSheetModalRef.current?.present()
@@ -61,9 +57,6 @@ const ExerciseGroupModal = forwardRef<ExerciseGroupModalHandle, Props>(
       dismiss,
     }))
 
-    // Shared modal logic
-    useModalBackHandler(isOpen, dismiss)
-    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -80,7 +73,7 @@ const ExerciseGroupModal = forwardRef<ExerciseGroupModalHandle, Props>(
         snapPoints={snapPoints}
         backdropComponent={renderBackdrop}
         onDismiss={onClose}
-        onChange={(index) => setIsOpen(index >= 0)}
+        onChange={(index) => {}}
         handleIndicatorStyle={{
           backgroundColor: colors.isDark ? '#525252' : '#d1d5db',
         }}

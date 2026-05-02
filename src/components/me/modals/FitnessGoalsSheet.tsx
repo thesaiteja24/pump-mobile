@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/buttons/Button'
 import DateTimePicker from '@/components/ui/DateTimePicker'
 import { SelectableCard } from '@/components/ui/SelectableCard'
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import {
   useFitnessProfileQuery,
   useMeasurementsQuery,
@@ -20,7 +19,7 @@ import {
   calculateTDEE,
 } from '@/utils/analytics'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
-import { forwardRef, useCallback, useMemo, useState } from 'react'
+import { forwardRef, useMemo, useState } from 'react'
 import {
   Keyboard,
   Pressable,
@@ -36,13 +35,10 @@ import Toast from 'react-native-toast-message'
 type TargetType = 'weight' | 'bodyFat'
 type PlanningMode = 'rateDriven' | 'dateDriven'
 
-type Props = {
-  persistOnNavigation?: boolean
-}
+type Props = {}
 
 export const FitnessGoalsSheet = forwardRef<BottomSheetModal, Props>(
-  ({ persistOnNavigation = false }, ref) => {
-    const [isOpen, setIsOpen] = useState(false)
+  (_, ref) => {
     const isDarkMode = useColorScheme() === 'dark'
     const insets = useSafeAreaInsets()
     const colors = useThemeColor()
@@ -170,19 +166,7 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal, Props>(
       fitnessProfile?.fitnessLevel,
     ])
 
-    const present = useCallback(() => {
-      // @ts-ignore
-      ref?.current?.present()
-    }, [ref])
 
-    const dismiss = useCallback(() => {
-      // @ts-ignore
-      ref?.current?.dismiss()
-    }, [ref])
-
-    // Shared modal logic
-    useModalBackHandler(isOpen, dismiss)
-    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const handleSave = async () => {
       Keyboard.dismiss()
@@ -245,7 +229,8 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal, Props>(
             type: 'success',
             text1: 'Goals updated successfully',
           })
-          dismiss()
+          // @ts-ignore
+          ref?.current?.dismiss()
         }
       } catch (error: any) {
         setIsLoading(false)
@@ -267,7 +252,7 @@ export const FitnessGoalsSheet = forwardRef<BottomSheetModal, Props>(
         )}
         handleIndicatorStyle={{ backgroundColor: isDarkMode ? '#525252' : '#d1d5db' }}
         backgroundStyle={{ backgroundColor: colors.background }}
-        onChange={(index) => setIsOpen(index >= 0)}
+        onChange={(index) => {}}
         animationConfigs={{ duration: 350 }}
       >
         <BottomSheetScrollView

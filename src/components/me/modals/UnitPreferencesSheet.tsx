@@ -1,21 +1,18 @@
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useProfileQuery, useUpdateProfileMutation } from '@/hooks/queries/me'
 import { useThemeColor } from '@/hooks/theme'
 import { SelfUser } from '@/types/me'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
-import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react'
+import { forwardRef, useEffect, useMemo, useState } from 'react'
 import { Text, TouchableOpacity, useColorScheme, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type WeightUnit = 'kg' | 'lbs'
 type LengthUnit = 'cm' | 'inches'
 
-type Props = {
-  persistOnNavigation?: boolean
-}
+type Props = {}
 
 export const UnitPreferencesSheet = forwardRef<BottomSheetModal, Props>(
-  ({ persistOnNavigation = false }, ref) => {
+  (_, ref) => {
     const { data: userData } = useProfileQuery()
     const user = userData as SelfUser | null
 
@@ -23,7 +20,6 @@ export const UnitPreferencesSheet = forwardRef<BottomSheetModal, Props>(
     const isDarkMode = useColorScheme() === 'dark'
     const insets = useSafeAreaInsets()
     const colors = useThemeColor()
-    const [isOpen, setIsOpen] = useState(false)
 
     const storedWeightUnit: WeightUnit = user?.preferredWeightUnit ?? 'kg'
     const storedLengthUnit: LengthUnit = user?.preferredLengthUnit ?? 'cm'
@@ -41,18 +37,8 @@ export const UnitPreferencesSheet = forwardRef<BottomSheetModal, Props>(
       return weightUnit !== storedWeightUnit || lengthUnit !== storedLengthUnit
     }, [weightUnit, lengthUnit, storedWeightUnit, storedLengthUnit])
 
-    const present = useCallback(() => {
-      // @ts-ignore
-      ref?.current?.present()
-    }, [ref])
-
-    const dismiss = useCallback(() => {
-      // @ts-ignore
-      ref?.current?.dismiss()
-    }, [ref])
 
     const onDismiss = async () => {
-      setIsOpen(false)
       if (!hasChanges || !user?.id) return
 
       updateUserDataMutation.mutate({
@@ -61,9 +47,6 @@ export const UnitPreferencesSheet = forwardRef<BottomSheetModal, Props>(
       })
     }
 
-    // Shared modal logic
-    useModalBackHandler(isOpen, dismiss)
-    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const optionClass = (active: boolean, rounded?: string) =>
       [
@@ -86,7 +69,7 @@ export const UnitPreferencesSheet = forwardRef<BottomSheetModal, Props>(
           backgroundColor: isDarkMode ? '#525252' : '#d1d5db',
         }}
         onDismiss={onDismiss}
-        onChange={(index) => setIsOpen(index >= 0)}
+        onChange={(index) => {}}
         backgroundStyle={{ backgroundColor: colors.background }}
         animationConfigs={{ duration: 350 }}
       >

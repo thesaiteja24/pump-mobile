@@ -2,7 +2,6 @@ import EditableAvatar from '@/components/me/EditableAvatar'
 import { Button } from '@/components/ui/buttons/Button'
 import DateTimePicker from '@/components/ui/DateTimePicker'
 import { SelectableCard } from '@/components/ui/SelectableCard'
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import {
   useDeleteProfilePicMutation,
   useProfileQuery,
@@ -28,16 +27,13 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-type Props = {
-  persistOnNavigation?: boolean
-}
+type Props = {}
 
 export const EditProfileSheet = forwardRef<BottomSheetModal, Props>(
-  ({ persistOnNavigation = false }, ref) => {
+  (_, ref) => {
     const colors = useThemeColor()
     const isDarkMode = useColorScheme() === 'dark'
     const insets = useSafeAreaInsets()
-    const [isOpen, setIsOpen] = useState(false)
 
     const { data: userData } = useProfileQuery()
     const user = userData as SelfUser | null
@@ -122,24 +118,13 @@ export const EditProfileSheet = forwardRef<BottomSheetModal, Props>(
       )
     }, [firstName, lastName, heightDisplay, weightDisplay, dateOfBirth, gender])
 
-    const present = useCallback(() => {
-      // @ts-ignore
-      ref?.current?.present()
-    }, [ref])
 
-    const dismiss = useCallback(() => {
-      // @ts-ignore
-      ref?.current?.dismiss()
-    }, [ref])
-
-    // Shared modal logic
-    useModalBackHandler(isOpen, dismiss)
-    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     // Save handler — convert display-unit values back to backend canonical units (kg, cm)
     const handleSave = useCallback(async () => {
       if (!user?.id || !hasChanges) {
-        dismiss()
+        // @ts-ignore
+        ref?.current?.dismiss()
         return
       }
 
@@ -180,7 +165,8 @@ export const EditProfileSheet = forwardRef<BottomSheetModal, Props>(
           dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
           gender,
         }
-        dismiss()
+        // @ts-ignore
+        ref?.current?.dismiss()
       } catch {
         Toast.show({ type: 'error', text1: 'Profile update failed, try again' })
       }
@@ -194,7 +180,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal, Props>(
       hasChanges,
       user?.id,
       updateUserDataMutation,
-      dismiss,
+      ref,
       lengthUnit,
       weightUnit,
     ])
@@ -235,7 +221,7 @@ export const EditProfileSheet = forwardRef<BottomSheetModal, Props>(
         animationConfigs={{ duration: 350 }}
         style={{ marginTop: insets.top }}
         stackBehavior="push"
-        onChange={(index) => setIsOpen(index >= 0)}
+        onChange={(index) => {}}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

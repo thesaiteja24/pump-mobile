@@ -1,4 +1,3 @@
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import type { SetType } from '@/types/workouts'
 import { Ionicons } from '@expo/vector-icons'
@@ -10,7 +9,6 @@ import {
   useImperativeHandle,
   useMemo,
   useRef,
-  useState,
 } from 'react'
 import { Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -56,16 +54,14 @@ type Props = {
   currentType: SetType
   onSelect: (type: SetType) => void
   onClose?: () => void
-  persistOnNavigation?: boolean
 }
 
 const SetTypeSelectionModal = forwardRef<SetTypeSelectionModalHandle, Props>(
-  ({ currentType, onSelect, onClose, persistOnNavigation = false }, ref) => {
+  ({ currentType, onSelect, onClose }, ref) => {
     const colors = useThemeColor()
     const isDark = useColorScheme() === 'dark'
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
-    const [isOpen, setIsOpen] = useState(false)
 
     const present = useCallback(() => {
       bottomSheetModalRef.current?.present()
@@ -80,9 +76,6 @@ const SetTypeSelectionModal = forwardRef<SetTypeSelectionModalHandle, Props>(
       dismiss,
     }))
 
-    // Shared modal logic
-    useModalBackHandler(isOpen, dismiss)
-    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -99,7 +92,7 @@ const SetTypeSelectionModal = forwardRef<SetTypeSelectionModalHandle, Props>(
         snapPoints={snapPoints}
         backdropComponent={renderBackdrop}
         onDismiss={onClose}
-        onChange={(index) => setIsOpen(index >= 0)}
+        onChange={(index) => {}}
         handleIndicatorStyle={{
           backgroundColor: isDark ? '#525252' : '#d1d5db',
         }}

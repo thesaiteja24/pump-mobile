@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/buttons/Button'
 import { ReadOnlyExerciseRow } from '@/components/workout-editor/ReadOnlyExerciseRow'
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { ProgramDay, UserProgramDay } from '@/types/programs'
 import { TemplateExerciseGroup } from '@/types/templates'
@@ -19,18 +18,16 @@ export interface WorkoutDetailsModalHandle {
 export interface WorkoutDetailsModalProps {
   onOpenChange?: (isOpen: boolean) => void
   onStartWorkout?: (day: UserProgramDay) => void
-  persistOnNavigation?: boolean
 }
 
 export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, WorkoutDetailsModalProps>(
-  ({ onOpenChange, onStartWorkout, persistOnNavigation = false }, ref) => {
+  ({ onOpenChange, onStartWorkout }, ref) => {
     const router = useRouter()
     const [selectedDay, setSelectedDay] = useState<ProgramDay | UserProgramDay | null>(null)
     const [isStartable, setIsStartable] = useState(false)
     const isDark = useColorScheme() === 'dark'
     const insets = useSafeAreaInsets()
     const colors = useThemeColor()
-    const [isOpen, setIsOpen] = useState(false)
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const dynamicSizing = selectedDay?.isRestDay ? true : false
 
@@ -52,16 +49,6 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
       dismiss: dismissModal,
     }))
 
-    // Shared modal logic
-    useModalBackHandler(isOpen, dismissModal)
-    useModalNavigationSync({
-      isOpen,
-      present: () => {
-        if (selectedDay) presentModal(selectedDay, isStartable)
-      },
-      dismiss: dismissModal,
-      persistOnNavigation,
-    })
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -159,9 +146,7 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
                   if (selectedDay && 'templateSnapshot' in selectedDay) {
                     onStartWorkout?.(selectedDay as UserProgramDay)
                   }
-                  if (!persistOnNavigation) {
-                    bottomSheetModalRef.current?.dismiss()
-                  }
+                  bottomSheetModalRef.current?.dismiss()
                   router.push({
                     pathname: '/(app)/workout/start',
                   })
@@ -180,12 +165,10 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
         enableDynamicSizing={dynamicSizing}
         backdropComponent={renderBackdrop}
         onDismiss={() => {
-          setIsOpen(false)
           onOpenChange?.(false)
         }}
         onChange={(index) => {
           const open = index >= 0
-          setIsOpen(open)
           onOpenChange?.(open)
         }}
         handleIndicatorStyle={{

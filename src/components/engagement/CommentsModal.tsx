@@ -4,7 +4,6 @@ import {
   DeleteConfirmModal,
   DeleteConfirmModalHandle,
 } from '@/components/ui/modals/DeleteConfirmModal'
-import { useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { useCommentsQuery, useDeleteCommentMutation } from '@/hooks/queries/engagement'
 import { Comment } from '@/types/engagement'
@@ -45,11 +44,10 @@ export interface CommentsModalHandle {
 type Props = {
   workoutId: string
   onClose?: () => void
-  persistOnNavigation?: boolean
 }
 
 const CommentsModal = forwardRef<CommentsModalHandle, Props>(
-  ({ workoutId, onClose, persistOnNavigation = false }, ref) => {
+  ({ workoutId, onClose }, ref) => {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
     const colors = useThemeColor()
@@ -99,7 +97,6 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(
     }))
 
     // Shared modal logic
-    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const snapPoints = useMemo(() => ['75%'], [])
 

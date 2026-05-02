@@ -1,4 +1,3 @@
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { MetaItem } from '@/types/meta'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
@@ -9,7 +8,6 @@ import React, {
   useImperativeHandle,
   useMemo,
   useRef,
-  useState,
 } from 'react'
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -28,7 +26,6 @@ type Props = {
   onSelect: (item: MetaItem) => void
   onLongPress?: (item: MetaItem) => void
   onCreatePress?: () => void
-  persistOnNavigation?: boolean
 }
 
 const MetaModal = forwardRef<MetaModalHandle, Props>(
@@ -42,14 +39,12 @@ const MetaModal = forwardRef<MetaModalHandle, Props>(
       onSelect,
       onLongPress,
       onCreatePress,
-      persistOnNavigation = false,
     },
     ref,
   ) => {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
     const colors = useThemeColor()
-    const [isOpen, setIsOpen] = useState(false)
 
     const present = useCallback(() => {
       bottomSheetModalRef.current?.present()
@@ -64,9 +59,6 @@ const MetaModal = forwardRef<MetaModalHandle, Props>(
       dismiss,
     }))
 
-    // Shared modal logic
-    useModalBackHandler(isOpen, dismiss)
-    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -83,7 +75,7 @@ const MetaModal = forwardRef<MetaModalHandle, Props>(
         snapPoints={snapPoints}
         backdropComponent={renderBackdrop}
         onDismiss={onClose}
-        onChange={(index) => setIsOpen(index >= 0)}
+        onChange={(index) => {}}
         handleIndicatorStyle={{
           backgroundColor: colors.isDark ? '#525252' : '#d1d5db',
         }}

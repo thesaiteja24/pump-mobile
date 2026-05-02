@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useAddMeasurementMutation, useProfileQuery } from '@/hooks/queries/me'
 import { useThemeColor } from '@/hooks/theme'
 import { SelfUser } from '@/types/me'
@@ -29,16 +28,13 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-type Props = {
-  persistOnNavigation?: boolean
-}
+type Props = {}
 
 export const MeasurementsSheet = forwardRef<BottomSheetModal, Props>(
-  ({ persistOnNavigation = false }, ref) => {
+  (_, ref) => {
     const colors = useThemeColor()
     const isDarkMode = useColorScheme() === 'dark'
     const insets = useSafeAreaInsets()
-    const [isOpen, setIsOpen] = useState(false)
     const { data: userData } = useProfileQuery()
     const user = userData as SelfUser | null
 
@@ -139,19 +135,7 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal, Props>(
     // leanBodyMass in kg — for backend storage
     const leanBodyMassKg = composition?.leanMass?.toFixed(2) ?? ''
 
-    const present = useCallback(() => {
-      // @ts-ignore
-      ref?.current?.present()
-    }, [ref])
 
-    const dismiss = useCallback(() => {
-      // @ts-ignore
-      ref?.current?.dismiss()
-    }, [ref])
-
-    // Shared modal logic
-    useModalBackHandler(isOpen, dismiss)
-    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const pickImages = async () => {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -270,7 +254,8 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal, Props>(
 
       if (res) {
         Toast.show({ type: 'success', text1: 'Measurements saved successfully!' })
-        dismiss()
+        // @ts-ignore
+        ref?.current?.dismiss()
 
         // Reset fields after successful save
         setWeight('')
@@ -315,7 +300,7 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal, Props>(
       progressPics,
       user?.id,
       addMeasurementMutation,
-      dismiss,
+      ref,
       weightUnit,
       lengthUnit,
     ])
@@ -336,7 +321,7 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal, Props>(
         keyboardBlurBehavior="restore"
         style={{ marginTop: insets.top }}
         stackBehavior="push"
-        onChange={(index) => setIsOpen(index >= 0)}
+        onChange={(index) => {}}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

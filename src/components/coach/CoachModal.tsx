@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/buttons/Button'
 import { useCoach } from '@/hooks/coach'
-import { useModalBackHandler } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
 import { CoachMessage } from '@/types/coach'
@@ -30,7 +29,6 @@ export interface CoachModalHandle {
 
 type Props = {
   onClose?: () => void
-  persistOnNavigation?: boolean
 }
 
 const ChatBubble = ({ message }: { message: CoachMessage }) => {
@@ -65,7 +63,7 @@ const ChatBubble = ({ message }: { message: CoachMessage }) => {
   )
 }
 
-const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose, persistOnNavigation = false }, ref) => {
+const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose }, ref) => {
   const colors = useThemeColor()
   const isDark = useColorScheme() === 'dark'
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
@@ -101,8 +99,6 @@ const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose, persistOnNavi
     dismiss,
   }))
 
-  // Shared modal logic
-  useModalBackHandler(isOpen, dismiss)
 
   const renderBackdrop = useCallback(
     (props: any) => (

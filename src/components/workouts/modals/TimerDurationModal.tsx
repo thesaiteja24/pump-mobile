@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
@@ -27,7 +26,6 @@ export interface TimerDurationModalProps {
   onClose?: () => void
   onConfirm: (seconds: number) => void
   onReset?: () => void
-  persistOnNavigation?: boolean
 }
 
 const TimerDurationModal = React.memo(
@@ -39,7 +37,6 @@ const TimerDurationModal = React.memo(
         onClose,
         onConfirm,
         onReset,
-        persistOnNavigation = false,
       },
       ref,
     ) => {
@@ -47,8 +44,7 @@ const TimerDurationModal = React.memo(
       const colors = useThemeColor()
       const bottomSheetModalRef = useRef<BottomSheetModal>(null)
       const insets = useSafeAreaInsets()
-      const [isOpen, setIsOpen] = useState(false)
-      const [hours, setHours] = useState(0)
+        const [hours, setHours] = useState(0)
       const [minutes, setMinutes] = useState(0)
       const [seconds, setSeconds] = useState(0)
       const [pickerKey, setPickerKey] = useState(0)
@@ -81,13 +77,6 @@ const TimerDurationModal = React.memo(
         selectedDurationRef.current = hours * 3600 + minutes * 60 + seconds
       }, [hours, minutes, seconds])
 
-      useModalBackHandler(isOpen, dismiss)
-      useModalNavigationSync({
-        isOpen,
-        present: () => present(selectedDurationRef.current),
-        dismiss,
-        persistOnNavigation,
-      })
 
       const handleConfirm = () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
@@ -120,7 +109,7 @@ const TimerDurationModal = React.memo(
           enableDynamicSizing={false}
           enableContentPanningGesture={false}
           enableHandlePanningGesture={false}
-          onChange={(index) => setIsOpen(index >= 0)}
+          onChange={(index) => {}}
           handleIndicatorStyle={{
             backgroundColor: isDark ? '#525252' : '#d1d5db',
           }}

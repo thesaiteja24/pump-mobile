@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { useModalBackHandler } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet'
 import {
@@ -22,16 +21,14 @@ export interface PrivacyPolicyModalHandle {
 type Props = {
   onAgree: (version?: string) => void
   onClose?: () => void
-  persistOnNavigation?: boolean
 }
 
 const PrivacyPolicyModal = forwardRef<PrivacyPolicyModalHandle, Props>(
-  ({ onAgree, onClose, persistOnNavigation = false }, ref) => {
+  ({ onAgree, onClose }, ref) => {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
     const isDark = useColorScheme() === 'dark'
     const colors = useThemeColor()
-    const [isOpen, setIsOpen] = useState(false)
 
     const [policyVersion, setPolicyVersion] = useState<string | null>(null)
 
@@ -66,8 +63,6 @@ const PrivacyPolicyModal = forwardRef<PrivacyPolicyModalHandle, Props>(
       dismiss,
     }))
 
-    // Shared modal logic
-    useModalBackHandler(isOpen, dismiss)
 
     const snapPoints = useMemo(() => ['90%'], [])
 
@@ -87,10 +82,9 @@ const PrivacyPolicyModal = forwardRef<PrivacyPolicyModalHandle, Props>(
         enablePanDownToClose
         enableDynamicSizing={false}
         onDismiss={() => {
-          setIsOpen(false)
           onClose?.()
         }}
-        onChange={(index) => setIsOpen(index >= 0)}
+        onChange={(index) => {}}
         handleIndicatorStyle={{
           backgroundColor: isDark ? '#525252' : '#d1d5db',
         }}

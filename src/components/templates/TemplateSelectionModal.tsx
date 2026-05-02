@@ -1,4 +1,3 @@
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { WorkoutTemplate } from '@/types/templates'
 import { Ionicons } from '@expo/vector-icons'
@@ -10,7 +9,6 @@ import {
   useImperativeHandle,
   useMemo,
   useRef,
-  useState,
 } from 'react'
 import { Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -24,16 +22,14 @@ type Props = {
   templates: WorkoutTemplate[]
   onSelect: (templateId: string) => void
   onClose?: () => void
-  persistOnNavigation?: boolean
 }
 
 const TemplateSelectionModal = forwardRef<TemplateSelectionModalHandle, Props>(
-  ({ templates, onSelect, onClose, persistOnNavigation = false }, ref) => {
+  ({ templates, onSelect, onClose }, ref) => {
     const isDark = useColorScheme() === 'dark'
     const colors = useThemeColor()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const insets = useSafeAreaInsets()
-    const [isOpen, setIsOpen] = useState(false)
 
     const present = useCallback(() => bottomSheetModalRef.current?.present(), [])
     const dismiss = useCallback(() => bottomSheetModalRef.current?.dismiss(), [])
@@ -43,9 +39,6 @@ const TemplateSelectionModal = forwardRef<TemplateSelectionModalHandle, Props>(
       dismiss,
     }))
 
-    // Shared modal logic
-    useModalBackHandler(isOpen, dismiss)
-    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -62,7 +55,7 @@ const TemplateSelectionModal = forwardRef<TemplateSelectionModalHandle, Props>(
         snapPoints={snapPoints}
         backdropComponent={renderBackdrop}
         onDismiss={onClose}
-        onChange={(index) => setIsOpen(index >= 0)}
+        onChange={(index) => {}}
         handleIndicatorStyle={{ backgroundColor: isDark ? '#525252' : '#d1d5db' }}
         backgroundStyle={{ backgroundColor: colors.background }}
         animationConfigs={{ duration: 350 }}

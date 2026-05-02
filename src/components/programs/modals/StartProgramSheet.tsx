@@ -1,7 +1,6 @@
 import { PaywallModal, PaywallModalHandle } from '@/components/subscriptions/PaywallModal'
 import { Button } from '@/components/ui/buttons/Button'
 import { SelectableCard } from '@/components/ui/SelectableCard'
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
 import { Program, UserProgram } from '@/types/programs'
@@ -26,11 +25,10 @@ interface StartProgramSheetProps {
   activeProgram: UserProgram | null
   onConfirm: (duration: number) => Promise<void>
   isLoading?: boolean
-  persistOnNavigation?: boolean
 }
 
 export const StartProgramSheet = forwardRef<StartProgramSheetHandle, StartProgramSheetProps>(
-  ({ program, activeProgram, onConfirm, isLoading, persistOnNavigation = false }, ref) => {
+  ({ program, activeProgram, onConfirm, isLoading }, ref) => {
     const isDark = useColorScheme() === 'dark'
     const insets = useSafeAreaInsets()
     const colors = useThemeColor()
@@ -42,7 +40,6 @@ export const StartProgramSheet = forwardRef<StartProgramSheetHandle, StartProgra
 
     const [selectedDuration, setSelectedDuration] = useState(4)
     const [planType, setPlanType] = useState<'regular' | 'personalised'>('regular')
-    const [isOpen, setIsOpen] = useState(false)
 
     const durations = [4, 6, 8, 10, 12, 14, 16]
 
@@ -54,9 +51,6 @@ export const StartProgramSheet = forwardRef<StartProgramSheetHandle, StartProgra
       dismiss,
     }))
 
-    // Shared modal logic
-    useModalBackHandler(isOpen, dismiss)
-    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -91,7 +85,7 @@ export const StartProgramSheet = forwardRef<StartProgramSheetHandle, StartProgra
           ref={bottomSheetModalRef}
           backdropComponent={renderBackdrop}
           enableDynamicSizing
-          onChange={(index) => setIsOpen(index >= 0)}
+          onChange={(index) => {}}
           handleIndicatorStyle={{
             backgroundColor: isDark ? '#525252' : '#d1d5db',
           }}

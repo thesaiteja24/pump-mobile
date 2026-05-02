@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { formatSeconds } from '@/utils/time'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
@@ -33,7 +32,6 @@ type Props = {
   onPause?: () => void
   onResume?: () => void
   onClose?: () => void
-  persistOnNavigation?: boolean
 }
 
 const MIN_DURATION_SECONDS = 0
@@ -55,7 +53,6 @@ const WorkoutDurationModal = React.memo(
         onPause,
         onResume,
         onClose,
-        persistOnNavigation = false,
       },
       ref,
     ) => {
@@ -63,8 +60,7 @@ const WorkoutDurationModal = React.memo(
       const colors = useThemeColor()
       const bottomSheetModalRef = useRef<BottomSheetModal>(null)
       const insets = useSafeAreaInsets()
-      const [isOpen, setIsOpen] = useState(false)
-      const [isEditingStartTime, setIsEditingStartTime] = useState(false)
+        const [isEditingStartTime, setIsEditingStartTime] = useState(false)
 
       const present = useCallback(() => {
         bottomSheetModalRef.current?.present()
@@ -80,8 +76,6 @@ const WorkoutDurationModal = React.memo(
         dismiss,
       }))
 
-      useModalBackHandler(isOpen, dismiss)
-      useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
       const renderBackdrop = useCallback(
         (props: any) => (
@@ -112,7 +106,7 @@ const WorkoutDurationModal = React.memo(
           onDismiss={onClose}
           enablePanDownToClose
           enableDynamicSizing={false}
-          onChange={(index) => setIsOpen(index >= 0)}
+          onChange={(index) => {}}
           handleIndicatorStyle={{
             backgroundColor: isDark ? '#525252' : '#d1d5db',
           }}

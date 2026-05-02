@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import React, {
@@ -29,7 +28,6 @@ type Props = {
   onConfirm?: () => Promise<void> | void
   onCancel?: () => void
   children?: React.ReactNode
-  persistOnNavigation?: boolean
   floating?: boolean
 }
 
@@ -43,7 +41,6 @@ export const CustomModal = forwardRef<ModalHandle, Props>(
       onConfirm,
       onCancel,
       children,
-      persistOnNavigation = false,
       floating = false,
     },
     ref,
@@ -77,9 +74,6 @@ export const CustomModal = forwardRef<ModalHandle, Props>(
       close: dismiss,
     }))
 
-    // Shared modal logic
-    useModalBackHandler(isOpen, dismiss)
-    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const handleConfirm = async () => {
       if (isLoading) return

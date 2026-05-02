@@ -1,9 +1,8 @@
 import { Button } from '@/components/ui/buttons/Button'
-import { useModalBackHandler, useModalNavigationSync } from '@/hooks/modal'
 import { useThemeColor } from '@/hooks/theme'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
-import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react'
+import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react'
 import { Text, useColorScheme, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -12,7 +11,6 @@ interface ProgramWorkoutPromptProps {
   workoutTitle: string
   onSelectProgram: () => void
   onSelectEmpty: () => void
-  persistOnNavigation?: boolean
 }
 
 export interface ProgramWorkoutPromptHandle {
@@ -21,12 +19,11 @@ export interface ProgramWorkoutPromptHandle {
 }
 
 const ProgramWorkoutPromptModal = forwardRef<ProgramWorkoutPromptHandle, ProgramWorkoutPromptProps>(
-  ({ programTitle, workoutTitle, onSelectProgram, onSelectEmpty, persistOnNavigation = false }, ref) => {
+  ({ programTitle, workoutTitle, onSelectProgram, onSelectEmpty }, ref) => {
     const bottomSheetRef = useRef<BottomSheetModal>(null)
     const colors = useThemeColor()
     const isDark = useColorScheme() === 'dark'
     const insets = useSafeAreaInsets()
-    const [isOpen, setIsOpen] = useState(false)
 
     const present = useCallback(() => bottomSheetRef.current?.present(), [])
     const dismiss = useCallback(() => bottomSheetRef.current?.dismiss(), [])
@@ -36,9 +33,6 @@ const ProgramWorkoutPromptModal = forwardRef<ProgramWorkoutPromptHandle, Program
       dismiss,
     }))
 
-    // Shared modal logic
-    useModalBackHandler(isOpen, dismiss)
-    useModalNavigationSync({ isOpen, present, dismiss, persistOnNavigation })
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -55,7 +49,7 @@ const ProgramWorkoutPromptModal = forwardRef<ProgramWorkoutPromptHandle, Program
         enableDynamicSizing={false}
         enablePanDownToClose={true}
         backdropComponent={renderBackdrop}
-        onChange={(index) => setIsOpen(index >= 0)}
+        onChange={(index) => {}}
         handleIndicatorStyle={{ backgroundColor: isDark ? '#525252' : '#d1d5db' }}
         backgroundStyle={{ backgroundColor: colors.background }}
         animationConfigs={{ duration: 350 }}
