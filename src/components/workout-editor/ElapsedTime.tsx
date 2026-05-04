@@ -1,5 +1,5 @@
 import { useThemeColor } from '@/hooks/theme'
-import { formatSeconds } from '@/utils/time'
+import { formatSeconds } from '@/utils/workout'
 import { useEffect, useState } from 'react'
 import { Text } from 'react-native'
 

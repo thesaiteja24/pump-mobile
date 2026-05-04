@@ -2,9 +2,9 @@ import { useRepliesQuery, useToggleLikeMutation } from '@/hooks/queries/engageme
 import { useProfileQuery } from '@/hooks/queries/me'
 import { Comment } from '@/types/engagement'
 import { SelfUser } from '@/types/me'
-import { formatTimeAgo } from '@/utils/time'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import React, { memo, useMemo, useState } from 'react'
+import { formatDistanceToNow } from 'date-fns'
+import { memo, useMemo, useState } from 'react'
 import { Image, Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 
 const CommentItem = ({
@@ -112,7 +112,7 @@ const CommentItem = ({
           @{comment.user?.firstName || 'Unknown'}
         </Text>
         <Text className="ml-2 text-xs" style={{ color: subTextColor }}>
-          {formatTimeAgo(new Date(comment.createdAt))}
+          {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
         </Text>
       </View>
       {comment.user?.id === userId && (

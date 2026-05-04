@@ -1,4 +1,6 @@
+import { useCallback } from 'react'
 import { LengthUnits, WeightUnits } from '@/types/me'
+import { useProfileQuery } from './queries/me'
 
 /* ---------------------------------------------
    Constants (never magic numbers)
@@ -99,4 +101,56 @@ export function displayWeight(value: number, unit: WeightUnits, options?: { prec
  */
 export function displayLength(value: number, unit: LengthUnits, options?: { precision?: number }) {
   return convertLength(value, { from: 'cm', to: unit, precision: options?.precision ?? 2 })
+}
+
+/* ---------------------------------------------
+   The Hook
+--------------------------------------------- */
+
+/**
+ * A hook that provides unit conversion functions based on the user's preferred units.
+ * It internally manages fetching the user's preferences.
+ */
+export function useUnitConverter() {
+  const { data: user } = useProfileQuery()
+
+  const weightUnit: WeightUnits = (user as any)?.preferredWeightUnit ?? 'kg'
+  const lengthUnit: LengthUnits = (user as any)?.preferredLengthUnit ?? 'cm'
+
+  const formatWeight = useCallback(
+    (kgValue: number, precision?: number) => {
+      return displayWeight(kgValue, weightUnit, { precision })
+    },
+    [weightUnit],
+  )
+
+  const formatLength = useCallback(
+    (cmValue: number, precision?: number) => {
+      return displayLength(cmValue, lengthUnit, { precision })
+    },
+    [lengthUnit],
+  )
+
+  const toCanonicalWeight = useCallback(
+    (value: number, precision?: number) => {
+      return convertWeight(value, { from: weightUnit, to: 'kg', precision })
+    },
+    [weightUnit],
+  )
+
+  const toCanonicalLength = useCallback(
+    (value: number, precision?: number) => {
+      return convertLength(value, { from: lengthUnit, to: 'cm', precision })
+    },
+    [lengthUnit],
+  )
+
+  return {
+    formatWeight,
+    formatLength,
+    toCanonicalWeight,
+    toCanonicalLength,
+    weightUnit,
+    lengthUnit,
+  }
 }

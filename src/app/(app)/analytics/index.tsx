@@ -7,6 +7,7 @@ import {
   useNutritionPlanQuery,
   useProfileQuery,
 } from '@/hooks/queries/me'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { useThemeColor } from '@/hooks/theme'
 import { SelfUser } from '@/types/me'
 import {
@@ -16,7 +17,6 @@ import {
   calculateComposition,
   estimateBodyFatFromBMI,
 } from '@/utils/analytics'
-import { convertWeight } from '@/utils/converter'
 import { useRouter } from 'expo-router'
 import React, { useEffect, useMemo } from 'react'
 import { BackHandler, ScrollView, View } from 'react-native'
@@ -33,6 +33,7 @@ const AnalyticsScreen = () => {
 
   const latestMeasurements = measurements?.latestValues
   const colors = useThemeColor()
+  const { formatWeight } = useUnitConverter()
 
   // All values from store are in backend canonical units (kg / cm)
   const weightKg = Number(latestMeasurements?.weight ?? user?.weight) // kg
@@ -42,7 +43,6 @@ const AnalyticsScreen = () => {
   const waistCm = Number(latestMeasurements?.waist) // cm
   const hipsCm = Number(latestMeasurements?.hips) // cm
 
-  const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
   // Goal extracted at top level to satisfy Rules of Hooks
   const fitnessGoal = fitnessProfile?.fitnessGoal
 
@@ -86,11 +86,11 @@ const AnalyticsScreen = () => {
     const bmi = calculateBMI(weightKg, heightCm)
 
     // Convert fat/lean mass to user's preferred unit for display
-    const fatMass = convertWeight(fatMassKg, { from: 'kg', to: preferredWeightUnit })
-    const leanMass = convertWeight(leanMassKg, { from: 'kg', to: preferredWeightUnit })
+    const fatMass = formatWeight(fatMassKg)
+    const leanMass = formatWeight(leanMassKg)
 
     return { bodyFat, fatMass, leanMass, bmi }
-  }, [weightKg, heightCm, gender, neckCm, waistCm, hipsCm, preferredWeightUnit, age])
+  }, [weightKg, heightCm, gender, neckCm, waistCm, hipsCm, age, formatWeight])
 
   const bmr = useMemo(() => {
     if (!weightKg || !heightCm || !gender) return null
@@ -163,7 +163,6 @@ const AnalyticsScreen = () => {
             composition={composition}
             gender={gender}
             goal={fitnessGoal}
-            preferredWeightUnit={preferredWeightUnit}
           />
 
           <NutritionTargetsCard
@@ -172,7 +171,6 @@ const AnalyticsScreen = () => {
             riskBadge={riskBadge}
             bmr={bmr}
             colors={colors}
-            preferredWeightUnit={preferredWeightUnit}
           />
         </View>
       )}

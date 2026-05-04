@@ -1,16 +1,12 @@
 import { BaseTrainingChart } from '@/components/me/BaseTrainingChart'
-import { useProfileQuery } from '@/hooks/queries/me'
-import { SelfUser } from '@/types/me'
-import { convertWeight } from '@/utils/converter'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 import React from 'react'
 
 export default function VolumeChartScreen() {
-  const { data: userData } = useProfileQuery()
-  const user = userData as SelfUser | null
-  const preferredUnit = user?.preferredWeightUnit ?? 'kg'
+  const { formatWeight, weightUnit: preferredUnit } = useUnitConverter()
 
   const formatVolume = (val: number) => {
-    const converted = convertWeight(val, { from: 'kg', to: preferredUnit as any, precision: 0 })
+    const converted = formatWeight(val, 0)
     return converted.toLocaleString()
   }
 

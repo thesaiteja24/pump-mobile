@@ -1,7 +1,6 @@
-import { useFitnessProfileQuery, useMeasurementsQuery, useProfileQuery } from '@/hooks/queries/me'
+import { useFitnessProfileQuery, useMeasurementsQuery } from '@/hooks/queries/me'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { useThemeColor } from '@/hooks/theme'
-import { SelfUser } from '@/types/me'
-import { convertWeight } from '@/utils/converter'
 import { useRouter } from 'expo-router'
 import React, { useMemo } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
@@ -15,13 +14,11 @@ interface WeightMetricCardProps {
 export function WeightMetricCard({ width }: WeightMetricCardProps) {
   const router = useRouter()
   const colors = useThemeColor()
-  const { data: userData } = useProfileQuery()
-  const user = userData as SelfUser | null
+  const { formatWeight, weightUnit: preferredUnit } = useUnitConverter()
 
   const { data: analytics } = useMeasurementsQuery()
   const { data: fitnessProfile } = useFitnessProfileQuery()
 
-  const preferredUnit = user?.preferredWeightUnit ?? 'kg'
   const fitnessGoal = fitnessProfile?.fitnessGoal as string | undefined
 
   // ── Layout ratios ─────────────────────────────────────────────
@@ -56,13 +53,9 @@ export function WeightMetricCard({ width }: WeightMetricCardProps) {
     if (last7.length === 0) return [0]
     // TODO(to be done by user only): check if we can fix this any type declartion
     return last7.map((m: any) =>
-      convertWeight(Number(m.weight), {
-        from: 'kg',
-        to: preferredUnit,
-        precision: 2,
-      }),
+      formatWeight(Number(m.weight), 2),
     )
-  }, [last7, preferredUnit])
+  }, [last7, formatWeight])
 
   // ── Latest value ──────────────────────────────────────────────
   const latestWeight = chartData[chartData.length - 1]

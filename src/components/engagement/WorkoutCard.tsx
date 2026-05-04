@@ -5,9 +5,9 @@ import { Comment as AppComment } from '@/types/engagement'
 import { ExerciseType } from '@/types/exercises'
 import { SelfUser } from '@/types/me'
 import { WorkoutHistoryItem } from '@/types/workouts'
-import { formatDurationFromDates, formatTimeAgo } from '@/utils/time'
-import { calculateWorkoutMetrics } from '@/utils/workout'
+import { formatDurationFromDates, calculateWorkoutMetrics } from '@/utils/workout'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
+import { formatDistanceToNow } from 'date-fns'
 import * as Haptics from 'expo-haptics'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
@@ -175,7 +175,7 @@ function WorkoutCard({
               )}
             </View>
             <Text className="flex-1 text-sm font-normal text-neutral-500 dark:text-neutral-400">
-              {formatTimeAgo(new Date(workout.startTime))}
+              {formatDistanceToNow(new Date(workout.startTime), { addSuffix: true })}
             </Text>
           </View>
         </View>

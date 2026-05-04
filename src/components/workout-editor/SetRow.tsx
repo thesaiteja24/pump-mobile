@@ -10,9 +10,8 @@ import TimerDurationModal, {
 import { useThemeColor } from '@/hooks/theme'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import type { ExerciseType } from '@/types/exercises'
-import type { WeightUnits } from '@/types/me'
 import type { ExerciseRestMode } from '@/types/workouts'
-import { convertWeight } from '@/utils/converter'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
@@ -68,7 +67,6 @@ const EXERCISE_CAPABILITIES: Record<
 type Props = {
   setId: string
   exerciseType: ExerciseType
-  preferredWeightUnit: WeightUnits
   exerciseRestMode: ExerciseRestMode
   notesExpanded?: boolean
 }
@@ -89,7 +87,6 @@ function getSetTypeColor(type: string, setIndex: number, completed: boolean) {
 function SetRow({
   setId,
   exerciseType,
-  preferredWeightUnit,
   exerciseRestMode,
   notesExpanded = false,
 }: Props) {
@@ -105,6 +102,7 @@ function SetRow({
   const toggleSetCompleted = useWorkoutEditor((state) => state.toggleSetCompleted)
   const startSetTimer = useWorkoutEditor((state) => state.startSetTimer)
   const stopSetTimer = useWorkoutEditor((state) => state.stopSetTimer)
+  const { formatWeight, toCanonicalWeight } = useUnitConverter()
 
   const [isEditing, setIsEditing] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -125,16 +123,8 @@ function SetRow({
 
   useEffect(() => {
     if (!set || isEditing || !hasWeight) return
-    setWeightText(
-      set.weight != null
-        ? convertWeight(set.weight, {
-            from: 'kg',
-            to: preferredWeightUnit,
-            precision: 2,
-          }).toString()
-        : '',
-    )
-  }, [set, isEditing, hasWeight, preferredWeightUnit])
+    setWeightText(set.weight != null ? formatWeight(set.weight).toString() : '')
+  }, [set, isEditing, hasWeight, formatWeight])
 
   useEffect(() => {
     if (!set || isEditing || !hasReps) return
@@ -270,7 +260,7 @@ function SetRow({
                         weight:
                           weightText.trim().length === 0
                             ? undefined
-                            : convertWeight(num, { from: preferredWeightUnit, to: 'kg' }),
+                            : toCanonicalWeight(num),
                       })
                     }
                   }}

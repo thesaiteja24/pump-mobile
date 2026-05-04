@@ -7,8 +7,7 @@ import { useExercises } from '@/hooks/queries/exercises'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import { ExerciseType } from '@/types/exercises'
 import { WorkoutHistoryExercise, WorkoutHistorySet, WorkoutLogGroup } from '@/types/workouts'
-import { formatDate, formatDurationFromDates } from '@/utils/time'
-import { calculateWorkoutMetrics } from '@/utils/workout'
+import { formatDurationFromDates, calculateWorkoutMetrics } from '@/utils/workout'
 import * as Crypto from 'expo-crypto'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
@@ -27,6 +26,7 @@ import {
 } from '@/hooks/queries/workouts'
 import { useThemeColor } from '@/hooks/theme'
 import { useAuth } from '@/stores/auth.store'
+import { formatDistanceToNow } from 'date-fns'
 import { Image } from 'expo-image'
 
 /* ───────────────── Component ───────────────── */
@@ -217,7 +217,7 @@ export default function WorkoutDetails() {
 
   const duration = formatDurationFromDates(workout.startTime, workout.endTime)
 
-  const timeAgo = formatDate(new Date(workout.endTime))
+  const timeAgo = formatDistanceToNow(new Date(workout.endTime), { addSuffix: true })
 
   const { tonnage, completedSets } = calculateWorkoutMetrics(workout, exerciseTypeMap)
 

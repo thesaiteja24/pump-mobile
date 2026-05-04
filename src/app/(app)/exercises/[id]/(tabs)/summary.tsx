@@ -2,10 +2,8 @@ import ExerciseCharts from '@/components/exercises/ExerciseCharts'
 import { CustomModal, ModalHandle } from '@/components/ui/modals/CustomModal'
 import { useAnalytics } from '@/hooks/analytics'
 import { useExercises } from '@/hooks/queries/exercises'
-import { useProfileQuery } from '@/hooks/queries/me'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { useThemeColor } from '@/hooks/theme'
-import { SelfUser } from '@/types/me'
-import { convertWeight } from '@/utils/converter'
 import { EvilIcons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { useGlobalSearchParams } from 'expo-router'
 import { useVideoPlayer, VideoView } from 'expo-video'
@@ -27,9 +25,7 @@ export default function ViewExerciseScreen() {
   const color = useThemeColor()
 
   const { data: exerciseList = [] } = useExercises()
-  const { data: userData } = useProfileQuery()
-  const user = userData as SelfUser | null
-  const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
+  const { formatWeight, weightUnit: preferredWeightUnit } = useUnitConverter()
   const { getExerciseAnalytics } = useAnalytics()
   const metrics = getExerciseAnalytics(id)
 
@@ -116,11 +112,7 @@ export default function ViewExerciseScreen() {
             </Pressable>
           </View>
           <Text className="text-lg font-normal text-blue-500">
-            {convertWeight(metrics.best1RM, {
-              from: preferredWeightUnit,
-              to: 'kg',
-            })}{' '}
-            {preferredWeightUnit}s
+            {formatWeight(metrics.best1RM)} {preferredWeightUnit}s
           </Text>
         </View>
 
@@ -132,11 +124,7 @@ export default function ViewExerciseScreen() {
             </Pressable>
           </View>
           <Text className="text-lg font-normal text-blue-500">
-            {convertWeight(metrics.bestSetVolume, {
-              from: preferredWeightUnit,
-              to: 'kg',
-            })}{' '}
-            {preferredWeightUnit}s
+            {formatWeight(metrics.bestSetVolume)} {preferredWeightUnit}s
           </Text>
         </View>
 
@@ -148,11 +136,7 @@ export default function ViewExerciseScreen() {
             </Pressable>
           </View>
           <Text className="text-lg font-normal text-blue-500">
-            {convertWeight(metrics.heaviestWeight, {
-              from: preferredWeightUnit,
-              to: 'kg',
-            })}{' '}
-            {preferredWeightUnit}s
+            {formatWeight(metrics.heaviestWeight)} {preferredWeightUnit}s
           </Text>
         </View>
 
@@ -193,11 +177,7 @@ export default function ViewExerciseScreen() {
                   {reps}
                 </Text>
                 <Text className="w-32 text-center text-lg font-normal text-black dark:text-white">
-                  {convertWeight(weight, {
-                    from: preferredWeightUnit,
-                    to: 'kg',
-                  })}{' '}
-                  {preferredWeightUnit}s
+                  {formatWeight(weight)} {preferredWeightUnit}s
                 </Text>
               </View>
               <View className="h-px w-full bg-neutral-200 dark:bg-neutral-800" />

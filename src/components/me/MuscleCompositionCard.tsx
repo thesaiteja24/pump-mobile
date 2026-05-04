@@ -1,6 +1,6 @@
 import { useThemeColor } from '@/hooks/theme'
 import { useCountUp } from '@/hooks/ui-utils'
-import { WeightUnits } from '@/types/me'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { BodyFatFeedback, classifyBodyFat } from '@/utils/analytics'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
@@ -32,17 +32,15 @@ interface MuscleCompositionCardProps {
   composition: CompositionData | null
   gender: 'male' | 'female' | 'other' | null | undefined
   goal?: string | null
-  /** The user's preferred weight unit — fatMass/leanMass values passed here must already be in this unit */
-  preferredWeightUnit: WeightUnits
 }
 
 export function MuscleCompositionCard({
   composition,
   gender,
   goal,
-  preferredWeightUnit,
 }: MuscleCompositionCardProps) {
   const router = useRouter()
+  const { weightUnit: preferredWeightUnit } = useUnitConverter()
   const colors = useThemeColor()
   const isDark = colors.isDark
 

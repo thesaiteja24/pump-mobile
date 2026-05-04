@@ -7,10 +7,10 @@ import {
   useLogWeight,
 } from '@/hooks/queries/habits'
 import { HabitType } from '@/types/habits'
-import { toDateKey } from '@/utils/time'
 import { Ionicons } from '@expo/vector-icons'
+import { format } from 'date-fns'
 import { useRouter } from 'expo-router'
-import React, { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Pressable, Text, useWindowDimensions, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import Toast from 'react-native-toast-message'
@@ -61,12 +61,12 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
     startOfWeek.setHours(0, 0, 0, 0)
 
     let count = 0
-    const loggedDates = new Set(habitLogs.map((l) => toDateKey(new Date(l.date))))
+    const loggedDates = new Set(habitLogs.map((l) => format(new Date(l.date), 'yyyy-MM-dd')))
 
     for (let i = 0; i <= today.getDay(); i++) {
       const d = new Date(startOfWeek)
       d.setDate(startOfWeek.getDate() + i)
-      if (loggedDates.has(toDateKey(d))) {
+      if (loggedDates.has(format(d, 'yyyy-MM-dd'))) {
         count++
       }
     }
@@ -83,8 +83,8 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
     for (let i = 0; i <= today.getDay(); i++) {
       const d = new Date(startOfWeek)
       d.setDate(startOfWeek.getDate() + i)
-      const key = toDateKey(d)
-      const log = habitLogs.find((l) => toDateKey(new Date(l.date)) === key)
+      const key = format(d, 'yyyy-MM-dd')
+      const log = habitLogs.find((l) => format(new Date(l.date), 'yyyy-MM-dd') === key)
       if (log) {
         count += Number(log.value)
       }

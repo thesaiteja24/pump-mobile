@@ -1,7 +1,7 @@
 import { useThemeColor } from '@/hooks/theme'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { Pressable, Text, View, useColorScheme } from 'react-native'
 import DatePicker from 'react-native-date-picker'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -190,6 +190,9 @@ export default function DateTimePicker(props: DateTimePickerProps) {
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{
           backgroundColor: isDark ? '#525252' : '#d1d5db',
+        }}
+        backgroundStyle={{
+          backgroundColor: colors.background,
         }}
         // Smoother, slightly slower animation
         animationConfigs={{ duration: 350 }}

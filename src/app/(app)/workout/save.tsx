@@ -19,7 +19,7 @@ import {
 } from '@/stores/workout-editor.store'
 import type { ExerciseType } from '@/types/exercises'
 import type { WorkoutPayload } from '@/types/payloads'
-import { formatSeconds } from '@/utils/time'
+import { formatSeconds } from '@/utils/workout'
 import { Stack, router } from 'expo-router'
 import { useMemo, useRef } from 'react'
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'

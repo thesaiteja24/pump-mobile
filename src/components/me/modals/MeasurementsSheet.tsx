@@ -1,9 +1,9 @@
 import { Button } from '@/components/ui/buttons/Button'
 import { useAddMeasurementMutation, useProfileQuery } from '@/hooks/queries/me'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { useThemeColor } from '@/hooks/theme'
 import { SelfUser } from '@/types/me'
 import { calculateBodyFat, calculateComposition } from '@/utils/analytics'
-import { convertLength, convertWeight } from '@/utils/converter'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import {
@@ -28,7 +28,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-type Props = {}
+type Props = Record<string, never>
 
 export const MeasurementsSheet = forwardRef<BottomSheetModal, Props>(
   (_, ref) => {
@@ -38,15 +38,18 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal, Props>(
     const { data: userData } = useProfileQuery()
     const user = userData as SelfUser | null
 
+    const {
+      toCanonicalWeight,
+      toCanonicalLength,
+      weightUnit,
+      lengthUnit,
+    } = useUnitConverter()
+
     const gender = user?.gender
     // height from store is always in cm (backend canonical)
     const heightCm = user?.height
     const addMeasurementMutation = useAddMeasurementMutation()
     const isLoading = addMeasurementMutation.isPending
-
-    // Preferred units — read from store
-    const weightUnit = user?.preferredWeightUnit ?? 'kg'
-    const lengthUnit = user?.preferredLengthUnit ?? 'cm'
 
     const lineHeight = Platform.OS === 'ios' ? 0 : 30
 
@@ -87,18 +90,9 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal, Props>(
     const missingCoreProfile = !gender || !Number.isFinite(parsedHeightCm) || parsedHeightCm <= 0
 
     // Convert user's input values to cm for the body-fat formula (USN formula requires cm)
-    const neckCm =
-      lengthUnit === 'inches'
-        ? convertLength(Number(debouncedCalc.neck), { from: 'inches', to: 'cm' })
-        : Number(debouncedCalc.neck)
-    const waistCm =
-      lengthUnit === 'inches'
-        ? convertLength(Number(debouncedCalc.waist), { from: 'inches', to: 'cm' })
-        : Number(debouncedCalc.waist)
-    const hipsCm =
-      lengthUnit === 'inches'
-        ? convertLength(Number(debouncedCalc.hips), { from: 'inches', to: 'cm' })
-        : Number(debouncedCalc.hips)
+    const neckCm = toCanonicalLength(Number(debouncedCalc.neck))
+    const waistCm = toCanonicalLength(Number(debouncedCalc.waist))
+    const hipsCm = toCanonicalLength(Number(debouncedCalc.hips))
 
     const missingMeasurements =
       !Number.isFinite(neckCm) ||
@@ -121,10 +115,7 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal, Props>(
       : null
 
     // Weight in kg for composition (convert from user unit if needed)
-    const weightKg =
-      weightUnit === 'lbs'
-        ? convertWeight(Number(debouncedCalc.weight), { from: 'lbs', to: 'kg' })
-        : Number(debouncedCalc.weight)
+    const weightKg = toCanonicalWeight(Number(debouncedCalc.weight))
 
     const composition =
       bodyFat != null && weightKg > 0 ? calculateComposition({ weight: weightKg, bodyFat }) : null
@@ -207,14 +198,14 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal, Props>(
       const appendLength = (key: string, val: string) => {
         const parsed = parseFloat(val)
         if (!val || isNaN(parsed) || parsed <= 0) return
-        const inCm = convertLength(parsed, { from: lengthUnit, to: 'cm' })
+        const inCm = toCanonicalLength(parsed)
         payload[key] = Number(inCm.toFixed(2))
       }
 
       const appendKg = (key: string, val: string) => {
         const parsed = parseFloat(val)
         if (!val || isNaN(parsed) || parsed <= 0) return
-        const inKg = convertWeight(parsed, { from: weightUnit, to: 'kg' })
+        const inKg = toCanonicalWeight(parsed)
         payload[key] = Number(inKg.toFixed(2))
       }
 
@@ -301,8 +292,8 @@ export const MeasurementsSheet = forwardRef<BottomSheetModal, Props>(
       user?.id,
       addMeasurementMutation,
       ref,
-      weightUnit,
-      lengthUnit,
+      toCanonicalLength,
+      toCanonicalWeight,
     ])
 
     return (

@@ -1,7 +1,6 @@
-import { useFitnessProfileQuery, useMeasurementsQuery, useProfileQuery } from '@/hooks/queries/me'
+import { useFitnessProfileQuery, useMeasurementsQuery } from '@/hooks/queries/me'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { useThemeColor } from '@/hooks/theme'
-import { SelfUser } from '@/types/me'
-import { convertWeight } from '@/utils/converter'
 import { Ionicons } from '@expo/vector-icons'
 import { format } from 'date-fns'
 import { useRouter } from 'expo-router'
@@ -15,14 +14,12 @@ type TimeRange = '1W' | '1M' | '3M' | '6M' | '1Y' | 'All'
 const WeightChart = () => {
   const router = useRouter()
   const colors = useThemeColor()
-  const { data: userData } = useProfileQuery()
-  const user = userData as SelfUser | null
+  const { formatWeight, weightUnit: preferredUnit } = useUnitConverter()
 
   const [selectedRange, setSelectedRange] = useState<TimeRange>('1W')
   const { data: measurementsData } = useMeasurementsQuery(selectedRange.toLowerCase())
   const { data: fitnessProfile } = useFitnessProfileQuery()
   const measurements = useMemo(() => measurementsData?.history || [], [measurementsData?.history])
-  const preferredUnit = user?.preferredWeightUnit ?? 'kg'
   const fitnessGoal = fitnessProfile?.fitnessGoal as string | undefined
 
   // ── Data Preparation ──────────────────────────────────────────
@@ -36,9 +33,7 @@ const WeightChart = () => {
   const stats = useMemo(() => {
     if (filteredData.length === 0) return { avg: 0, diff: 0, rangeStr: '' }
 
-    const weights = filteredData.map((m) =>
-      convertWeight(Number(m.weight), { from: 'kg', to: preferredUnit, precision: 1 }),
-    )
+    const weights = filteredData.map((m) => formatWeight(Number(m.weight), 1))
     const avg = weights.reduce((a, b) => a + b, 0) / weights.length
     const diff = weights[weights.length - 1] - weights[0]
 
@@ -50,7 +45,7 @@ const WeightChart = () => {
       diff,
       rangeStr: `${startStr} – ${endStr}`,
     }
-  }, [filteredData, preferredUnit])
+  }, [filteredData, formatWeight])
 
   const showPositive =
     (fitnessGoal === 'loseWeight' && stats.diff < 0) ||
@@ -58,9 +53,7 @@ const WeightChart = () => {
 
   // ── Chart Preparation ─────────────────────────────────────────
   const chartConfig = useMemo(() => {
-    const weights = filteredData.map((m) =>
-      convertWeight(Number(m.weight), { from: 'kg', to: preferredUnit, precision: 1 }),
-    )
+    const weights = filteredData.map((m) => formatWeight(Number(m.weight), 1))
 
     if (weights.length === 0) return { labels: [], datasets: [{ data: [0] }] }
 
@@ -87,7 +80,7 @@ const WeightChart = () => {
         },
       ],
     }
-  }, [filteredData, preferredUnit, selectedRange])
+  }, [filteredData, selectedRange, formatWeight])
 
   const ranges: TimeRange[] = ['1W', '1M', '3M', '6M', '1Y', 'All']
 
@@ -230,11 +223,7 @@ const WeightChart = () => {
                 {(filteredData.length > 0
                   ? Math.min(
                       ...filteredData.map((m) =>
-                        convertWeight(Number(m.weight), {
-                          from: 'kg',
-                          to: preferredUnit,
-                          precision: 1,
-                        }),
+                        formatWeight(Number(m.weight), 1),
                       ),
                     )
                   : 0
@@ -248,11 +237,7 @@ const WeightChart = () => {
                 {(filteredData.length > 0
                   ? Math.max(
                       ...filteredData.map((m) =>
-                        convertWeight(Number(m.weight), {
-                          from: 'kg',
-                          to: preferredUnit,
-                          precision: 1,
-                        }),
+                        formatWeight(Number(m.weight), 1),
                       ),
                     )
                   : 0

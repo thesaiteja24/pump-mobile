@@ -1,6 +1,5 @@
-import { toUTCISOString } from '@/utils/time'
-import { FitnessLevel } from '@/types/programs'
 import type { Gender, HeightUnit, WeightUnit } from '@/types/onboarding'
+import { FitnessLevel } from '@/types/programs'
 import { create } from 'zustand'
 
 interface OnboardingState {
@@ -178,7 +177,7 @@ export const useOnboarding = create<OnboardingState>((set, get) => ({
     const s = get()
     return {
       ...(s.gender && { gender: s.gender }),
-      ...(s.dateOfBirth && { dateOfBirth: toUTCISOString(s.dateOfBirth) }),
+      ...(s.dateOfBirth && { dateOfBirth: s.dateOfBirth.toISOString() }),
       ...(s.weight && { weight: s.weight }),
       ...(s.height && { height: s.height }),
       ...(s.weightUnit && { weightUnit: s.weightUnit }),
@@ -199,7 +198,7 @@ export const useOnboarding = create<OnboardingState>((set, get) => ({
           ...(s.activityLevel && { activityLevel: s.activityLevel }),
           ...(s.fitnessLevel && { fitnessLevel: s.fitnessLevel }),
           ...(s.weeklyRate && { weeklyWeightChange: s.weeklyRate }),
-          ...(s.targetDate && { targetDate: toUTCISOString(s.targetDate) }),
+          ...(s.targetDate && { targetDate: s.targetDate.toISOString() }),
         },
       }),
     }

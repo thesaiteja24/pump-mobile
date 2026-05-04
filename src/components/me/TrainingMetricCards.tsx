@@ -1,4 +1,4 @@
-import { convertWeight } from '@/utils/converter'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import React from 'react'
@@ -50,16 +50,15 @@ function TrainingMetricCard({
 export function WeeklyVolumeCard({
   volume,
   lastWeekVolume,
-  unit,
   width,
 }: {
   volume: number
   lastWeekVolume: number
-  unit: string
   width: number
 }) {
   const router = useRouter()
-  const displayVolume = convertWeight(volume, { from: 'kg', to: unit as any, precision: 0 })
+  const { formatWeight, weightUnit: unit } = useUnitConverter()
+  const displayVolume = formatWeight(volume, 0)
   const diff = volume - lastWeekVolume
   const isPositive = diff >= 0
 

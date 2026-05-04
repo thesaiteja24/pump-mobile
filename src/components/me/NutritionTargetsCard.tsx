@@ -1,5 +1,5 @@
 import { useCountUp } from '@/hooks/ui-utils'
-import { convertWeight } from '@/utils/converter'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import React from 'react'
@@ -12,7 +12,6 @@ interface NutritionTargetsCardProps {
   riskBadge: { label: string; color: string; bg: string } | null
   bmr: number | null
   colors: any
-  preferredWeightUnit: string
 }
 
 export function NutritionTargetsCard({
@@ -21,9 +20,9 @@ export function NutritionTargetsCard({
   riskBadge,
   bmr,
   colors,
-  preferredWeightUnit,
 }: NutritionTargetsCardProps) {
   const router = useRouter()
+  const { formatWeight, weightUnit: preferredWeightUnit } = useUnitConverter()
   const isDark = colors.isDark
 
   const isIncomplete =
@@ -36,10 +35,7 @@ export function NutritionTargetsCard({
 
   const targetWeightVal =
     Number(fitnessProfile?.targetWeight) > 0
-      ? convertWeight(Number(fitnessProfile!.targetWeight), {
-          from: 'kg',
-          to: preferredWeightUnit as any,
-        })
+      ? formatWeight(Number(fitnessProfile!.targetWeight))
       : null
   const targetWeightDisplay = useCountUp(targetWeightVal, 1, 700)
 

@@ -6,10 +6,8 @@ import TimerDurationModal, {
   TimerDurationModalHandle,
 } from '@/components/workouts/modals/TimerDurationModal'
 import { useExercises } from '@/hooks/queries/exercises'
-import { useProfileQuery } from '@/hooks/queries/me'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import type { ExerciseType } from '@/types/exercises'
-import type { SelfUser } from '@/types/me'
 import type { ExerciseGroupType } from '@/types/workouts'
 import { Entypo, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
@@ -19,6 +17,7 @@ import { memo, useMemo, useRef, useState } from 'react'
 import { Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ElapsedTime } from './ElapsedTime'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 import SetRow from './SetRow'
 
 const COL_SET = 'w-[40%] flex-row items-center justify-evenly'
@@ -80,9 +79,7 @@ function ExerciseRow({ exerciseInstanceId, onEnterReorder }: Props) {
   const deleteGroup = useWorkoutEditor((state) => state.deleteGroup)
 
   const { data: exerciseList = [] } = useExercises()
-  const { data: userData } = useProfileQuery()
-  const user = userData as SelfUser | null
-  const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
+  const { weightUnit: preferredWeightUnit } = useUnitConverter()
 
   const [notesExpanded, setNotesExpanded] = useState(false)
   const [groupType, setGroupType] = useState<ExerciseGroupType | null>(null)
@@ -346,7 +343,6 @@ function ExerciseRow({ exerciseInstanceId, onEnterReorder }: Props) {
           key={setId}
           setId={setId}
           exerciseType={exerciseDetails.exerciseType}
-          preferredWeightUnit={preferredWeightUnit}
           exerciseRestMode={exercise.restMode}
           notesExpanded={notesExpanded}
         />

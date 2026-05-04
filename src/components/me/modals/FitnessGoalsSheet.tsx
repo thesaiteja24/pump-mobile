@@ -35,7 +35,7 @@ import Toast from 'react-native-toast-message'
 type TargetType = 'weight' | 'bodyFat'
 type PlanningMode = 'rateDriven' | 'dateDriven'
 
-type Props = {}
+type Props = Record<string, never>
 
 export const FitnessGoalsSheet = forwardRef<BottomSheetModal, Props>(
   (_, ref) => {

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/buttons/Button'
 import { useThemeColor } from '@/hooks/theme'
-import { formatSeconds } from '@/utils/time'
+import { formatSeconds } from '@/utils/workout'
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
 import React, {

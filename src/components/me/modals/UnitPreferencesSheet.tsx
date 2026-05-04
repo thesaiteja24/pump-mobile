@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 type WeightUnit = 'kg' | 'lbs'
 type LengthUnit = 'cm' | 'inches'
 
-type Props = {}
+type Props = Record<string, never>
 
 export const UnitPreferencesSheet = forwardRef<BottomSheetModal, Props>(
   (_, ref) => {

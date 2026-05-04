@@ -3,7 +3,7 @@ import {
   getRestTimerRemainingSeconds,
   useWorkoutEditor,
 } from '@/stores/workout-editor.store'
-import { formatSeconds } from '@/utils/time'
+import { formatSeconds } from '@/utils/workout'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { setAudioModeAsync, useAudioPlayer } from 'expo-audio'
 import * as Haptics from 'expo-haptics'

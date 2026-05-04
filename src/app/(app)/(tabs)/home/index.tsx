@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native'
 import Animated, {
   Easing,
@@ -30,9 +30,9 @@ import {
   calculateComposition,
   estimateBodyFatFromBMI,
 } from '@/utils/analytics'
-import { convertWeight } from '@/utils/converter'
 import { getMotivationLine } from '@/utils/motivation'
-import { getGreeting, toDateKey } from '@/utils/time'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
+import { format } from 'date-fns'
 import { useRouter } from 'expo-router'
 import Toast from 'react-native-toast-message'
 
@@ -59,7 +59,8 @@ export default function HomeScreen() {
   const { data: habits = [], refetch: refetchHabits, isLoading: isLoadingHabits } = useHabitsQuery()
   const { refetch: refetchHabitLogs, isLoading: isLoadingHabitLogs } = useHabitLogsQuery()
 
-  const preferredWeightUnit = user?.preferredWeightUnit ?? 'kg'
+  const { formatWeight } = useUnitConverter()
+
   const age = useMemo(() => {
     if (!user?.dateOfBirth) return 25 // fallback
     return new Date().getFullYear() - new Date(user.dateOfBirth).getFullYear()
@@ -99,7 +100,7 @@ export default function HomeScreen() {
 
   const { streakData } = useMemo(() => {
     const today = new Date()
-    const todayKey = toDateKey(today)
+    const todayKey = format(today, 'yyyy-MM-dd')
 
     const start = new Date(today)
     start.setDate(today.getDate() - 3)
@@ -111,7 +112,7 @@ export default function HomeScreen() {
     const cursor = new Date(start)
 
     while (cursor <= end) {
-      const key = toDateKey(cursor)
+      const key = format(cursor, 'yyyy-MM-dd')
       let status: StreakDay['status']
 
       if (workoutDates?.has?.(key)) status = 'active'
@@ -185,11 +186,11 @@ export default function HomeScreen() {
     const bmi = calculateBMI(weightKg, heightCm)
 
     // Convert fat/lean mass to user's preferred unit for display
-    const fatMass = convertWeight(fatMassKg, { from: 'kg', to: preferredWeightUnit })
-    const leanMass = convertWeight(leanMassKg, { from: 'kg', to: preferredWeightUnit })
+    const fatMass = formatWeight(fatMassKg)
+    const leanMass = formatWeight(leanMassKg)
 
     return { bodyFat, fatMass, leanMass, bmi }
-  }, [weightKg, heightCm, gender, neckCm, waistCm, hipsCm, preferredWeightUnit, age])
+  }, [weightKg, heightCm, gender, neckCm, waistCm, hipsCm, age, formatWeight])
 
   // ───────────────── Refresh ─────────────────
   const onRefresh = useCallback(async () => {
@@ -248,7 +249,12 @@ export default function HomeScreen() {
       {/* Header */}
       <Animated.View style={headerAnimatedStyle} className="mb-4">
         <Text numberOfLines={1} className="text-2xl font-semibold text-black dark:text-white">
-          {getGreeting()}
+          {(() => {
+            const hours = new Date().getHours()
+            if (hours < 12) return 'Good Morning'
+            if (hours < 18) return 'Good Afternoon'
+            return 'Good Evening'
+          })()}
           {user?.firstName ? `, ${user.firstName.split(' ').at(-1)}` : ''}!
         </Text>
         <Text className="text-base font-normal text-neutral-600 dark:text-neutral-400">
@@ -360,7 +366,6 @@ export default function HomeScreen() {
               <WeeklyVolumeCard
                 volume={weeklyVolume}
                 lastWeekVolume={lastWeekVolume}
-                unit={preferredWeightUnit}
                 width={width * 0.5}
               />
               <WeeklyDurationCard
