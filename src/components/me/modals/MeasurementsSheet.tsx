@@ -28,7 +28,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-type Props = Record<string, never>
+type Props = object
 
 export const MeasurementsSheet = forwardRef<BottomSheetModal, Props>(
   (_, ref) => {
