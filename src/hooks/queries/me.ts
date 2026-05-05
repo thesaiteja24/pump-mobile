@@ -31,10 +31,13 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 export function useProfileQuery() {
+  const userId = useAuth((s) => s.userId)
+
   return useQuery({
     queryKey: queryKeys.me.profile,
     queryFn: () => getMeService(),
     staleTime: 5 * 60 * 1000,
+    enabled: !!userId,
   })
 }
 
