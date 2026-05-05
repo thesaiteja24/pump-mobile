@@ -92,9 +92,9 @@ const PrivacyPolicy: React.FC = () => {
 
       <Heading level={2}>1. Introduction</Heading>
       <Paragraph>
-        Welcome to PUMP ("we," "our," or "us"). We are committed to protecting your privacy and
+        Welcome to PUMP ({'\"'}we,{'\"'} {'\"'}our,{'\"'} or {'\"'}us{'\"'}). We are committed to protecting your privacy and
         ensuring you understand how your information is collected, used, and shared. This Privacy
-        Policy applies to our mobile application PUMP (the "App").
+        Policy applies to our mobile application PUMP (the {'\"'}App{'\"'}).
       </Paragraph>
       <Paragraph>
         By using the App, you agree to the collection and use of information in accordance with this
@@ -218,14 +218,14 @@ const PrivacyPolicy: React.FC = () => {
       <Heading level={3}>7.1. Access and Update</Heading>
       <Paragraph>
         You can view and update your personal profile, body metrics, and fitness preferences
-        directly within the App's "Profile" and "Settings" sections.
+        directly within the App{'\''}s {'\"'}Profile{'\"'} and {'\"'}Settings{'\"'} sections.
       </Paragraph>
 
       <Heading level={3}>7.2. Account Deletion</Heading>
       <Paragraph>
         You have the right to request the deletion of your account and all associated data. Current
         Process: Since an automated deletion feature is currently under development, please contact
-        us at iamsaiteja2411@gmail.com with the subject line "Delete Account" to request complete
+        us at iamsaiteja2411@gmail.com with the subject line {'\"'}Delete Account{'\"'} to request complete
         data removal. We will process your request within 30 days.
       </Paragraph>
 
@@ -235,7 +235,7 @@ const PrivacyPolicy: React.FC = () => {
         protect your data. However, no method of transmission over the internet is 100% secure.
       </Paragraph>
 
-      <Heading level={2}>9. Children's Privacy</Heading>
+      <Heading level={2}>9. Children{'\''}s Privacy</Heading>
       <Paragraph>
         Our App is not intended for use by children under the age of 13. We do not knowingly collect
         personal data from children.
@@ -244,7 +244,7 @@ const PrivacyPolicy: React.FC = () => {
       <Heading level={2}>10. Changes to This Policy</Heading>
       <Paragraph>
         We may update this Privacy Policy from time to time. We will notify you of any changes by
-        posting the new policy on this page and updating the "Last Updated" date.
+        posting the new policy on this page and updating the {'\"'}Last Updated{'\"'} date.
       </Paragraph>
 
       <Heading level={2}>11. Contact Us</Heading>

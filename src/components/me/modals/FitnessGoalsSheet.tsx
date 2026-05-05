@@ -8,7 +8,6 @@ import {
   useUpdateFitnessProfileMutation,
   useUpdateNutritionPlanMutation,
 } from '@/hooks/queries/me'
-import { useThemeColor } from '@/hooks/theme'
 import { FitnessGoal, SelfUser } from '@/types/me'
 import { FitnessLevel } from '@/types/programs'
 
@@ -28,8 +27,6 @@ type PlanningMode = 'rateDriven' | 'dateDriven'
 type Props = object
 
 export const FitnessGoalsSheet = forwardRef<BaseModalHandle, Props>((_, ref) => {
-  const colors = useThemeColor()
-
   const { data: userData } = useProfileQuery()
   const user = userData as SelfUser | null
 

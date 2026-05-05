@@ -1,6 +1,5 @@
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
-import { useThemeColor } from '@/hooks/theme'
 import * as Haptics from 'expo-haptics'
 import { forwardRef, useMemo } from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
@@ -31,8 +30,6 @@ type Props = {
 
 const RPESelectionModal = forwardRef<BaseModalHandle, Props>(
   ({ currentValue, onClose, onSelect }, ref) => {
-    const colors = useThemeColor()
-
     const selectedValue = currentValue && currentValue > 0 ? currentValue : null
 
     const description = useMemo(() => {

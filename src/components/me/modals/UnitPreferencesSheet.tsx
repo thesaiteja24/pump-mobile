@@ -1,6 +1,5 @@
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { useProfileQuery, useUpdateProfileMutation } from '@/hooks/queries/me'
-import { useThemeColor } from '@/hooks/theme'
 import { SelfUser } from '@/types/me'
 import { forwardRef, useEffect, useMemo, useState } from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
@@ -16,7 +15,6 @@ export const UnitPreferencesSheet = forwardRef<BaseModalHandle, Props>((_, ref) 
   const user = userData as SelfUser | null
 
   const updateUserDataMutation = useUpdateProfileMutation()
-  const colors = useThemeColor()
 
   const storedWeightUnit: WeightUnit = user?.preferredWeightUnit ?? 'kg'
   const storedLengthUnit: LengthUnit = user?.preferredLengthUnit ?? 'cm'
@@ -52,7 +50,7 @@ export const UnitPreferencesSheet = forwardRef<BaseModalHandle, Props>((_, ref) 
       })
       const modalRef = ref as React.RefObject<BaseModalHandle>
       modalRef.current?.dismiss()
-    } catch (error) {
+    } catch {
       Toast.show({
         type: 'error',
         text1: 'Failed to update preferences',

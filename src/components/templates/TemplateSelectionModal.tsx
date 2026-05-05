@@ -1,5 +1,4 @@
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
-import { useThemeColor } from '@/hooks/theme'
 import { WorkoutTemplate } from '@/types/templates'
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
@@ -14,8 +13,6 @@ type Props = {
 
 const TemplateSelectionModal = forwardRef<BaseModalHandle, Props>(
   ({ templates, onSelect, onClose }, ref) => {
-    const colors = useThemeColor()
-
     return (
       <BaseModal ref={ref} title="Select a Template" onDismiss={onClose}>
         <BottomSheetScrollView style={{ height: 500 }} showsVerticalScrollIndicator={false}>

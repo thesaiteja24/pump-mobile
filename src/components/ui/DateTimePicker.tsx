@@ -4,7 +4,6 @@ import * as Haptics from 'expo-haptics'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Pressable, Text, View, useColorScheme } from 'react-native'
 import DatePicker from 'react-native-date-picker'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 /* --------------------------------------------------
    Types
@@ -86,7 +85,6 @@ export type DateTimePickerProps = DateTimePickerModalProps | DateTimePickerInlin
 export default function DateTimePicker(props: DateTimePickerProps) {
   const isDark = useColorScheme() === 'dark'
   const colors = useThemeColor()
-  const insets = useSafeAreaInsets()
 
   const { value, onUpdate, dateOnly = false, is24Hour, minimumDate } = props
 

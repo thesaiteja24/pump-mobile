@@ -16,7 +16,6 @@ import { Image } from 'expo-image'
 import { router } from 'expo-router'
 import { memo, useMemo, useRef, useState } from 'react'
 import { Text, TouchableOpacity, View, useColorScheme } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ElapsedTime } from './ElapsedTime'
 import SetRow from './SetRow'
 
@@ -65,7 +64,6 @@ function getGroupColor(groupId: string) {
 
 function ExerciseRow({ exerciseInstanceId, onEnterReorder }: Props) {
   const isDark = useColorScheme() === 'dark'
-  const insets = useSafeAreaInsets()
   const workout = useWorkoutEditor((state) => state.workout)
   const mode = useWorkoutEditor((state) => state.mode)
   const exercise = useWorkoutEditor(
