@@ -1,9 +1,6 @@
-import RPESelectionModal, {
-  RPESelectionModalHandle,
-} from '@/components/workouts/modals/RPESelectionModal'
-import SetTypeSelectionModal, {
-  SetTypeSelectionModalHandle,
-} from '@/components/workouts/modals/SetTypeSelectionModal'
+import RPESelectionModal from '@/components/workouts/modals/RPESelectionModal'
+import SetTypeSelectionModal from '@/components/workouts/modals/SetTypeSelectionModal'
+import { BaseModalHandle } from '@/components/ui/BaseModal'
 import TimerDurationModal, {
   TimerDurationModalHandle,
 } from '@/components/workouts/modals/TimerDurationModal'
@@ -111,8 +108,8 @@ function SetRow({
   const [noteText, setNoteText] = useState('')
 
   const swipeableRef = useRef<SwipeableMethods>(null)
-  const setTypeModalRef = useRef<SetTypeSelectionModalHandle>(null)
-  const rpeModalRef = useRef<RPESelectionModalHandle>(null)
+  const setTypeModalRef = useRef<BaseModalHandle>(null)
+  const rpeModalRef = useRef<BaseModalHandle>(null)
   const restPickerRef = useRef<TimerDurationModalHandle>(null)
   const durationPickerRef = useRef<TimerDurationModalHandle>(null)
   const hasTriggeredHaptic = useRef(false)

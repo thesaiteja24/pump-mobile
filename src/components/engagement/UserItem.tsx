@@ -20,31 +20,48 @@ export const UserItem = ({
 }) => {
   const isDark = useThemeColor().isDark
   return (
-    <View className="w-full flex-row items-center justify-between py-3" key={id}>
-      <View className="w-2/3 flex-row items-center gap-4">
+    <View className="w-full flex-row items-center justify-between px-4 py-3" key={id}>
+      {/* LEFT SECTION */}
+      <View className="w-2/3 flex-row items-center gap-3">
         <Image
           source={profilePicUrl ? { uri: profilePicUrl } : require('../../assets/images/icon.png')}
           style={{
             width: 48,
             height: 48,
-            borderRadius: 100,
-            borderColor: isDark ? 'white' : '#black',
-            borderWidth: 0.25,
+            borderRadius: 24,
+            borderColor: isDark ? '#fff' : '#e5e7eb',
+            borderWidth: 0.5,
           }}
           contentFit="cover"
         />
-        <Text className="text-base text-black dark:text-white">
-          {firstName} {lastName}
-        </Text>
-        {isPro && <VerifiedBadge tier={proSubscriptionType} size={28} />}
+
+        {/* NAME + BADGE */}
+        <View className="flex-1 flex-row items-center gap-2">
+          <Text
+            numberOfLines={1}
+            className="flex-shrink text-base font-medium text-black dark:text-white"
+          >
+            {firstName} {lastName}
+          </Text>
+
+          {isPro && (
+            <View className="justify-center">
+              <VerifiedBadge tier={proSubscriptionType} size={20} />
+            </View>
+          )}
+        </View>
       </View>
-      <Button
-        className="min-h-6 w-1/3 py-2"
-        variant={isFollowing ? 'secondary' : 'primary'}
-        title={isFollowing ? 'Following' : 'Follow'}
-        onPress={onPressFollow}
-        loading={followLoading}
-      />
+
+      {/* RIGHT SECTION */}
+      <View className="w-1/3">
+        <Button
+          className="rounded-full"
+          variant={isFollowing ? 'secondary' : 'primary'}
+          title={isFollowing ? 'Following' : 'Follow'}
+          onPress={onPressFollow}
+          loading={followLoading}
+        />
+      </View>
     </View>
   )
 }

@@ -1,23 +1,23 @@
 import ExerciseGroupModal, {
   ExerciseGroupModalHandle,
 } from '@/components/exercises/ExerciseGroupModal'
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import TimerDurationModal, {
   TimerDurationModalHandle,
 } from '@/components/workouts/modals/TimerDurationModal'
 import { useExercises } from '@/hooks/queries/exercises'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import type { ExerciseType } from '@/types/exercises'
 import type { ExerciseGroupType } from '@/types/workouts'
 import { Entypo, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
 import { memo, useMemo, useRef, useState } from 'react'
 import { Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ElapsedTime } from './ElapsedTime'
-import { useUnitConverter } from '@/hooks/useUnitConverter'
 import SetRow from './SetRow'
 
 const COL_SET = 'w-[40%] flex-row items-center justify-evenly'
@@ -86,7 +86,7 @@ function ExerciseRow({ exerciseInstanceId, onEnterReorder }: Props) {
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null)
   const [selectedGroupExerciseIds, setSelectedGroupExerciseIds] = useState<Set<string>>(new Set())
 
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+  const bottomSheetModalRef = useRef<BaseModalHandle>(null)
   const exerciseGroupModalRef = useRef<ExerciseGroupModalHandle>(null)
   const restPickerRef = useRef<TimerDurationModalHandle>(null)
 
@@ -350,22 +350,8 @@ function ExerciseRow({ exerciseInstanceId, onEnterReorder }: Props) {
 
       <Button title="Add Set" variant="secondary" onPress={() => addSet(exercise.id)} />
 
-      <BottomSheetModal
-        ref={bottomSheetModalRef}
-        index={0}
-        enableDynamicSizing={true}
-        backdropComponent={(props) => (
-          <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
-        )}
-        backgroundStyle={{
-          backgroundColor: isDark ? '#171717' : 'white',
-        }}
-        handleIndicatorStyle={{
-          backgroundColor: isDark ? '#525252' : '#d1d5db',
-        }}
-        animationConfigs={{ duration: 350 }}
-      >
-        <BottomSheetView style={{ paddingBottom: insets.bottom + 16 }}>
+      <BaseModal ref={bottomSheetModalRef} title="Exercise Options" onDismiss={() => {}}>
+        <View className="gap-1">
           {!group ? (
             <>
               <TouchableOpacity
@@ -373,11 +359,12 @@ function ExerciseRow({ exerciseInstanceId, onEnterReorder }: Props) {
                   bottomSheetModalRef.current?.dismiss()
                   onEnterReorder?.(exercise.id)
                 }}
-                className="px-4 py-3"
+                className="rounded-xl bg-neutral-100 px-4 py-4 dark:bg-neutral-900"
               >
-                <Text className="text-base text-black dark:text-white">Reorder Exercises</Text>
+                <Text className="text-base font-medium text-black dark:text-white">
+                  Reorder Exercises
+                </Text>
               </TouchableOpacity>
-              <View className="h-px bg-neutral-200 dark:bg-neutral-800" />
               {isTemplateMode && (
                 <>
                   <TouchableOpacity
@@ -391,64 +378,74 @@ function ExerciseRow({ exerciseInstanceId, onEnterReorder }: Props) {
                         },
                       })
                     }}
-                    className="px-4 py-3"
+                    className="rounded-xl bg-neutral-100 px-4 py-4 dark:bg-neutral-900"
                   >
-                    <Text className="text-base text-black dark:text-white">Replace Exercise</Text>
+                    <Text className="text-base font-medium text-black dark:text-white">
+                      Replace Exercise
+                    </Text>
                   </TouchableOpacity>
-                  <View className="h-px bg-neutral-200 dark:bg-neutral-800" />
                 </>
               )}
-              <TouchableOpacity onPress={() => openCreateGroup('superSet')} className="px-4 py-3">
-                <Text className="text-base text-black dark:text-white">Create Super Set</Text>
+              <TouchableOpacity
+                onPress={() => openCreateGroup('superSet')}
+                className="rounded-xl bg-neutral-100 px-4 py-4 dark:bg-neutral-900"
+              >
+                <Text className="text-base font-medium text-black dark:text-white">
+                  Create Super Set
+                </Text>
               </TouchableOpacity>
-              <View className="h-px bg-neutral-200 dark:bg-neutral-800" />
-              <TouchableOpacity onPress={() => openCreateGroup('giantSet')} className="px-4 py-3">
-                <Text className="text-base text-black dark:text-white">Create Giant Set</Text>
+              <TouchableOpacity
+                onPress={() => openCreateGroup('giantSet')}
+                className="rounded-xl bg-neutral-100 px-4 py-4 dark:bg-neutral-900"
+              >
+                <Text className="text-base font-medium text-black dark:text-white">
+                  Create Giant Set
+                </Text>
               </TouchableOpacity>
             </>
           ) : (
             <>
-              <TouchableOpacity onPress={openEditGroup} className="px-4 py-3">
-                <Text className="text-base text-black dark:text-white">Edit Group</Text>
+              <TouchableOpacity
+                onPress={openEditGroup}
+                className="rounded-xl bg-neutral-100 px-4 py-4 dark:bg-neutral-900"
+              >
+                <Text className="text-base font-medium text-black dark:text-white">Edit Group</Text>
               </TouchableOpacity>
-              <View className="h-px bg-neutral-200 dark:bg-neutral-800" />
               <TouchableOpacity
                 onPress={() => {
                   bottomSheetModalRef.current?.dismiss()
                   deleteGroup(group.id)
                 }}
-                className="px-4 py-3"
+                className="rounded-xl bg-neutral-100 px-4 py-4 dark:bg-neutral-900"
               >
-                <Text className="text-base text-black dark:text-white">Delete Group</Text>
+                <Text className="text-base font-medium text-red-600">Delete Group</Text>
               </TouchableOpacity>
             </>
           )}
 
-          <View className="h-px bg-neutral-200 dark:bg-neutral-800" />
           <TouchableOpacity
             onPress={() => {
               bottomSheetModalRef.current?.dismiss()
               setNotesExpanded((open) => !open)
             }}
-            className="px-4 py-3"
+            className="rounded-xl bg-neutral-100 px-4 py-4 dark:bg-neutral-900"
           >
-            <Text className="text-base text-black dark:text-white">
+            <Text className="text-base font-medium text-black dark:text-white">
               {notesExpanded ? 'Hide Notes' : 'Take Notes'}
             </Text>
           </TouchableOpacity>
 
-          <View className="h-px bg-neutral-200 dark:bg-neutral-800" />
           <TouchableOpacity
             onPress={() => {
               bottomSheetModalRef.current?.dismiss()
               deleteExercise(exercise.id)
             }}
-            className="px-4 py-3"
+            className="rounded-xl bg-neutral-100 px-4 py-4 dark:bg-neutral-900"
           >
-            <Text className="text-base text-red-600">Delete Exercise</Text>
+            <Text className="text-base font-medium text-red-600">Delete Exercise</Text>
           </TouchableOpacity>
-        </BottomSheetView>
-      </BottomSheetModal>
+        </View>
+      </BaseModal>
 
       <ExerciseGroupModal
         ref={exerciseGroupModalRef}

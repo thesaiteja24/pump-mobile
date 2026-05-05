@@ -1,15 +1,6 @@
-import { Button } from '@/components/ui/buttons/Button'
-import { useThemeColor } from '@/hooks/theme'
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { useRouter } from 'expo-router'
-import React, { forwardRef, useCallback, useImperativeHandle, useRef } from 'react'
-import { Text, View, useColorScheme } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-
-export interface PaywallModalHandle {
-  present: () => void
-  dismiss: () => void
-}
+import { forwardRef } from 'react'
 
 type Props = {
   title?: string
@@ -27,7 +18,7 @@ type Props = {
   onCancel?: () => void
 }
 
-export const PaywallModal = forwardRef<PaywallModalHandle, Props>(
+export const PaywallModal = forwardRef<BaseModalHandle, Props>(
   (
     {
       title = 'Upgrade to Pro',
@@ -39,35 +30,11 @@ export const PaywallModal = forwardRef<PaywallModalHandle, Props>(
     },
     ref,
   ) => {
-    const colors = useThemeColor()
-    const isDark = useColorScheme() === 'dark'
-    const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-    const insets = useSafeAreaInsets()
     const router = useRouter()
 
-    const present = useCallback(() => {
-      bottomSheetModalRef.current?.present()
-    }, [])
-
-    const dismiss = useCallback(() => {
-      bottomSheetModalRef.current?.dismiss()
-    }, [])
-
-    useImperativeHandle(ref, () => ({
-      present,
-      dismiss,
-    }))
-
-
-    const renderBackdrop = useCallback(
-      (props: any) => (
-        <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
-      ),
-      [],
-    )
-
     const handleContinue = () => {
-      dismiss()
+      // @ts-ignore
+      ref?.current?.dismiss()
       if (onContinue) {
         onContinue()
       } else {
@@ -76,49 +43,24 @@ export const PaywallModal = forwardRef<PaywallModalHandle, Props>(
     }
 
     return (
-      <BottomSheetModal
-        stackBehavior="push"
-        ref={bottomSheetModalRef}
-        backdropComponent={renderBackdrop}
-        enableDynamicSizing
-        onChange={(index) => {}}
-        handleIndicatorStyle={{
-          backgroundColor: isDark ? '#525252' : '#d1d5db',
+      <BaseModal
+        ref={ref}
+        title={title}
+        description={description}
+        enableDynamicSizing={true}
+        confirmAction={{
+          title: continueText,
+          onPress: handleContinue,
         }}
-        backgroundStyle={{ backgroundColor: colors.background }}
-        animationConfigs={{ duration: 350 }}
-      >
-        <BottomSheetView style={{ paddingBottom: insets.bottom + 24 }} className="px-6 pt-2">
-          <Text className="text-center text-xl font-bold" style={{ color: colors.text }}>
-            {title}
-          </Text>
-
-          <Text className="mt-3 text-center text-base" style={{ color: colors.neutral[500] }}>
-            {description}
-          </Text>
-
-          <View className="mt-8 flex-1 flex-row gap-3">
-            {/* Not now */}
-            <Button
-              className="flex-1"
-              title={cancelText}
-              variant="secondary"
-              onPress={() => {
-                dismiss()
-                onCancel?.()
-              }}
-            />
-
-            {/* Continue */}
-            <Button
-              className="flex-1"
-              title={continueText}
-              variant="primary"
-              onPress={handleContinue}
-            />
-          </View>
-        </BottomSheetView>
-      </BottomSheetModal>
+        cancelAction={{
+          title: cancelText,
+          onPress: () => {
+            // @ts-ignore
+            ref?.current?.dismiss()
+            onCancel?.()
+          },
+        }}
+      />
     )
   },
 )

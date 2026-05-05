@@ -1,9 +1,6 @@
-import { PaywallModal, PaywallModalHandle } from '@/components/subscriptions/PaywallModal'
+import { PaywallModal } from '@/components/subscriptions/PaywallModal'
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
-import {
-  DeleteConfirmModal,
-  DeleteConfirmModalHandle,
-} from '@/components/ui/modals/DeleteConfirmModal'
 import ExerciseRow from '@/components/workout-editor/ExerciseRow'
 import WorkoutReorderList from '@/components/workout-editor/WorkoutReorderList'
 import { FREE_TIER_LIMITS } from '@/constants/limits'
@@ -66,9 +63,9 @@ export default function TemplateEditor() {
   >(null)
   const [pruneMessage, setPruneMessage] = useState<string | null>(null)
 
-  const discardModalRef = useRef<DeleteConfirmModalHandle>(null)
-  const pruneModalRef = useRef<DeleteConfirmModalHandle>(null)
-  const paywallModalRef = useRef<PaywallModalHandle>(null)
+  const discardModalRef = useRef<BaseModalHandle>(null)
+  const pruneModalRef = useRef<BaseModalHandle>(null)
+  const paywallModalRef = useRef<BaseModalHandle>(null)
 
   const isLimitHit =
     !isEditing && !isPro && templates.length >= FREE_TIER_LIMITS.MAX_CUSTOM_TEMPLATES
@@ -455,31 +452,42 @@ export default function TemplateEditor() {
         </ScrollView>
       )}
 
-      <DeleteConfirmModal
+      <BaseModal
         ref={discardModalRef}
         title="Discard Changes?"
         description="You have unsaved changes. Are you sure you want to discard them?"
-        onConfirm={() => {
-          discardWorkout()
-          router.back()
+        deleteAction={{
+          title: 'Discard',
+          onPress: () => {
+            discardWorkout()
+            discardModalRef.current?.dismiss()
+            router.back()
+          },
         }}
-        confirmText="Discard"
-        onCancel={() => {}}
+        cancelAction={{
+          onPress: () => discardModalRef.current?.dismiss(),
+        }}
       />
 
-      <DeleteConfirmModal
+      <BaseModal
         ref={pruneModalRef}
         title="Confirm Save"
         description={pruneMessage || ''}
-        onConfirm={() => {
-          if (pendingPrunedTemplate) {
-            void commitSave(pendingPrunedTemplate)
-          }
+        confirmAction={{
+          title: 'Save Anyway',
+          onPress: () => {
+            if (pendingPrunedTemplate) {
+              void commitSave(pendingPrunedTemplate)
+              pruneModalRef.current?.dismiss()
+            }
+          },
         }}
-        confirmText="Save Anyway"
-        onCancel={() => {
-          setPendingPrunedTemplate(null)
-          setPruneMessage(null)
+        cancelAction={{
+          onPress: () => {
+            setPendingPrunedTemplate(null)
+            setPruneMessage(null)
+            pruneModalRef.current?.dismiss()
+          },
         }}
       />
 

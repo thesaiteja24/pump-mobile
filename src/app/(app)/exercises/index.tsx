@@ -1,11 +1,8 @@
 import ExerciseList from '@/components/exercises/ExerciseList'
-import MetaModal, { MetaModalHandle } from '@/components/meta/MetaModal'
+import MetaModal from '@/components/meta/MetaModal'
 
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
-import {
-  DeleteConfirmModal,
-  DeleteConfirmModalHandle,
-} from '@/components/ui/modals/DeleteConfirmModal'
 
 import { ROLES as roles } from '@/constants/roles'
 import { useDeleteExercise, useExercises } from '@/hooks/queries/exercises'
@@ -22,7 +19,6 @@ import Fuse from 'fuse.js'
 
 import React, { useEffect, useMemo, useState } from 'react'
 import {
-  BackHandler,
   Keyboard,
   Platform,
   Text,
@@ -130,9 +126,9 @@ export default function ExercisesScreen() {
   const [query, setQuery] = useState('')
   // const [showMuscleGroupsModal, setShowMuscleGroupsModal] = useState(false); // Removed
 
-  const equipmentModalRef = React.useRef<MetaModalHandle>(null)
-  const muscleGroupsModalRef = React.useRef<MetaModalHandle>(null)
-  const deleteConfirmModalRef = React.useRef<DeleteConfirmModalHandle>(null)
+  const equipmentModalRef = React.useRef<BaseModalHandle>(null)
+  const muscleGroupsModalRef = React.useRef<BaseModalHandle>(null)
+  const deleteConfirmModalRef = React.useRef<BaseModalHandle>(null)
 
   const [filter, setFilter] = useState({
     equipmentId: '',
@@ -143,9 +139,6 @@ export default function ExercisesScreen() {
     id: string
     title: string
   } | null>(null)
-
-  const [isEquipmentModalOpen, setIsEquipmentModalOpen] = useState(false)
-  const [isMuscleGroupModalOpen, setIsMuscleGroupModalOpen] = useState(false)
 
   useEffect(() => {
     if (role === roles.systemAdmin) {
@@ -159,28 +152,6 @@ export default function ExercisesScreen() {
       })
     }
   }, [navigationWithRightIcons, role])
-
-  useEffect(() => {
-    const onBackPress = () => {
-      if (isEquipmentModalOpen) {
-        equipmentModalRef.current?.dismiss()
-        return true
-      }
-      if (isMuscleGroupModalOpen) {
-        muscleGroupsModalRef.current?.dismiss()
-        return true
-      }
-      if (router.canGoBack()) {
-        router.back()
-      } else {
-        router.push('/(app)/(tabs)/home')
-      }
-      return true
-    }
-
-    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
-    return () => subscription.remove()
-  }, [isEquipmentModalOpen, isMuscleGroupModalOpen])
 
   /* ───────────────── Fuzzy search ───────────────── */
 
@@ -330,7 +301,6 @@ export default function ExercisesScreen() {
             <Button
               title="Equipment"
               onPress={() => {
-                setIsEquipmentModalOpen(true)
                 equipmentModalRef.current?.present()
                 Keyboard.dismiss()
               }}
@@ -353,7 +323,6 @@ export default function ExercisesScreen() {
             <Button
               title="Muscle Groups"
               onPress={() => {
-                setIsMuscleGroupModalOpen(true)
                 muscleGroupsModalRef.current?.present()
                 Keyboard.dismiss()
               }}
@@ -447,7 +416,6 @@ export default function ExercisesScreen() {
         loading={equipmentLoading}
         enableCreate={role === roles.systemAdmin}
         items={equipmentList}
-        onClose={() => setIsEquipmentModalOpen(false)}
         onSelect={(item) => {
           setFilter((f) => ({ ...f, equipmentId: item.id }))
           equipmentModalRef.current?.dismiss()
@@ -472,7 +440,6 @@ export default function ExercisesScreen() {
         loading={muscleGroupLoading}
         enableCreate={role === roles.systemAdmin}
         items={muscleGroupList}
-        onClose={() => setIsMuscleGroupModalOpen(false)}
         onSelect={(item) => {
           setFilter((f) => ({ ...f, muscleGroupId: item.id }))
           muscleGroupsModalRef.current?.dismiss()
@@ -491,29 +458,39 @@ export default function ExercisesScreen() {
         }}
       />
 
-      <DeleteConfirmModal
+      <BaseModal
         ref={deleteConfirmModalRef}
         title={deleteExerciseId ? `Delete "${deleteExerciseId.title}"?` : 'Delete Exercise?'}
         description="This exercise will be permanently removed."
-        onCancel={() => setDeleteExerciseId(null)}
-        onConfirm={async () => {
-          if (!deleteExerciseId) return
-          try {
-            await deleteExerciseMutation.mutateAsync(deleteExerciseId.id)
+        deleteAction={{
+          title: 'Delete',
+          onPress: async () => {
+            if (!deleteExerciseId) return
+            try {
+              await deleteExerciseMutation.mutateAsync(deleteExerciseId.id)
+              setDeleteExerciseId(null)
+              deleteConfirmModalRef.current?.dismiss()
+              Toast.show({
+                type: 'success',
+                text1: 'Exercise deleted successfully',
+              })
+            } catch (e) {
+              const message = e instanceof Error ? e.message : 'Unexpected error deleting exercise'
+              setDeleteExerciseId(null)
+              deleteConfirmModalRef.current?.dismiss()
+              Toast.show({
+                type: 'error',
+                text1: 'Error deleting exercise',
+                text2: message,
+              })
+            }
+          },
+        }}
+        cancelAction={{
+          onPress: () => {
             setDeleteExerciseId(null)
-            Toast.show({
-              type: 'success',
-              text1: 'Exercise deleted successfully',
-            })
-          } catch (e) {
-            const message = e instanceof Error ? e.message : 'Unexpected error deleting exercise'
-            setDeleteExerciseId(null)
-            Toast.show({
-              type: 'error',
-              text1: 'Error deleting exercise',
-              text2: message,
-            })
-          }
+            deleteConfirmModalRef.current?.dismiss()
+          },
         }}
       />
     </View>

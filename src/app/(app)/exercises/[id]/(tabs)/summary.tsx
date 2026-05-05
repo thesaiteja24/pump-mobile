@@ -1,9 +1,9 @@
 import ExerciseCharts from '@/components/exercises/ExerciseCharts'
-import { CustomModal, ModalHandle } from '@/components/ui/modals/CustomModal'
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { useAnalytics } from '@/hooks/analytics'
 import { useExercises } from '@/hooks/queries/exercises'
-import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { useThemeColor } from '@/hooks/theme'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { EvilIcons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { useGlobalSearchParams } from 'expo-router'
 import { useVideoPlayer, VideoView } from 'expo-video'
@@ -29,9 +29,9 @@ export default function ViewExerciseScreen() {
   const { getExerciseAnalytics } = useAnalytics()
   const metrics = getExerciseAnalytics(id)
 
-  const best1RMModalRef = useRef<ModalHandle>(null)
-  const bestSetVolumeModalRef = useRef<ModalHandle>(null)
-  const heaviestWeightModalRef = useRef<ModalHandle>(null)
+  const best1RMModalRef = useRef<BaseModalHandle>(null)
+  const bestSetVolumeModalRef = useRef<BaseModalHandle>(null)
+  const heaviestWeightModalRef = useRef<BaseModalHandle>(null)
   const insets = useSafeAreaInsets()
 
   const isOpen = useSharedValue(0) // 1 = open, 0 = closed
@@ -186,33 +186,36 @@ export default function ViewExerciseScreen() {
         </Animated.View>
       </ScrollView>
       {/* Best 1RM Info Modal */}
-      <CustomModal
+      <BaseModal
         ref={best1RMModalRef}
         title="Best 1RM"
         description="Best 1RM is the heaviest weight you can lift for a single repetition. It is calculated from your personal records and estimated for your maximum strength."
-        confirmText="OK"
-        onConfirm={() => {}}
-        cancelText=""
+        confirmAction={{
+          title: 'OK',
+          onPress: () => best1RMModalRef.current?.dismiss(),
+        }}
       />
 
       {/* Best Set Volume Info Modal */}
-      <CustomModal
+      <BaseModal
         ref={bestSetVolumeModalRef}
         title="Best Set Volume"
         description="Best Set Volume is the highest total volume you have lifted in a single set. It helps track your most productive sets."
-        confirmText="OK"
-        onConfirm={() => {}}
-        cancelText=""
+        confirmAction={{
+          title: 'OK',
+          onPress: () => bestSetVolumeModalRef.current?.dismiss(),
+        }}
       />
 
       {/* Heaviest Weight Info Modal */}
-      <CustomModal
+      <BaseModal
         ref={heaviestWeightModalRef}
         title="Heaviest Weight"
         description="Heaviest Weight records the maximum weight you have successfully lifted for any set. It helps track your top performance for each exercise."
-        confirmText="OK"
-        onConfirm={() => {}}
-        cancelText=""
+        confirmAction={{
+          title: 'OK',
+          onPress: () => heaviestWeightModalRef.current?.dismiss(),
+        }}
       />
     </View>
   )

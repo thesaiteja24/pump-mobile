@@ -1,19 +1,19 @@
 import EditableAvatar from '@/components/me/EditableAvatar'
-import { VerifiedBadge } from '@/components/subscriptions/VerifiedBadge'
-import { Button } from '@/components/ui/buttons/Button'
 import { EditProfileSheet } from '@/components/me/modals/EditProfileSheet'
 import { FitnessGoalsSheet } from '@/components/me/modals/FitnessGoalsSheet'
 import { MeasurementsSheet } from '@/components/me/modals/MeasurementsSheet'
 import { UnitPreferencesSheet } from '@/components/me/modals/UnitPreferencesSheet'
+import { VerifiedBadge } from '@/components/subscriptions/VerifiedBadge'
+import { BaseModalHandle } from '@/components/ui/BaseModal'
+import { Button } from '@/components/ui/buttons/Button'
 import { useProfileQuery } from '@/hooks/queries/me'
 import { useAuth } from '@/stores/auth.store'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
 import { SelfUser } from '@/types/me'
 import { AntDesign, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
-import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import { useRouter } from 'expo-router'
 import { useColorScheme } from 'nativewind'
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { BackHandler, GestureResponderEvent, Pressable, Text, View } from 'react-native'
 import Animated, {
   Easing,
@@ -37,10 +37,10 @@ export default function ProfileScreen() {
   const isDarkMode = colorScheme === 'dark'
   const insets = useSafeAreaInsets()
 
-  const unitSheetRef = useRef<BottomSheetModal>(null)
-  const editProfileSheetRef = useRef<BottomSheetModal>(null)
-  const measurementsSheetRef = useRef<BottomSheetModal>(null)
-  const fitnessGoalsSheetRef = useRef<BottomSheetModal>(null)
+  const unitSheetRef = useRef<BaseModalHandle>(null)
+  const editProfileSheetRef = useRef<BaseModalHandle>(null)
+  const measurementsSheetRef = useRef<BaseModalHandle>(null)
+  const fitnessGoalsSheetRef = useRef<BaseModalHandle>(null)
 
   // Animation Values
   const avatarOpacity = useSharedValue(0)

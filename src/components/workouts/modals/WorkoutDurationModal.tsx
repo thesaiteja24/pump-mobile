@@ -1,24 +1,10 @@
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
-import { useThemeColor } from '@/hooks/theme'
 import { formatSeconds } from '@/utils/workout'
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
-import React, {
-  forwardRef,
-  useCallback,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, { forwardRef, useState } from 'react'
 import { Pressable, Text, View, useColorScheme } from 'react-native'
 import DatePicker from 'react-native-date-picker'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-
-export interface WorkoutDurationModalHandle {
-  present: () => void
-  dismiss: () => void
-}
 
 type Props = {
   title?: string
@@ -39,7 +25,7 @@ const MAX_DURATION_SECONDS = 4 * 60 * 60
 const DURATION_STEP_SECONDS = 60
 
 const WorkoutDurationModal = React.memo(
-  forwardRef<WorkoutDurationModalHandle, Props>(
+  forwardRef<BaseModalHandle, Props>(
     (
       {
         title = 'Workout Duration',
@@ -57,34 +43,7 @@ const WorkoutDurationModal = React.memo(
       ref,
     ) => {
       const isDark = useColorScheme() === 'dark'
-      const colors = useThemeColor()
-      const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-      const insets = useSafeAreaInsets()
-        const [isEditingStartTime, setIsEditingStartTime] = useState(false)
-
-      const present = useCallback(() => {
-        bottomSheetModalRef.current?.present()
-      }, [])
-
-      const dismiss = useCallback(() => {
-        bottomSheetModalRef.current?.dismiss()
-        setIsEditingStartTime(false)
-      }, [])
-
-      useImperativeHandle(ref, () => ({
-        present,
-        dismiss,
-      }))
-
-
-      const renderBackdrop = useCallback(
-        (props: any) => (
-          <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
-        ),
-        [],
-      )
-
-      const snapPoints = useMemo(() => ['64%'], [])
+      const [isEditingStartTime, setIsEditingStartTime] = useState(false)
 
       const adjustDuration = (deltaSeconds: number) => {
         if (!onUpdateDurationSeconds) return
@@ -99,35 +58,24 @@ const WorkoutDurationModal = React.memo(
       }
 
       return (
-        <BottomSheetModal
-          ref={bottomSheetModalRef}
-          snapPoints={snapPoints}
-          backdropComponent={renderBackdrop}
-          onDismiss={onClose}
-          enablePanDownToClose
-          enableDynamicSizing={false}
-          onChange={(index) => {}}
-          handleIndicatorStyle={{
-            backgroundColor: isDark ? '#525252' : '#d1d5db',
+        <BaseModal
+          ref={ref}
+          title={title}
+          confirmAction={{
+            title: 'Done',
+            onPress: () => {
+              // @ts-ignore
+              ref?.current?.dismiss()
+            },
           }}
-          backgroundStyle={{ backgroundColor: colors.background }}
-          animationConfigs={{ duration: 350 }}
+          onDismiss={onClose}
         >
-          <BottomSheetView
-            style={{
-              flex: 1,
-              paddingHorizontal: 24,
-              paddingBottom: insets.bottom + 24,
-              paddingTop: 8,
-            }}
-          >
-            <Text className="mb-6 text-center text-xl font-bold text-black dark:text-white">
-              {title}
-            </Text>
-
+          <View className="gap-6">
             {mode === 'live' && (
-              <View className="mb-6 items-center">
-                <Text className="text-5xl font-bold text-primary">{formatSeconds(elapsedSeconds)}</Text>
+              <View className="items-center">
+                <Text className="text-5xl font-bold text-primary">
+                  {formatSeconds(elapsedSeconds)}
+                </Text>
                 <Text className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                   Live workout duration
                 </Text>
@@ -164,42 +112,46 @@ const WorkoutDurationModal = React.memo(
 
                   <View className="mt-4 flex-row gap-3">
                     <View className="flex-1">
-                      <Button title="-1 min" variant="outline" onPress={() => adjustDuration(-DURATION_STEP_SECONDS)} />
+                      <Button
+                        title="-1 min"
+                        variant="outline"
+                        onPress={() => adjustDuration(-DURATION_STEP_SECONDS)}
+                      />
                     </View>
                     <View className="flex-1">
-                      <Button title="+1 min" variant="outline" onPress={() => adjustDuration(DURATION_STEP_SECONDS)} />
+                      <Button
+                        title="+1 min"
+                        variant="outline"
+                        onPress={() => adjustDuration(DURATION_STEP_SECONDS)}
+                      />
                     </View>
                   </View>
                 </View>
               )}
             </View>
 
-            <View className="mt-6 flex-row gap-3">
-              {mode === 'live' && (onPause || onResume) && (
-                <View className="flex-1">
-                  <Button
-                    title={isPaused ? 'Resume Workout' : 'Pause Workout'}
-                    variant={isPaused ? 'primary' : 'secondary'}
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
-                      if (isPaused) {
-                        onResume?.()
-                      } else {
-                        onPause?.()
-                      }
-                    }}
-                  />
-                </View>
-              )}
-              <View className="flex-1">
-                <Button title="Done" variant="primary" onPress={dismiss} />
-              </View>
-            </View>
-          </BottomSheetView>
-        </BottomSheetModal>
+            {mode === 'live' && (onPause || onResume) && (
+              <Button
+                title={isPaused ? 'Resume Workout' : 'Pause Workout'}
+                variant={isPaused ? 'primary' : 'secondary'}
+                className="mt-2"
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+                  if (isPaused) {
+                    onResume?.()
+                  } else {
+                    onPause?.()
+                  }
+                }}
+              />
+            )}
+          </View>
+        </BaseModal>
       )
     },
   ),
 )
+
+WorkoutDurationModal.displayName = 'WorkoutDurationModal'
 
 export default WorkoutDurationModal

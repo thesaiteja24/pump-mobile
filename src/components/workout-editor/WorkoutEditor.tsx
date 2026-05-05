@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/buttons/Button'
-import WorkoutDurationModal, {
-  WorkoutDurationModalHandle,
-} from '@/components/workouts/modals/WorkoutDurationModal'
+import WorkoutDurationModal from '@/components/workouts/modals/WorkoutDurationModal'
+import { BaseModalHandle } from '@/components/ui/BaseModal'
 import { useExercises } from '@/hooks/queries/exercises'
 import {
   getWorkoutDurationSeconds,
@@ -23,7 +22,7 @@ import WorkoutReorderList from './WorkoutReorderList'
 export default function Workout() {
   const insets = useSafeAreaInsets()
   const titleInputRef = useRef<TextInput>(null)
-  const durationModalRef = useRef<WorkoutDurationModalHandle>(null)
+  const durationModalRef = useRef<BaseModalHandle>(null)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [now, setNow] = useState(Date.now())
 

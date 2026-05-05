@@ -1,8 +1,5 @@
 import EditableAvatar from '@/components/me/EditableAvatar'
-import {
-  DeleteConfirmModal,
-  DeleteConfirmModalHandle,
-} from '@/components/ui/modals/DeleteConfirmModal'
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { useDeleteMeta, useMetaById, useUpdateMeta } from '@/hooks/queries/meta'
 import { EquipmentType, MetaResource } from '@/types/meta'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
@@ -36,7 +33,7 @@ export default function EditMeta() {
   const updateMutation = useUpdateMeta(resource)
   const deleteMutation = useDeleteMeta(resource)
 
-  const deleteConfirmModalRef = React.useRef<DeleteConfirmModalHandle>(null)
+  const deleteConfirmModalRef = React.useRef<BaseModalHandle>(null)
 
   // current state
   const [title, setTitle] = useState('')
@@ -215,22 +212,28 @@ export default function EditMeta() {
         </View>
       )}
 
-      <DeleteConfirmModal
+      <BaseModal
         ref={deleteConfirmModalRef}
         title={`Delete ${label}?`}
         description={`This ${label.toLowerCase()} will be permanently removed.`}
-        onCancel={() => {}}
-        onConfirm={async () => {
-          try {
-            await deleteMutation.mutateAsync(id)
-            Toast.show({ type: 'success', text1: `${label} deleted` })
-            navigation.goBack()
-          } catch (e: any) {
-            Toast.show({
-              type: 'error',
-              text1: e.message || `Failed to delete ${label.toLowerCase()}`,
-            })
-          }
+        deleteAction={{
+          title: 'Delete',
+          onPress: async () => {
+            try {
+              await deleteMutation.mutateAsync(id)
+              Toast.show({ type: 'success', text1: `${label} deleted` })
+              deleteConfirmModalRef.current?.dismiss()
+              navigation.goBack()
+            } catch (e: any) {
+              Toast.show({
+                type: 'error',
+                text1: e.message || `Failed to delete ${label.toLowerCase()}`,
+              })
+            }
+          },
+        }}
+        cancelAction={{
+          onPress: () => deleteConfirmModalRef.current?.dismiss(),
         }}
       />
     </View>

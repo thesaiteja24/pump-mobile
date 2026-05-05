@@ -1,13 +1,10 @@
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
-import {
-  DeleteConfirmModal,
-  DeleteConfirmModalHandle,
-} from '@/components/ui/modals/DeleteConfirmModal'
 import { useExercises } from '@/hooks/queries/exercises'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import { ExerciseType } from '@/types/exercises'
 import { WorkoutHistoryExercise, WorkoutHistorySet, WorkoutLogGroup } from '@/types/workouts'
-import { formatDurationFromDates, calculateWorkoutMetrics } from '@/utils/workout'
+import { calculateWorkoutMetrics, formatDurationFromDates } from '@/utils/workout'
 import * as Crypto from 'expo-crypto'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
@@ -37,8 +34,8 @@ export default function WorkoutDetails() {
   const navigation = useNavigation()
   const isDark = useThemeColor().isDark
 
-  const deleteModalRef = useRef<DeleteConfirmModalHandle>(null)
-  const discardModalRef = useRef<DeleteConfirmModalHandle>(null)
+  const deleteModalRef = useRef<BaseModalHandle>(null)
+  const discardModalRef = useRef<BaseModalHandle>(null)
 
   /* Store Related State */
   const { data: exerciseList = [] } = useExercises()
@@ -285,13 +282,6 @@ export default function WorkoutDetails() {
       {/* Floating Action Button */}
       <View className="absolute bottom-0 left-0 right-0 mb-4 bg-transparent p-4">
         <View className="flex-row items-center justify-center gap-4">
-          <Button
-            variant="primary"
-            title="Save as Template"
-            className="w-2/3 rounded-full"
-            onPress={handleSaveAsTemplate}
-          />
-
           {isAuthrized && (
             <Button
               title="Delete"
@@ -300,26 +290,39 @@ export default function WorkoutDetails() {
               onPress={() => deleteModalRef.current?.present()}
             />
           )}
+          <Button
+            variant="primary"
+            title="Save as Template"
+            className="w-2/3 rounded-full"
+            onPress={handleSaveAsTemplate}
+          />
         </View>
       </View>
 
-      {/* Delete Confirmation Modal */}
-      <DeleteConfirmModal
+      <BaseModal
         ref={deleteModalRef}
         title="Delete Workout?"
         description="This workout and all its data will be permanently deleted. This action cannot be undone."
-        onCancel={() => {}}
-        onConfirm={handleDeleteConfirm}
+        deleteAction={{
+          title: 'Delete',
+          onPress: handleDeleteConfirm,
+        }}
+        cancelAction={{
+          onPress: () => deleteModalRef.current?.dismiss(),
+        }}
       />
 
-      {/* Discard Confirmation Modal */}
-      <DeleteConfirmModal
+      <BaseModal
         ref={discardModalRef}
         title="Discard Current Workout?"
         description="You have an active workout in progress. Editing this history item will discard your current progress."
-        confirmText="Discard & Edit"
-        onCancel={() => {}}
-        onConfirm={handleDiscardConfirm}
+        deleteAction={{
+          title: 'Discard & Edit',
+          onPress: handleDiscardConfirm,
+        }}
+        cancelAction={{
+          onPress: () => discardModalRef.current?.dismiss(),
+        }}
       />
     </SafeAreaView>
   )

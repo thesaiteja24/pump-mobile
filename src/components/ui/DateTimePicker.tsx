@@ -1,11 +1,10 @@
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { useThemeColor } from '@/hooks/theme'
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Pressable, Text, View, useColorScheme } from 'react-native'
 import DatePicker from 'react-native-date-picker'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Button } from './buttons/Button'
 
 /* --------------------------------------------------
    Types
@@ -96,7 +95,7 @@ export default function DateTimePicker(props: DateTimePickerProps) {
   const initialDate = useMemo(() => value ?? new Date(), [value])
 
   // Ref for the Bottom Sheet
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+  const bottomSheetModalRef = useRef<BaseModalHandle>(null)
 
   // Local state for draft value
   const [draft, setDraft] = useState<Date>(initialDate)
@@ -120,13 +119,6 @@ export default function DateTimePicker(props: DateTimePickerProps) {
     onUpdate(draft)
     handleDismiss()
   }, [draft, onUpdate, handleDismiss])
-
-  const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
-    ),
-    [],
-  )
 
   /* ---------------------------------------------
      Display string
@@ -183,32 +175,18 @@ export default function DateTimePicker(props: DateTimePickerProps) {
         </Text>
       </Pressable>
 
-      <BottomSheetModal
+      <BaseModal
         ref={bottomSheetModalRef}
-        index={0}
-        enableDynamicSizing={true}
-        backdropComponent={renderBackdrop}
-        handleIndicatorStyle={{
-          backgroundColor: isDark ? '#525252' : '#d1d5db',
+        title={title}
+        confirmAction={{
+          title: 'Confirm',
+          onPress: handleConfirm,
         }}
-        backgroundStyle={{
-          backgroundColor: colors.background,
+        cancelAction={{
+          onPress: handleDismiss,
         }}
-        // Smoother, slightly slower animation
-        animationConfigs={{ duration: 350 }}
-        stackBehavior="push"
       >
-        <BottomSheetView
-          style={{
-            paddingBottom: insets.bottom + 16,
-            paddingHorizontal: 24,
-            paddingTop: 8,
-          }}
-        >
-          <Text className="mb-4 text-center text-xl font-bold" style={{ color: colors.text }}>
-            {title}
-          </Text>
-
+        <View className="items-center">
           <DatePicker
             date={draft}
             onDateChange={setDraft}
@@ -218,17 +196,8 @@ export default function DateTimePicker(props: DateTimePickerProps) {
             style={{ alignSelf: 'center' }}
             minimumDate={minimumDate}
           />
-
-          <View className="mt-6 flex-row gap-4">
-            <View className="w-1/2">
-              <Button title="Cancel" variant="outline" onPress={handleDismiss} />
-            </View>
-            <View className="w-1/2">
-              <Button title="Confirm" variant="primary" onPress={handleConfirm} />
-            </View>
-          </View>
-        </BottomSheetView>
-      </BottomSheetModal>
+        </View>
+      </BaseModal>
     </>
   )
 }

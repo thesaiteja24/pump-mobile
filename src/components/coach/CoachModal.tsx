@@ -1,26 +1,14 @@
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import { useCoach } from '@/hooks/coach'
 import { useThemeColor } from '@/hooks/theme'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
 import { CoachMessage } from '@/types/coach'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetScrollView,
-} from '@gorhom/bottom-sheet'
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { useRouter } from 'expo-router'
-import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
-import { Text, View, useColorScheme } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { forwardRef, useEffect, useState } from 'react'
+import { Text, View } from 'react-native'
 
 export interface CoachModalHandle {
   present: () => void
@@ -63,13 +51,8 @@ const ChatBubble = ({ message }: { message: CoachMessage }) => {
   )
 }
 
-const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose }, ref) => {
+const CoachModal = forwardRef<BaseModalHandle, Props>(({ onClose }, ref) => {
   const colors = useThemeColor()
-  const isDark = useColorScheme() === 'dark'
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-  const scrollViewRef = useRef<any>(null)
-
-  const insets = useSafeAreaInsets()
   const router = useRouter()
   const isPro = useSubscriptionStore((s) => s.isPro)
 
@@ -80,34 +63,10 @@ const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose }, ref) => {
     startRecording,
     sendVoiceMessage,
     clearMessages,
-
     initializeConversation,
   } = useCoach()
 
   const [isOpen, setIsOpen] = useState(false)
-
-  const present = useCallback(() => {
-    bottomSheetModalRef.current?.present()
-  }, [])
-
-  const dismiss = useCallback(() => {
-    bottomSheetModalRef.current?.dismiss()
-  }, [])
-
-  useImperativeHandle(ref, () => ({
-    present,
-    dismiss,
-  }))
-
-
-  const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} opacity={0.4} />
-    ),
-    [],
-  )
-
-  const snapPoints = useMemo(() => ['90%'], [])
 
   useEffect(() => {
     if (messages.length === 0 && isOpen && isPro) {
@@ -116,41 +75,30 @@ const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose }, ref) => {
   }, [isOpen, messages.length, initializeConversation, isPro])
 
   return (
-    <BottomSheetModal
-      ref={bottomSheetModalRef}
-      snapPoints={snapPoints}
-      backdropComponent={renderBackdrop}
+    <BaseModal
+      ref={ref}
+      title="AI Training Coach"
       onDismiss={() => {
         setIsOpen(false)
         onClose?.()
       }}
+      // @ts-ignore
       onChange={(index) => setIsOpen(index >= 0)}
-      enablePanDownToClose
-      enableDynamicSizing={false}
-      handleIndicatorStyle={{
-        backgroundColor: isDark ? '#525252' : '#d1d5db',
-      }}
-      backgroundStyle={{ backgroundColor: colors.background }}
-      animationConfigs={{
-        duration: 350,
-      }}
     >
-      <View style={{ flex: 1, paddingBottom: insets.bottom }}>
+      <View style={{ height: 600 }}>
         {isPro ? (
           <View className="flex-1 flex-col">
             <BottomSheetScrollView
-              ref={scrollViewRef as any}
               className="flex-1"
               contentContainerStyle={{ padding: 16 }}
               showsVerticalScrollIndicator={false}
-              onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
             >
               {messages.map((message) => (
                 <ChatBubble key={message.id} message={message} />
               ))}
             </BottomSheetScrollView>
 
-            <View className="flex-row items-center justify-center gap-4 px-2 pb-4">
+            <View className="flex-row items-center justify-center gap-4 px-2 pb-4 pt-2">
               {recorderState.isRecording ? (
                 <Button
                   title=""
@@ -185,7 +133,8 @@ const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose }, ref) => {
                 leftIcon={<MaterialCommunityIcons name="trash-can" size={24} color="red" />}
                 onPress={() => {
                   clearMessages()
-                  dismiss()
+                  // @ts-ignore
+                  ref?.current?.dismiss()
                 }}
               />
             </View>
@@ -195,9 +144,6 @@ const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose }, ref) => {
             <View className="rounded-full bg-blue-100 p-4 dark:bg-blue-900/30">
               <MaterialCommunityIcons name="robot" size={48} color={colors.primary || '#3b82f6'} />
             </View>
-            <Text className="text-center text-2xl font-bold" style={{ color: colors.text }}>
-              AI Training Coach
-            </Text>
             <Text
               className="text-center text-base leading-6"
               style={{ color: colors.neutral[500] }}
@@ -211,7 +157,8 @@ const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose }, ref) => {
                 variant="primary"
                 fullWidth
                 onPress={() => {
-                  bottomSheetModalRef.current?.dismiss()
+                  // @ts-ignore
+                  ref?.current?.dismiss()
                   router.push('/paywall')
                 }}
               />
@@ -219,7 +166,7 @@ const CoachModal = forwardRef<CoachModalHandle, Props>(({ onClose }, ref) => {
           </View>
         )}
       </View>
-    </BottomSheetModal>
+    </BaseModal>
   )
 })
 

@@ -1,8 +1,5 @@
-import MetaModal, { MetaModalHandle } from '@/components/meta/MetaModal'
-import {
-  DeleteConfirmModal,
-  DeleteConfirmModalHandle,
-} from '@/components/ui/modals/DeleteConfirmModal'
+import MetaModal from '@/components/meta/MetaModal'
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 
 import { useDeleteExercise, useExercises, useUpdateExercise } from '@/hooks/queries/exercises'
 import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'
@@ -54,9 +51,9 @@ export default function EditExercise() {
     original?.exerciseType || 'repsOnly',
   )
 
-  const equipmentModalRef = useRef<MetaModalHandle>(null)
-  const primaryMuscleModalRef = useRef<MetaModalHandle>(null)
-  const deleteModalRef = useRef<DeleteConfirmModalHandle>(null)
+  const equipmentModalRef = useRef<BaseModalHandle>(null)
+  const primaryMuscleModalRef = useRef<BaseModalHandle>(null)
+  const deleteModalRef = useRef<BaseModalHandle>(null)
 
   const lineHeight = Platform.OS === 'ios' ? 0 : 30
 
@@ -335,29 +332,33 @@ export default function EditExercise() {
         }}
       />
 
-      <DeleteConfirmModal
+      <BaseModal
         ref={deleteModalRef}
         title="Delete Exercise"
         description="Are you sure you want to delete this exercise? This action cannot be undone."
-        confirmText="Delete"
-        onConfirm={async () => {
-          try {
-            await deleteExerciseMutation.mutateAsync(id)
-            Toast.show({
-              type: 'success',
-              text1: 'Exercise deleted successfully',
-            })
-            // Query is automatically invalidated by useDeleteExercise
-            router.back()
-          } catch (e: any) {
-            Toast.show({
-              type: 'error',
-              text1: 'Failed to delete exercise',
-              text2: e.message,
-            })
-          }
+        deleteAction={{
+          title: 'Delete',
+          onPress: async () => {
+            try {
+              await deleteExerciseMutation.mutateAsync(id)
+              Toast.show({
+                type: 'success',
+                text1: 'Exercise deleted successfully',
+              })
+              deleteModalRef.current?.dismiss()
+              router.back()
+            } catch (e: any) {
+              Toast.show({
+                type: 'error',
+                text1: 'Failed to delete exercise',
+                text2: e.message,
+              })
+            }
+          },
         }}
-        onCancel={() => {}}
+        cancelAction={{
+          onPress: () => deleteModalRef.current?.dismiss(),
+        }}
       />
     </View>
   )

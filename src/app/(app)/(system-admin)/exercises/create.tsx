@@ -1,4 +1,5 @@
-import MetaModal, { MetaModalHandle } from '@/components/meta/MetaModal'
+import MetaModal from '@/components/meta/MetaModal'
+import { BaseModalHandle } from '@/components/ui/BaseModal'
 
 import { useCreateExercise } from '@/hooks/queries/exercises'
 import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'
@@ -40,8 +41,8 @@ export default function CreateExercise() {
   const [primaryMuscleGroupId, setPrimaryMuscleGroupId] = useState('')
   const [exerciseType] = useState<ExerciseType>('repsOnly')
 
-  const equipmentModalRef = useRef<MetaModalHandle>(null)
-  const primaryMuscleModalRef = useRef<MetaModalHandle>(null)
+  const equipmentModalRef = useRef<BaseModalHandle>(null)
+  const primaryMuscleModalRef = useRef<BaseModalHandle>(null)
 
   const lineHeight = Platform.OS === 'ios' ? 0 : 30
 

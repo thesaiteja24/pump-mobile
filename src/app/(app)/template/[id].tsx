@@ -1,8 +1,5 @@
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
-import {
-  DeleteConfirmModal,
-  DeleteConfirmModalHandle,
-} from '@/components/ui/modals/DeleteConfirmModal'
 import { useDeleteTemplateMutation, useTemplateByIdQuery } from '@/hooks/queries/templates'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import { TemplateExerciseGroup } from '@/types/templates'
@@ -50,7 +47,7 @@ export default function TemplateDetails() {
     })
   }, [template?.shareId])
 
-  const deleteModalRef = useRef<DeleteConfirmModalHandle>(null)
+  const deleteModalRef = useRef<BaseModalHandle>(null)
 
   // Configure Navigation Header
   useEffect(() => {
@@ -152,36 +149,43 @@ export default function TemplateDetails() {
       >
         <View className="flex-row items-center justify-center gap-4">
           <Button
+            title="Delete"
+            className="w-1/3 rounded-full"
+            variant="danger"
+            onPress={() => {
+              deleteModalRef.current?.present()
+            }}
+          />
+          <Button
             variant="success"
             title="Start Workout"
-            className="w-2/3"
+            className="w-2/3 rounded-full"
             onPress={() => {
               discardWorkout()
               initiateWorkout({ template })
               router.push('/(app)/workout/start')
             }}
           />
-          <Button
-            title="Delete"
-            className="w-1/3"
-            variant="danger"
-            onPress={() => {
-              deleteModalRef.current?.present()
-            }}
-          />
         </View>
       </View>
-      <DeleteConfirmModal
+      <BaseModal
         ref={deleteModalRef}
         title="Delete Template?"
         description="Are you sure you want to delete this template?"
-        onConfirm={() => {
-          deleteMutation.mutate(id, {
-            onSuccess: () => router.back(),
-          })
+        deleteAction={{
+          title: 'Delete',
+          onPress: () => {
+            deleteMutation.mutate(id, {
+              onSuccess: () => {
+                deleteModalRef.current?.dismiss()
+                router.back()
+              },
+            })
+          },
         }}
-        confirmText="Delete"
-        onCancel={() => {}}
+        cancelAction={{
+          onPress: () => deleteModalRef.current?.dismiss(),
+        }}
       />
     </View>
   )

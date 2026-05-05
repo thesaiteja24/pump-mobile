@@ -1,14 +1,12 @@
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import { ReadOnlyExerciseRow } from '@/components/workout-editor/ReadOnlyExerciseRow'
-import { useThemeColor } from '@/hooks/theme'
 import { ProgramDay, UserProgramDay } from '@/types/programs'
 import { TemplateExerciseGroup } from '@/types/templates'
 import { FontAwesome6 } from '@expo/vector-icons'
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { useRouter } from 'expo-router'
 import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { Text, View, useColorScheme } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Text, View } from 'react-native'
 
 export interface WorkoutDetailsModalHandle {
   present: (day: ProgramDay | UserProgramDay, isStartable?: boolean) => void
@@ -25,37 +23,26 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
     const router = useRouter()
     const [selectedDay, setSelectedDay] = useState<ProgramDay | UserProgramDay | null>(null)
     const [isStartable, setIsStartable] = useState(false)
-    const isDark = useColorScheme() === 'dark'
-    const insets = useSafeAreaInsets()
-    const colors = useThemeColor()
-    const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+    const baseModalRef = useRef<BaseModalHandle>(null)
     const dynamicSizing = selectedDay?.isRestDay ? true : false
 
     const presentModal = useCallback(
       (day: ProgramDay | UserProgramDay, startable: boolean = false) => {
         setSelectedDay(day)
         setIsStartable(startable)
-        bottomSheetModalRef.current?.present()
+        baseModalRef.current?.present()
       },
       [],
     )
 
     const dismissModal = useCallback(() => {
-      bottomSheetModalRef.current?.dismiss()
+      baseModalRef.current?.dismiss()
     }, [])
 
     useImperativeHandle(ref, () => ({
       present: presentModal,
       dismiss: dismissModal,
     }))
-
-
-    const renderBackdrop = useCallback(
-      (props: any) => (
-        <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
-      ),
-      [],
-    )
 
     const template = useMemo(() => {
       if (!selectedDay) return null
@@ -70,14 +57,12 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
       return map
     }, [template?.exerciseGroups])
 
-    const snapPoints = useMemo(() => ['75%'], [])
-
     const renderContent = () => {
       if (!selectedDay) return null
 
       if (selectedDay.isRestDay) {
         return (
-          <View className="items-center justify-center px-6 py-12">
+          <View className="items-center justify-center">
             <View className="mb-6 h-20 w-20 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
               <FontAwesome6 name="heart-circle-bolt" size={40} color="#10b981" />
             </View>
@@ -103,10 +88,7 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
       return (
         <View className="flex-1">
           {/* Header */}
-          <View className="border-b border-neutral-100 p-4 dark:border-neutral-900">
-            <Text className="mb-2 text-2xl font-bold text-black dark:text-white">
-              {template.title}
-            </Text>
+          <View className="border-b border-neutral-100 dark:border-neutral-900">
             {template.notes && (
               <Text className="mb-4 text-base text-neutral-600 dark:text-neutral-400">
                 {template.notes}
@@ -146,7 +128,7 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
                   if (selectedDay && 'templateSnapshot' in selectedDay) {
                     onStartWorkout?.(selectedDay as UserProgramDay)
                   }
-                  bottomSheetModalRef.current?.dismiss()
+                  baseModalRef.current?.dismiss()
                   router.push({
                     pathname: '/(app)/workout/start',
                   })
@@ -159,32 +141,15 @@ export const WorkoutDetailsModal = forwardRef<WorkoutDetailsModalHandle, Workout
     }
 
     return (
-      <BottomSheetModal
-        ref={bottomSheetModalRef}
-        snapPoints={snapPoints}
+      <BaseModal
+        ref={baseModalRef}
+        title={selectedDay?.isRestDay ? 'Rest Day' : template?.title || 'Workout Details'}
         enableDynamicSizing={dynamicSizing}
-        backdropComponent={renderBackdrop}
-        onDismiss={() => {
-          onOpenChange?.(false)
-        }}
-        onChange={(index) => {
-          const open = index >= 0
-          onOpenChange?.(open)
-        }}
-        handleIndicatorStyle={{
-          backgroundColor: isDark ? '#525252' : '#d1d5db',
-        }}
-        backgroundStyle={{ backgroundColor: colors.background }}
-        animationConfigs={{ duration: 350 }}
+        onDismiss={() => onOpenChange?.(false)}
+        onChange={(index) => onOpenChange?.(index >= 0)}
       >
-        <BottomSheetScrollView
-          style={{ marginBottom: insets.bottom }}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
-        >
-          {renderContent()}
-        </BottomSheetScrollView>
-      </BottomSheetModal>
+        {renderContent()}
+      </BaseModal>
     )
   },
 )

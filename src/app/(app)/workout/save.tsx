@@ -3,9 +3,8 @@ import DateTimePicker from '@/components/ui/DateTimePicker'
 import TimerDurationModal, {
   TimerDurationModalHandle,
 } from '@/components/workouts/modals/TimerDurationModal'
-import VisibilitySelectionModal, {
-  VisibilitySelectionModalHandle,
-} from '@/components/workouts/modals/VisibilitySelectionModal'
+import VisibilitySelectionModal from '@/components/workouts/modals/VisibilitySelectionModal'
+import { BaseModalHandle } from '@/components/ui/BaseModal'
 import { useExercises } from '@/hooks/queries/exercises'
 import {
   useCreateWorkoutPayloadMutation,
@@ -29,7 +28,7 @@ import Toast from 'react-native-toast-message'
 export default function WorkoutSaveScreen() {
   const insets = useSafeAreaInsets()
   const durationModalRef = useRef<TimerDurationModalHandle>(null)
-  const visibilityModalRef = useRef<VisibilitySelectionModalHandle>(null)
+  const visibilityModalRef = useRef<BaseModalHandle>(null)
 
   const workout = useWorkoutEditor((state) => state.workout)
   const mode = useWorkoutEditor((state) => state.mode)

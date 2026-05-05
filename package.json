@@ -63,7 +63,6 @@
     "react-native-gesture-handler": "~2.30.0",
     "react-native-heroicons": "^4.0.0",
     "react-native-mmkv": "^4.1.1",
-    "react-native-modal": "^14.0.0-rc.1",
     "react-native-onesignal": "^5.4.3",
     "react-native-otp-entry": "^1.8.5",
     "react-native-pager-view": "8.0.0",

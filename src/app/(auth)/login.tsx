@@ -1,4 +1,5 @@
-import PrivacyPolicyModal, { PrivacyPolicyModalHandle } from '@/components/auth/PrivacyPolicyModal'
+import PrivacyPolicyModal from '@/components/auth/PrivacyPolicyModal'
+import { BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import { useGoogleLoginMutation } from '@/hooks/queries/auth'
 import {
@@ -30,7 +31,7 @@ export default function Login() {
   const router = useRouter()
   const [privacyAccepted, setPrivacyAccepted] = useState(false)
   const [privacyPolicyVersion, setPrivacyPolicyVersion] = useState<string | null>(null)
-  const privacyModalRef = useRef<PrivacyPolicyModalHandle>(null)
+  const privacyModalRef = useRef<BaseModalHandle>(null)
   const isGooglePending = useRef(false)
 
   const { mutate: googleLogin, isPending: isGoogleLoading } = useGoogleLoginMutation()
@@ -261,9 +262,6 @@ export default function Login() {
             isGooglePending.current = false
             onGoogleButtonPress(v)
           }
-        }}
-        onClose={() => {
-          privacyModalRef.current?.dismiss()
         }}
       />
     </SafeAreaView>

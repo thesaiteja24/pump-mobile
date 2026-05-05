@@ -1,4 +1,4 @@
-import { CustomModal, ModalHandle } from '@/components/ui/modals/CustomModal'
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { TextInput } from '@/components/ui/TextInput'
 import {
   useDeleteHabit,
@@ -6,7 +6,7 @@ import {
   useLogHabit,
   useLogWeight,
 } from '@/hooks/queries/habits'
-import { HabitType } from '@/types/habits'
+import { HabitLogType, HabitType } from '@/types/habits'
 import { Ionicons } from '@expo/vector-icons'
 import { format } from 'date-fns'
 import { useRouter } from 'expo-router'
@@ -14,7 +14,6 @@ import { useMemo, useRef, useState } from 'react'
 import { Pressable, Text, useWindowDimensions, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import Toast from 'react-native-toast-message'
-import { Button } from '../ui/buttons/Button'
 import HeatMap from './HeatMap'
 
 interface HabitCardProps {
@@ -30,7 +29,7 @@ const COLOR_MAP: Record<string, string> = {
   orange: '#f97316',
 }
 
-const EMPTY_ARRAY: any[] = []
+const EMPTY_ARRAY: HabitLogType[] = []
 
 export const HabitCard = ({ habit }: HabitCardProps) => {
   const router = useRouter()
@@ -92,7 +91,7 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
     return count
   }, [habitLogs])
 
-  const habitModalRef = useRef<ModalHandle>(null)
+  const habitModalRef = useRef<BaseModalHandle>(null)
   const [weightValue, setWeightValue] = useState('')
 
   const handlePress = () => {
@@ -123,11 +122,12 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
       })
       setWeightValue('')
       habitModalRef.current?.dismiss()
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to log weight'
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: error.message || 'Failed to log weight',
+        text2: message,
       })
     }
   }
@@ -146,8 +146,9 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
       Toast.show({ type: 'success', text1: 'Progress saved!' })
       habitModalRef.current?.dismiss()
       setManualValue('')
-    } catch (error: any) {
-      Toast.show({ type: 'error', text1: error.message || 'Failed to save progress' })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to save progress'
+      Toast.show({ type: 'error', text1: message })
     }
   }
 
@@ -156,8 +157,9 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
       await deleteHabitMutation.mutateAsync(habit.id)
       Toast.show({ type: 'success', text1: 'Habit deleted' })
       habitModalRef.current?.dismiss()
-    } catch (error: any) {
-      Toast.show({ type: 'error', text1: error.message || 'Failed to delete habit' })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to delete habit'
+      Toast.show({ type: 'error', text1: message })
     }
   }
 
@@ -214,50 +216,65 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
         )}
       </Pressable>
 
-      <CustomModal ref={habitModalRef} title={habit.title} floating={true}>
+      <BaseModal
+        ref={habitModalRef}
+        title={habit.title}
+        floating={true}
+        editAction={{ onPress: handleEdit }}
+        deleteAction={{
+          onPress: handleDelete,
+          loading: deleteHabitMutation.isPending,
+        }}
+        confirmAction={
+          habit.source === 'manual'
+            ? habit.trackingType === 'streak'
+              ? {
+                  title: 'Yes',
+                  onPress: () => handleManualLog('1'),
+                  loading: logHabitMutation.isPending,
+                }
+              : {
+                  title: 'Save Progress',
+                  onPress: () => handleManualLog(manualValue),
+                  loading: logHabitMutation.isPending,
+                  disabled: !manualValue,
+                }
+            : habit.source === 'internal' && habit.internalMetricId === 'weight'
+              ? {
+                  title: 'Save Weight',
+                  onPress: handleWeightSubmit,
+                  loading: logWeightMutation.isPending,
+                  disabled: !weightValue,
+                }
+              : undefined
+        }
+        cancelAction={
+          habit.source === 'manual' && habit.trackingType === 'streak'
+            ? {
+                title: 'No',
+                onPress: () => handleManualLog('0'),
+                loading: logHabitMutation.isPending,
+              }
+            : undefined
+        }
+      >
         <View className="flex flex-col">
-          {/* Manual Habis Logger */}
-          {habit.source === 'manual' && (
+          {/* Manual Habis Logger - Only show input if not streak (streak uses footer actions) */}
+          {habit.source === 'manual' && habit.trackingType !== 'streak' && (
             <View className="gap-4">
-              {habit.trackingType === 'streak' ? (
-                <View className="flex-row items-center justify-around py-4">
-                  <Button
-                    title="No"
-                    variant="danger"
-                    className="mr-2 flex-1"
-                    onPress={() => handleManualLog('0')}
-                    loading={logHabitMutation.isPending}
-                  />
-                  <Button
-                    title="Yes"
-                    variant="primary"
-                    className="ml-2 flex-1"
-                    onPress={() => handleManualLog('1')}
-                    loading={logHabitMutation.isPending}
-                  />
-                </View>
-              ) : (
-                <View className="flex-col gap-4">
-                  <TextInput
-                    label={`Quantity (${habit.unit || ''})`}
-                    placeholder="0.0"
-                    keyboardType="numeric"
-                    value={manualValue}
-                    onChangeText={setManualValue}
-                    autoFocus
-                  />
-                  <Button
-                    variant="success"
-                    title="Save Progress"
-                    onPress={() => handleManualLog(manualValue)}
-                    loading={logHabitMutation.isPending}
-                  />
-                </View>
-              )}
+              <TextInput
+                label={`Quantity (${habit.unit || ''})`}
+                placeholder="0.0"
+                keyboardType="numeric"
+                value={manualValue}
+                onChangeText={setManualValue}
+                className="p-2"
+                autoFocus
+              />
             </View>
           )}
 
-          {/* Internal Weight Logger */}
+          {/* Internal Weight Logger - Only show input (save uses footer actions) */}
           {habit.source === 'internal' && habit.internalMetricId === 'weight' && (
             <View className="flex flex-col gap-4">
               <TextInput
@@ -268,12 +285,6 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
                 onChangeText={setWeightValue}
                 className="p-2"
                 autoFocus
-              />
-              <Button
-                title="Save Weight"
-                onPress={handleWeightSubmit}
-                disabled={!weightValue}
-                loading={logWeightMutation.isPending}
               />
             </View>
           )}
@@ -289,26 +300,8 @@ export const HabitCard = ({ habit }: HabitCardProps) => {
               </Text>
             </View>
           )}
-
-          {/* Actions */}
-          <View className="mt-4 flex-row gap-2 border-t border-neutral-100 pt-4 dark:border-neutral-800">
-            <Button
-              title="Edit"
-              variant="secondary"
-              className="flex-1"
-              onPress={handleEdit}
-              leftIcon={<Ionicons name="create-outline" size={18} color="#666" />}
-            />
-            <Button
-              title="Delete"
-              variant="danger"
-              className="flex-1"
-              onPress={handleDelete}
-              leftIcon={<Ionicons name="trash-outline" size={18} color="#ef4444" />}
-            />
-          </View>
         </View>
-      </CustomModal>
+      </BaseModal>
     </Animated.View>
   )
 }

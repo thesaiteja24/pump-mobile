@@ -1,10 +1,9 @@
-import ProgramWorkoutPromptModal, {
-  ProgramWorkoutPromptHandle,
-} from '@/components/programs/modals/ProgramWorkoutPromptModal'
+import { ProgramWorkoutPromptModal } from '@/components/programs/modals/ProgramWorkoutPromptModal'
 import ProgramCard from '@/components/programs/ProgramCard'
 import UserProgramCard from '@/components/programs/UserProgramCard'
-import { PaywallModal, PaywallModalHandle } from '@/components/subscriptions/PaywallModal'
+import { PaywallModal } from '@/components/subscriptions/PaywallModal'
 import TemplateCard from '@/components/templates/TemplateCard'
+import { BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import {
   SkeletonProgramCard,
@@ -88,8 +87,8 @@ export default function WorkoutScreen() {
   const isPro = useSubscriptionStore((s) => s.isPro)
 
   // Refs
-  const paywallModalRef = useRef<PaywallModalHandle>(null)
-  const programPromptRef = useRef<ProgramWorkoutPromptHandle>(null)
+  const paywallModalRef = useRef<BaseModalHandle>(null)
+  const programPromptRef = useRef<BaseModalHandle>(null)
 
   // Animation values initialized at 0 opacity
   const activeWorkoutOpacity = useSharedValue(0)

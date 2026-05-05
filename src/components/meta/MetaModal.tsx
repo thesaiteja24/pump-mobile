@@ -1,21 +1,10 @@
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { useThemeColor } from '@/hooks/theme'
 import { MetaItem } from '@/types/meta'
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { Image } from 'expo-image'
-import React, {
-  forwardRef,
-  useCallback,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-} from 'react'
+import { forwardRef } from 'react'
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-
-export interface MetaModalHandle {
-  present: () => void
-  dismiss: () => void
-}
 
 type Props = {
   title: string
@@ -28,122 +17,58 @@ type Props = {
   onCreatePress?: () => void
 }
 
-const MetaModal = forwardRef<MetaModalHandle, Props>(
-  (
-    {
-      title,
-      loading,
-      enableCreate,
-      items,
-      onClose,
-      onSelect,
-      onLongPress,
-      onCreatePress,
-    },
-    ref,
-  ) => {
-    const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-    const insets = useSafeAreaInsets()
+const MetaModal = forwardRef<BaseModalHandle, Props>(
+  ({ title, loading, enableCreate, items, onClose, onSelect, onLongPress, onCreatePress }, ref) => {
     const colors = useThemeColor()
 
-    const present = useCallback(() => {
-      bottomSheetModalRef.current?.present()
-    }, [])
-
-    const dismiss = useCallback(() => {
-      bottomSheetModalRef.current?.dismiss()
-    }, [])
-
-    useImperativeHandle(ref, () => ({
-      present,
-      dismiss,
-    }))
-
-
-    const renderBackdrop = useCallback(
-      (props: any) => (
-        <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
-      ),
-      [],
-    )
-
-    const snapPoints = useMemo(() => ['85%'], [])
-
     return (
-      <BottomSheetModal
-        ref={bottomSheetModalRef}
-        snapPoints={snapPoints}
-        backdropComponent={renderBackdrop}
+      <BaseModal
+        ref={ref}
+        title={title}
         onDismiss={onClose}
-        onChange={(index) => {}}
-        handleIndicatorStyle={{
-          backgroundColor: colors.isDark ? '#525252' : '#d1d5db',
-        }}
-        backgroundStyle={{ backgroundColor: colors.background }}
-        enableDynamicSizing={false}
-        animationConfigs={{ duration: 350 }}
+        headerRight={
+          onCreatePress && enableCreate ? (
+            <TouchableOpacity onPress={onCreatePress}>
+              <Text className="text-lg text-primary">Create</Text>
+            </TouchableOpacity>
+          ) : undefined
+        }
       >
-        <View style={{ flex: 1, paddingBottom: insets.bottom }}>
-          <View className="px-6 pt-4">
-            <View
-              className={`flex-row items-center ${
-                onCreatePress && enableCreate ? 'justify-between' : 'justify-center'
-              } mb-6`}
-            >
-              <Text className="text-xl font-bold" style={{ color: colors.text }}>
-                {title}
-              </Text>
-
-              {onCreatePress && enableCreate && (
-                <TouchableOpacity onPress={onCreatePress}>
-                  <Text className="text-xl text-primary">Create</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+        {loading ? (
+          <View className="items-center justify-center py-12">
+            <ActivityIndicator animating size="large" />
           </View>
+        ) : (
+          <BottomSheetScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+            {items.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                className="flex-row items-center justify-between pb-4"
+                onPress={() => onSelect(item)}
+                onLongPress={() => onLongPress?.(item)}
+                delayLongPress={700}
+              >
+                <Text className="text-xl font-semibold" style={{ color: colors.text }}>
+                  {item.title}
+                </Text>
 
-          {loading ? (
-            <View className="flex-1 items-center justify-center">
-              <ActivityIndicator animating size="large" />
-            </View>
-          ) : (
-            <BottomSheetScrollView
-              style={{ flex: 1 }}
-              contentContainerStyle={{
-                paddingHorizontal: 24,
-              }}
-              showsVerticalScrollIndicator={false}
-            >
-              {items.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  className="flex-row items-center justify-between pb-4"
-                  onPress={() => onSelect(item)}
-                  onLongPress={() => onLongPress?.(item)}
-                  delayLongPress={700}
-                >
-                  <Text className="text-xl font-semibold" style={{ color: colors.text }}>
-                    {item.title}
-                  </Text>
-
-                  <Image
-                    source={item.thumbnailUrl}
-                    style={{
-                      width: 50,
-                      height: 50,
-                      borderRadius: 100,
-                      borderWidth: 1,
-                      borderColor: colors.border,
-                      backgroundColor: colors.isDark ? colors.neutral[800] : colors.white,
-                    }}
-                    contentFit="contain"
-                  />
-                </TouchableOpacity>
-              ))}
-            </BottomSheetScrollView>
-          )}
-        </View>
-      </BottomSheetModal>
+                <Image
+                  source={item.thumbnailUrl}
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 100,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    backgroundColor: colors.isDark ? colors.neutral[800] : colors.white,
+                  }}
+                  contentFit="contain"
+                />
+              </TouchableOpacity>
+            ))}
+          </BottomSheetScrollView>
+        )}
+      </BaseModal>
     )
   },
 )

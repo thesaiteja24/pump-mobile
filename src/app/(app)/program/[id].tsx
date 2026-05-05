@@ -1,8 +1,5 @@
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
-import {
-  DeleteConfirmModal,
-  DeleteConfirmModalHandle,
-} from '@/components/ui/modals/DeleteConfirmModal'
 import {
   useActiveProgram,
   useDeleteProgram,
@@ -15,15 +12,12 @@ import React, { useEffect, useMemo, useRef } from 'react'
 import { BackHandler, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import Toast from 'react-native-toast-message'
 
-import {
-  StartProgramSheet,
-  StartProgramSheetHandle,
-} from '@/components/programs/modals/StartProgramSheet'
+import { StartProgramSheet } from '@/components/programs/modals/StartProgramSheet'
+import ShimmerProgramDetails from '@/components/ui/shimmers/ShimmerProgramDetails'
 import {
   WorkoutDetailsModal,
   WorkoutDetailsModalHandle,
 } from '@/components/workouts/modals/WorkoutDetailsModal'
-import ShimmerProgramDetails from '@/components/ui/shimmers/ShimmerProgramDetails'
 import { ROLES } from '@/constants/roles'
 import { useProfileQuery } from '@/hooks/queries/me'
 import { useAuth } from '@/stores/auth.store'
@@ -38,9 +32,9 @@ export default function ProgramTemplateDetails() {
   const startProgramMutation = useStartProgram()
 
   const [isModalOpen, setIsModalOpen] = React.useState(false)
-  const deleteModalRef = useRef<DeleteConfirmModalHandle>(null)
+  const deleteModalRef = useRef<BaseModalHandle>(null)
   const workoutDetailsModalRef = useRef<WorkoutDetailsModalHandle>(null)
-  const startProgramSheetRef = useRef<StartProgramSheetHandle>(null)
+  const startProgramSheetRef = useRef<BaseModalHandle>(null)
 
   const handleConfirmStart = async (duration: number) => {
     if (!program?.id) return
@@ -195,29 +189,34 @@ export default function ProgramTemplateDetails() {
         ))}
       </ScrollView>
 
-      <View className="flex items-center absolute bottom-0 left-0 right-0 bg-transparent p-4">
+      <View className="absolute bottom-0 left-0 right-0 flex items-center bg-transparent p-4">
         <Button
           title="Start This Program"
           variant="primary"
           onPress={() => {
             startProgramSheetRef.current?.present()
           }}
-          className="mb-4 rounded-full"
+          className="mb-4 w-2/3 rounded-full"
         />
       </View>
-      <DeleteConfirmModal
+      <BaseModal
         ref={deleteModalRef}
         title="Delete Program"
         description="Are you sure you want to delete this program? This will not affect users already following it."
-        confirmText="Delete"
-        onConfirm={async () => {
-          if (!program?.id) return
+        deleteAction={{
+          title: 'Delete',
+          onPress: async () => {
+            if (!program?.id) return
 
-          await deleteProgramMutation.mutateAsync(program.id)
-          Toast.show({ type: 'success', text1: 'Program deleted' })
-          router.back()
+            await deleteProgramMutation.mutateAsync(program.id)
+            Toast.show({ type: 'success', text1: 'Program deleted' })
+            deleteModalRef.current?.dismiss()
+            router.back()
+          },
         }}
-        onCancel={() => {}}
+        cancelAction={{
+          onPress: () => deleteModalRef.current?.dismiss(),
+        }}
       />
 
       <WorkoutDetailsModal
