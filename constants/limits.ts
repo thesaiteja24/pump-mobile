@@ -1,3 +1,0 @@
-export const FREE_TIER_LIMITS = {
-	MAX_CUSTOM_TEMPLATES: 5,
-}

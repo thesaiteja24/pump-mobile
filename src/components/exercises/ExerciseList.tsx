@@ -1,0 +1,132 @@
+import { Exercise } from '@/types/exercises'
+import { Image } from 'expo-image'
+import React, { useCallback } from 'react'
+import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native'
+import { useThemeColor } from '@/hooks/theme'
+
+/* ───────────────── Types ───────────────── */
+
+type Props = {
+  loading: boolean
+  exercises: Exercise[]
+  isSelecting?: boolean
+
+  isSelected?: (id: string) => boolean
+  onPress: (exercise: Exercise) => void
+  onLongPress?: (exercise: Exercise) => void
+}
+
+/* ───────────────── Row ───────────────── */
+
+const ExerciseRow = React.memo(
+  ({
+    item,
+    isSelecting,
+    selected,
+    onPress,
+    onLongPress,
+  }: {
+    item: Exercise
+    isSelecting?: boolean
+    selected: boolean
+    onPress: (e: Exercise) => void
+    onLongPress?: (e: Exercise) => void
+  }) => {
+    const colors = useThemeColor()
+
+    return (
+      <TouchableOpacity
+        activeOpacity={1}
+        className={`mb-2 h-20 flex-row items-center justify-between px-4 ${
+          selected && isSelecting ? 'rounded-l-lg border-l-4 border-l-amber-500' : ''
+        }`}
+        onPress={() => onPress(item)}
+        onLongPress={() => onLongPress?.(item)}
+        delayLongPress={700}
+      >
+        <View className="w-3/4">
+          <Text className="text-lg font-semibold" style={{ color: colors.text }}>
+            {item.title}
+          </Text>
+
+          <View className="mt-1 flex-row gap-4">
+            {item.equipment && <Text className="text-sm text-primary">{item.equipment.title}</Text>}
+
+            {item.primaryMuscleGroup && (
+              <Text className="text-sm text-primary">{item.primaryMuscleGroup.title}</Text>
+            )}
+
+            <Text className="text-sm text-red-600">PR</Text>
+          </View>
+        </View>
+
+        <Image
+          source={item.thumbnailUrl}
+          style={{
+            width: 48,
+            height: 48,
+            borderRadius: 100,
+            borderWidth: 1,
+            borderColor: colors.border,
+            backgroundColor: colors.isDark ? colors.neutral[800] : colors.white,
+          }}
+          contentFit="cover"
+        />
+      </TouchableOpacity>
+    )
+  },
+)
+
+ExerciseRow.displayName = 'ExerciseRow'
+
+/* ───────────────── List ───────────────── */
+
+export default function ExerciseList({
+  loading,
+  exercises,
+  isSelecting,
+  isSelected,
+  onPress,
+  onLongPress,
+}: Props) {
+  const colors = useThemeColor()
+
+  // Move useCallback before any early returns to comply with rules-of-hooks
+  const renderItem = useCallback(
+    ({ item }: { item: Exercise }) => (
+      <ExerciseRow
+        item={item}
+        isSelecting={isSelecting}
+        selected={isSelected?.(item.id) ?? false}
+        onPress={onPress}
+        onLongPress={onLongPress}
+      />
+    ),
+    [isSelecting, isSelected, onPress, onLongPress],
+  )
+
+  if (loading) {
+    return <ActivityIndicator animating size="large" className="mt-8" color={colors.primary} />
+  }
+
+  if (!exercises.length) {
+    return (
+      <View className="my-8 px-4">
+        <Text className="text-center" style={{ color: colors.text }}>
+          No exercises found.
+        </Text>
+      </View>
+    )
+  }
+
+  return (
+    <FlatList
+      data={exercises}
+      keyExtractor={(item) => item.id}
+      renderItem={renderItem}
+      showsVerticalScrollIndicator={false}
+      keyboardDismissMode="on-drag"
+      keyboardShouldPersistTaps="always"
+    />
+  )
+}
