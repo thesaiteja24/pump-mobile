@@ -22,10 +22,13 @@ export default function AppLayout() {
   const loginSubscription = useSubscriptionStore((s) => s.login)
   const logoutSubscription = useSubscriptionStore((s) => s.logout)
 
-  // 1. Initialize Services
   useEffect(() => {
-    initializeOneSignal()
+    const cleanup = initializeOneSignal()
     initializeSubscription()
+
+    return () => {
+      cleanup?.()
+    }
   }, [initializeOneSignal, initializeSubscription])
 
   // 2. Sync Auth State

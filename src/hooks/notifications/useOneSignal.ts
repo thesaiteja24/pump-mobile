@@ -9,7 +9,7 @@ export const useOneSignal = () => {
   const [isInitialized, setIsInitialized] = useState(false)
   const [hasPermission, setHasPermission] = useState(false)
 
-  const initialize = useCallback(async () => {
+  const initialize = useCallback(() => {
     if (isInitialized) return
 
     if (__DEV__) {
@@ -19,8 +19,8 @@ export const useOneSignal = () => {
     // Initialize OneSignal
     OneSignal.initialize(ONESIGNAL_APP_ID)
 
-    // Check existing permission
-    setHasPermission(await OneSignal.Notifications.getPermissionAsync())
+    // Check existing permission (async, but don't block initialization)
+    OneSignal.Notifications.getPermissionAsync().then(setHasPermission)
 
     // Notification clicked
     const clickListener = (event: any) => {
@@ -74,13 +74,7 @@ export const useOneSignal = () => {
   const login = useCallback(
     async (externalId: string) => {
       if (!isInitialized) return
-      const subId = await OneSignal.User.pushSubscription.getIdAsync()
-
-      if (subId) {
-        OneSignal.login(externalId)
-      } else {
-        console.log('⚠️ Cannot login — no subscription yet')
-      }
+      OneSignal.login(externalId)
     },
     [isInitialized],
   )
