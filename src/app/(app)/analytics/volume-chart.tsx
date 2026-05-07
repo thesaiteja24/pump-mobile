@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { BaseTrainingChart } from '@/components/me/BaseTrainingChart'
+import { BaseTrainingChart } from '@/components/user/UserTrainingChart'
 import { useUnitConverter } from '@/hooks/useUnitConverter'
 
 export default function VolumeChartScreen() {

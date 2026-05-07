@@ -1,7 +1,6 @@
 import { router, Stack } from 'expo-router'
-import React from 'react'
 
-import CustomHeader from '@/components/ui/CustomHeader'
+import { AppHeader } from '@/components/common/AppHeader'
 import { useThemeColor } from '@/hooks/theme'
 
 export default function ProfileLayout() {
@@ -21,7 +20,7 @@ export default function ProfileLayout() {
           if (options.headerShown === false) return null
 
           return (
-            <CustomHeader
+            <AppHeader
               title={options.title ?? ''}
               leftIcon={custom.leftIcon}
               onLeftPress={custom.onLeftPress}
@@ -31,38 +30,7 @@ export default function ProfileLayout() {
         },
       }}
     >
-      {/* EDIT */}
-      <Stack.Screen
-        name="edit"
-        options={
-          {
-            title: 'Edit Profile',
-            leftIcon: 'chevron-back-outline',
-            onLeftPress: () => router.back(),
-            rightIcons: [
-              {
-                name: 'checkmark-done',
-                disabled: true,
-                color: 'green',
-              },
-            ],
-          } as any
-        }
-      />
-
-      {/* SETTINGS */}
-      <Stack.Screen
-        name="settings"
-        options={
-          {
-            title: 'Settings',
-            leftIcon: 'chevron-back-outline',
-            onLeftPress: () => {
-              router.back()
-            },
-          } as any
-        }
-      />
+      <Stack.Screen name="[id]" />
 
       {/* FOLLOWING */}
       <Stack.Screen

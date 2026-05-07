@@ -58,7 +58,7 @@ function SkeletonBlock({
    Program Details Screen Skeleton (export)
 ────────────────────────────────────────────── */
 
-export default function ShimmerProgramDetails() {
+export function ShimmerProgramDetails() {
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-black" edges={['bottom']}>
       <Animated.View entering={FadeInDown.duration(300).springify()} className="flex-1">
@@ -137,3 +137,4 @@ export default function ShimmerProgramDetails() {
     </SafeAreaView>
   )
 }
+export default ShimmerProgramDetails

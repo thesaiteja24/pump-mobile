@@ -13,7 +13,7 @@ import {
 import { TextInput } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { UserItem } from '@/components/engagement/UserItem'
+import { SocialUserItem } from '@/components/social/SocialUserItem'
 import {
   useFollowUserMutation,
   useSearchUsersQuery,
@@ -124,7 +124,7 @@ export default function Search() {
           )
         }
         renderItem={({ item }) => (
-          <UserItem
+          <SocialUserItem
             id={item.id}
             firstName={item.firstName}
             lastName={item.lastName}

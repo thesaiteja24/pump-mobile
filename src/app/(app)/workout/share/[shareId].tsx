@@ -5,7 +5,7 @@ import { Alert, ScrollView, Text, useColorScheme, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Button } from '@/components/ui/buttons/Button'
-import { ReadOnlyExerciseRow } from '@/components/workout-editor/ReadOnlyExerciseRow'
+import { WorkoutReadOnlyExerciseRow } from '@/components/workout/WorkoutReadOnlyExerciseRow'
 import { useSaveWorkoutMutation } from '@/hooks/queries/workouts'
 import { getWorkoutByShareIdService } from '@/services/workouts.service'
 import { WorkoutHistoryItem } from '@/types/workouts'
@@ -151,7 +151,7 @@ export default function SharedWorkoutDetails() {
         {/* Read Only Exercise List */}
         <View className="gap-4 p-4">
           {sharedWorkout.exercises?.map((ex, idx) => (
-            <ReadOnlyExerciseRow
+            <WorkoutReadOnlyExerciseRow
               key={ex.id || idx}
               exercise={ex}
               group={ex.exerciseGroupId ? groupMap.get(ex.exerciseGroupId) : null}

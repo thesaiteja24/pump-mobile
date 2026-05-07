@@ -9,7 +9,7 @@ export type RightIcon = {
   color?: string
 }
 
-export type CustomHeaderProps = {
+export type AppHeaderProps = {
   title: string
   leftIcon?: IoniconName
   rightIcons?: RightIcon[]

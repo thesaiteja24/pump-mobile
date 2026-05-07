@@ -13,7 +13,7 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-import PrivacyPolicyModal from '@/components/auth/PrivacyPolicyModal'
+import { PrivacyPolicyModal } from '@/components/modals/PrivacyPolicyModal'
 import { BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import { useGoogleLoginMutation } from '@/hooks/queries/auth'

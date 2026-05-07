@@ -5,11 +5,11 @@ import { ScrollView, Text, TextInput, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-import { PaywallModal } from '@/components/subscriptions/PaywallModal'
+import { UserSubscriptionPaywallModal } from '@/components/modals/SubscriptionPaywallModal'
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
-import ExerciseRow from '@/components/workout-editor/ExerciseRow'
-import WorkoutReorderList from '@/components/workout-editor/WorkoutReorderList'
+import { WorkoutExerciseRow } from '@/components/workout/WorkoutExerciseRow'
+import { WorkoutReorderList } from '@/components/workout/WorkoutReorderList'
 import { FREE_TIER_LIMITS } from '@/constants/limits'
 import { useExercises } from '@/hooks/queries/exercises'
 import {
@@ -426,7 +426,7 @@ export default function TemplateEditor() {
             </View>
           ) : (
             workout.exerciseOrder.map((exerciseInstanceId) => (
-              <ExerciseRow
+              <WorkoutExerciseRow
                 key={exerciseInstanceId}
                 exerciseInstanceId={exerciseInstanceId}
                 onEnterReorder={() => setIsReorderMode(true)}
@@ -492,7 +492,7 @@ export default function TemplateEditor() {
         }}
       />
 
-      <PaywallModal
+      <UserSubscriptionPaywallModal
         ref={paywallModalRef}
         title="Upgrade to Pro"
         description={`You can only add up to ${FREE_TIER_LIMITS.MAX_CUSTOM_TEMPLATES} custom templates on the Free plan.`}

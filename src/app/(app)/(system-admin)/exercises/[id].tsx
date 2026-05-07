@@ -15,7 +15,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-import MetaModal from '@/components/meta/MetaModal'
+import { MetaModal } from '@/components/modals/ExerciseMetaModal'
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { useDeleteExercise, useExercises, useUpdateExercise } from '@/hooks/queries/exercises'
 import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'
@@ -223,7 +223,7 @@ export default function EditExercise() {
               </>
             ) : original?.thumbnailUrl ? (
               <>
-                {/* In a real app we'd just render an Image with the thumbnail, but Ionicons is a faster mockup here since EditableAvatar is gone */}
+                {/* In a real app we'd just render an Image with the thumbnail, but Ionicons is a faster mockup here since UserEditableAvatar is gone */}
                 <Ionicons
                   name="film-outline"
                   size={48}

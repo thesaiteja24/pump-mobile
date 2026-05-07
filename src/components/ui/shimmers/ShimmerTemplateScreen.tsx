@@ -58,7 +58,7 @@ function SkeletonBlock({
    Exercise Row Skeleton
 ────────────────────────────────────────────── */
 
-function SkeletonExerciseRow() {
+function SkeletonWorkoutExerciseRow() {
   return (
     <View className="mb-4 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
       <View className="mb-3 flex-row items-center gap-3">
@@ -99,7 +99,7 @@ function SkeletonExerciseRow() {
    Shimmer Template Screen
 ────────────────────────────────────────────── */
 
-export default function ShimmerTemplateScreen() {
+export function ShimmerTemplateScreen() {
   const safeAreaInsets = useSafeAreaInsets()
 
   return (
@@ -131,9 +131,9 @@ export default function ShimmerTemplateScreen() {
 
         {/* Exercise List Skeleton */}
         <View className="gap-4 p-4">
-          <SkeletonExerciseRow />
-          <SkeletonExerciseRow />
-          <SkeletonExerciseRow />
+          <SkeletonWorkoutExerciseRow />
+          <SkeletonWorkoutExerciseRow />
+          <SkeletonWorkoutExerciseRow />
         </View>
       </ScrollView>
 
@@ -150,3 +150,4 @@ export default function ShimmerTemplateScreen() {
     </Animated.View>
   )
 }
+export default ShimmerTemplateScreen

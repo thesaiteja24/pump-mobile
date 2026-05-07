@@ -13,8 +13,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-import EditableAvatar from '@/components/me/EditableAvatar'
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
+import { UserEditableAvatar } from '@/components/user/UserEditableAvatar'
 import { useDeleteMeta, useMetaById, useUpdateMeta } from '@/hooks/queries/meta'
 import { EquipmentType, MetaResource } from '@/types/meta'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
@@ -154,7 +154,7 @@ export default function EditMeta() {
   return (
     <View className="flex-1 bg-white p-4 dark:bg-black" style={{ paddingBottom: insets.bottom }}>
       <View className="mb-6 items-center">
-        <EditableAvatar
+        <UserEditableAvatar
           uri={thumbnailUri}
           size={132}
           editable={!updateMutation.isPending}

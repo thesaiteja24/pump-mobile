@@ -15,7 +15,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-import MetaModal from '@/components/meta/MetaModal'
+import { MetaModal } from '@/components/modals/ExerciseMetaModal'
 import { BaseModalHandle } from '@/components/ui/BaseModal'
 import { useCreateExercise } from '@/hooks/queries/exercises'
 import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'

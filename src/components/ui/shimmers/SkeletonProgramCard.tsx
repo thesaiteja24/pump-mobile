@@ -57,3 +57,4 @@ export const SkeletonUserProgramCard = () => {
     </View>
   )
 }
+export default SkeletonProgramCard

@@ -52,7 +52,7 @@ function SkeletonBlock({
   return <Animated.View style={[animatedStyle, blockStyle]} />
 }
 
-export default function ShimmerAnalyticsScreen() {
+export function ShimmerAnalyticsScreen() {
   return (
     <View className="flex-1">
       {/* MAIN CARD */}
@@ -123,3 +123,4 @@ export default function ShimmerAnalyticsScreen() {
     </View>
   )
 }
+export default ShimmerAnalyticsScreen

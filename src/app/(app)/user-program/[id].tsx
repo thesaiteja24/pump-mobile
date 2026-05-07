@@ -20,12 +20,12 @@ import Animated, {
 } from 'react-native-reanimated'
 import Toast from 'react-native-toast-message'
 
-import { Button } from '@/components/ui/buttons/Button'
-import ShimmerProgramDetails from '@/components/ui/shimmers/ShimmerProgramDetails'
 import {
   WorkoutDetailsModal,
   WorkoutDetailsModalHandle,
-} from '@/components/workouts/modals/WorkoutDetailsModal'
+} from '@/components/modals/WorkoutDetailsModal'
+import { Button } from '@/components/ui/buttons/Button'
+import { ShimmerProgramDetails } from '@/components/ui/shimmers/ShimmerProgramDetails'
 import { useUserProgram } from '@/hooks/queries/programs'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 

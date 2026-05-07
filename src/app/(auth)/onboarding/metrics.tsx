@@ -5,9 +5,9 @@ import { ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-import { UnitToggle } from '@/components/me/UnitToggle'
 import { Button } from '@/components/ui/buttons/Button'
-import { TextInput } from '@/components/ui/TextInput'
+import { TextInput } from '@/components/ui/inputs/TextInput'
+import { UnitToggle } from '@/components/user/UserUnitToggle'
 import { useThemeColor } from '@/hooks/theme'
 import { useOnboarding } from '@/stores/me.store'
 

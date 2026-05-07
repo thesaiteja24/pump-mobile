@@ -5,9 +5,9 @@ import { useRef } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import CoachModal, { CoachModalHandle } from '@/components/coach/CoachModal'
-import AnimatedButton from '@/components/ui/buttons/AnimatedButton'
-import CustomHeader from '@/components/ui/CustomHeader'
+import { AppHeader } from '@/components/common/AppHeader'
+import { CoachModal, CoachModalHandle } from '@/components/modals/CoachModal'
+import { AnimatedButton } from '@/components/ui/buttons/AnimatedButton'
 import { useThemeColor } from '@/hooks/theme'
 
 export default function TabsLayout() {
@@ -71,7 +71,7 @@ export default function TabsLayout() {
             if (options.headerShown === false) return null
 
             return (
-              <CustomHeader
+              <AppHeader
                 title={options.title ?? ''}
                 leftIcon={custom.leftIcon}
                 onLeftPress={custom.onLeftPress}

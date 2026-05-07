@@ -19,18 +19,18 @@ import Animated, {
 } from 'react-native-reanimated'
 import Carousel from 'react-native-reanimated-carousel'
 
-import { ProgramWorkoutPromptModal } from '@/components/programs/modals/ProgramWorkoutPromptModal'
-import ProgramCard from '@/components/programs/ProgramCard'
-import UserProgramCard from '@/components/programs/UserProgramCard'
-import { PaywallModal } from '@/components/subscriptions/PaywallModal'
-import TemplateCard from '@/components/templates/TemplateCard'
+import { ProgramWorkoutPromptModal } from '@/components/modals/ProgramWorkoutPromptModal'
+import { UserSubscriptionPaywallModal } from '@/components/modals/SubscriptionPaywallModal'
+import { ProgramCard } from '@/components/program/ProgramCard'
+import { UserProgramCard } from '@/components/program/UserProgramCard'
+import { TemplateCard } from '@/components/template/TemplateCard'
 import { BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import {
   SkeletonProgramCard,
   SkeletonUserProgramCard,
 } from '@/components/ui/shimmers/SkeletonProgramCard'
-import SkeletonTemplateCard from '@/components/ui/shimmers/SkeletonTemplateCard'
+import { SkeletonTemplateCard } from '@/components/ui/shimmers/SkeletonTemplateCard'
 import { FREE_TIER_LIMITS } from '@/constants/limits'
 import { ROLES } from '@/constants/roles'
 import { useExercises } from '@/hooks/queries/exercises'
@@ -476,7 +476,7 @@ export default function WorkoutScreen() {
         }}
       />
 
-      <PaywallModal
+      <UserSubscriptionPaywallModal
         ref={paywallModalRef}
         title="Upgrade to Pro"
         description={`You can only add up to ${FREE_TIER_LIMITS.MAX_CUSTOM_TEMPLATES} custom templates on the Free plan. Upgrade to create UNLIMITED Templates`}

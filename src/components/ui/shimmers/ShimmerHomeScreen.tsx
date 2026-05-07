@@ -64,7 +64,7 @@ function SkeletonBlock({
    Streak Card Skeleton
 ────────────────────────────────────────────── */
 
-function SkeletonStreakCard() {
+function SkeletonUserStreakCard() {
   return (
     <View className="mb-4 rounded-2xl border border-neutral-200 bg-white px-4 py-4 dark:border-neutral-800 dark:bg-neutral-900">
       {/* Month */}
@@ -94,7 +94,7 @@ function SkeletonStreakCard() {
    Home Screen Skeleton (export)
 ────────────────────────────────────────────── */
 
-export default function ShimmerHomeScreen() {
+export function ShimmerHomeScreen() {
   const { width } = useWindowDimensions()
 
   return (
@@ -103,7 +103,7 @@ export default function ShimmerHomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        <SkeletonStreakCard />
+        <SkeletonUserStreakCard />
 
         {/* Habits */}
         <View className="mb-4">
@@ -177,3 +177,4 @@ export default function ShimmerHomeScreen() {
     </Animated.View>
   )
 }
+export default ShimmerHomeScreen

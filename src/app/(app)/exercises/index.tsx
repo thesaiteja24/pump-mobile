@@ -15,8 +15,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-import ExerciseList from '@/components/exercises/ExerciseList'
-import MetaModal from '@/components/meta/MetaModal'
+import { ExerciseList } from '@/components/exercise/ExerciseList'
+import { MetaModal } from '@/components/modals/ExerciseMetaModal'
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import { ROLES as roles } from '@/constants/roles'
@@ -26,6 +26,7 @@ import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import { Exercise } from '@/types/exercises'
 import { SelfUser } from '@/types/me'
+import { MetaItem } from '@/types/meta'
 
 type NavigationWithRightIcons = {
   setOptions: (options: {
@@ -413,11 +414,11 @@ export default function ExercisesScreen() {
         loading={equipmentLoading}
         enableCreate={role === roles.systemAdmin}
         items={equipmentList}
-        onSelect={(item) => {
+        onSelect={(item: MetaItem) => {
           setFilter((f) => ({ ...f, equipmentId: item.id }))
           equipmentModalRef.current?.dismiss()
         }}
-        onLongPress={(item) => {
+        onLongPress={(item: MetaItem) => {
           if (role !== roles.systemAdmin) return
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
           equipmentModalRef.current?.dismiss()
@@ -437,11 +438,11 @@ export default function ExercisesScreen() {
         loading={muscleGroupLoading}
         enableCreate={role === roles.systemAdmin}
         items={muscleGroupList}
-        onSelect={(item) => {
+        onSelect={(item: MetaItem) => {
           setFilter((f) => ({ ...f, muscleGroupId: item.id }))
           muscleGroupsModalRef.current?.dismiss()
         }}
-        onLongPress={(item) => {
+        onLongPress={(item: MetaItem) => {
           if (role !== roles.systemAdmin) return
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
           muscleGroupsModalRef.current?.dismiss()

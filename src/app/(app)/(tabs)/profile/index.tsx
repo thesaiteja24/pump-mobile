@@ -1,27 +1,19 @@
-import { AntDesign, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
+import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useColorScheme } from 'nativewind'
 import { useEffect, useRef } from 'react'
-import { BackHandler, GestureResponderEvent, Pressable, Text, View } from 'react-native'
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withTiming,
-} from 'react-native-reanimated'
+import { BackHandler, View } from 'react-native'
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import switchTheme from 'react-native-theme-switch-animation'
-import { twMerge } from 'tailwind-merge'
 
-import EditableAvatar from '@/components/me/EditableAvatar'
-import { EditProfileSheet } from '@/components/me/modals/EditProfileSheet'
-import { FitnessGoalsSheet } from '@/components/me/modals/FitnessGoalsSheet'
-import { MeasurementsSheet } from '@/components/me/modals/MeasurementsSheet'
-import { UnitPreferencesSheet } from '@/components/me/modals/UnitPreferencesSheet'
-import { VerifiedBadge } from '@/components/subscriptions/VerifiedBadge'
+import { UserEditProfileModal } from '@/components/modals/UserEditProfileModal'
+import { UserFitnessGoalsModal } from '@/components/modals/UserFitnessGoalsModal'
+import { UserMeasurementsModal } from '@/components/modals/UserMeasurementsModal'
+import { UserUnitPreferencesModal } from '@/components/modals/UserUnitPreferencesModal'
 import { BaseModalHandle } from '@/components/ui/BaseModal'
-import { Button } from '@/components/ui/buttons/Button'
+import { UserHeader } from '@/components/user/UserHeader'
+import { UserMenuItem } from '@/components/user/UserMenuItem'
+import { UserThemeToggle } from '@/components/user/UserThemeToggle'
 import { useProfileQuery } from '@/hooks/queries/me'
 import { useAuth } from '@/stores/auth.store'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
@@ -34,7 +26,7 @@ export default function ProfileScreen() {
   const user = userData as SelfUser | null
 
   const { isPro, activePlanId } = useSubscriptionStore()
-  const { colorScheme, setColorScheme } = useColorScheme()
+  const { colorScheme } = useColorScheme()
   const isDarkMode = colorScheme === 'dark'
   const insets = useSafeAreaInsets()
 
@@ -107,91 +99,22 @@ export default function ProfileScreen() {
     return () => subscription.remove()
   }, [router])
 
-  const lightIconRef = useRef<View>(null)
-  const darkIconRef = useRef<View>(null)
-
-  const handleThemeToggle = (e: GestureResponderEvent) => {
-    const theme = colorScheme === 'dark' ? 'light' : 'dark'
-    e.currentTarget.measure((x1, y1, width, height, px, py) => {
-      switchTheme({
-        switchThemeFunction: () => {
-          setTimeout(() => {
-            setColorScheme(theme)
-          }, 100)
-        },
-        animationConfig: {
-          type: 'inverted-circular',
-          duration: 1200,
-          startingPoint: {
-            cy: py + height / 2,
-            cx: px + width / 2,
-          },
-        },
-      })
-    })
-  }
 
   return (
     <View className="flex-1 bg-white p-4 dark:bg-black" style={{ paddingBottom: insets.bottom }}>
-      {/* Avatar */}
-      <View className="flex-row items-center gap-4">
-        <Animated.View style={avatarStyle} className="mb-6 items-center">
-          <EditableAvatar
-            uri={user?.profilePicUrl ? user.profilePicUrl : null}
-            size={100}
-            editable={false}
-          />
-        </Animated.View>
-
-        {/* Name as prominent line */}
-        <Animated.View style={nameStyle} className="mb-3 min-w-0 flex-1 gap-2">
-          <View className="flex-row items-center gap-1">
-            <Text
-              className="shrink text-xl font-semibold text-neutral-900 dark:text-neutral-100"
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {(user?.firstName ?? '') + (user?.lastName ? ` ${user.lastName}` : '')}
-            </Text>
-            {isPro && <VerifiedBadge tier={activePlanId} size={28} />}
-          </View>
-
-          <View className="flex-row gap-4">
-            <Pressable
-              onPress={() => {
-                router.push('/(app)/profile/followers')
-              }}
-            >
-              <Text className="text-sm font-normal text-neutral-500 dark:text-neutral-400">
-                Followers
-              </Text>
-              <Text className="text-base font-medium text-neutral-900 dark:text-neutral-100">
-                {user?.followersCount ?? 0}
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                router.push('/(app)/profile/following')
-              }}
-            >
-              <Text className="text-sm font-normal text-neutral-500 dark:text-neutral-400">
-                Following
-              </Text>
-              <Text className="text-base font-medium text-neutral-900 dark:text-neutral-100">
-                {user?.followingCount ?? 0}
-              </Text>
-            </Pressable>
-          </View>
-        </Animated.View>
-      </View>
+      <UserHeader
+        user={user}
+        isPro={isPro}
+        activePlanId={activePlanId}
+        avatarStyle={avatarStyle}
+        nameStyle={nameStyle}
+      />
 
       {/* Info Card / Action List */}
       <Animated.View style={infoStyle} className="mt-4 gap-2">
-        <Button
+        <UserMenuItem
           title="Account Details"
-          variant="ghost"
-          className="justify-start py-4"
-          textClassName="text-base font-medium text-neutral-700 dark:text-neutral-300"
+          onPress={() => editProfileSheetRef.current?.present()}
           leftIcon={
             <MaterialCommunityIcons
               name="account-edit"
@@ -200,24 +123,13 @@ export default function ProfileScreen() {
               className="mr-2"
             />
           }
-          rightIcon={
-            <MaterialCommunityIcons
-              name="chevron-right"
-              size={24}
-              color={isDarkMode ? '#525252' : '#A3A3A3'}
-              className="ml-auto"
-            />
-          }
-          onPress={() => editProfileSheetRef.current?.present()}
         />
 
         <View className="ml-14 h-[1px] bg-neutral-100 dark:bg-neutral-800" />
 
-        <Button
+        <UserMenuItem
           title="Measurements"
-          variant="ghost"
-          className="justify-start py-4"
-          textClassName="text-base font-medium text-neutral-700 dark:text-neutral-300"
+          onPress={() => measurementsSheetRef.current?.present()}
           leftIcon={
             <MaterialCommunityIcons
               name="clipboard-check-outline"
@@ -226,24 +138,13 @@ export default function ProfileScreen() {
               className="mr-2"
             />
           }
-          rightIcon={
-            <MaterialCommunityIcons
-              name="chevron-right"
-              size={24}
-              color={isDarkMode ? '#525252' : '#A3A3A3'}
-              className="ml-auto"
-            />
-          }
-          onPress={() => measurementsSheetRef.current?.present()}
         />
 
         <View className="ml-14 h-[1px] bg-neutral-100 dark:bg-neutral-800" />
 
-        <Button
+        <UserMenuItem
           title="Fitness Goals"
-          variant="ghost"
-          className="justify-start py-4"
-          textClassName="text-base font-medium text-neutral-700 dark:text-neutral-300"
+          onPress={() => fitnessGoalsSheetRef.current?.present()}
           leftIcon={
             <MaterialCommunityIcons
               name="bullseye-arrow"
@@ -252,24 +153,13 @@ export default function ProfileScreen() {
               className="mr-2"
             />
           }
-          rightIcon={
-            <MaterialCommunityIcons
-              name="chevron-right"
-              size={24}
-              color={isDarkMode ? '#525252' : '#A3A3A3'}
-              className="ml-auto"
-            />
-          }
-          onPress={() => fitnessGoalsSheetRef.current?.present()}
         />
 
         <View className="ml-14 h-[1px] bg-neutral-100 dark:bg-neutral-800" />
 
-        <Button
+        <UserMenuItem
           title="Unit Preferences"
-          variant="ghost"
-          className="justify-start py-4"
-          textClassName="text-base font-medium text-neutral-700 dark:text-neutral-300"
+          onPress={() => unitSheetRef.current?.present()}
           leftIcon={
             <MaterialCommunityIcons
               name="tune-variant"
@@ -278,83 +168,18 @@ export default function ProfileScreen() {
               className="mr-2"
             />
           }
-          rightIcon={
-            <MaterialCommunityIcons
-              name="chevron-right"
-              size={24}
-              color={isDarkMode ? '#525252' : '#A3A3A3'}
-              className="ml-auto"
-            />
-          }
-          onPress={() => unitSheetRef.current?.present()}
         />
 
         <View className="ml-14 h-[1px] bg-neutral-100 dark:bg-neutral-800" />
 
-        {/* Inline Theme Toggle - Pill Style */}
-        <View className="flex-row items-center justify-between py-2 pr-2">
-          <View className="flex-row items-center gap-2">
-            <MaterialCommunityIcons
-              name="palette-outline"
-              size={24}
-              color={isDarkMode ? '#D4D4D4' : '#525252'}
-              className="ml-4 mr-2"
-            />
-            <Text className="text-base font-medium text-neutral-700 dark:text-neutral-300">
-              App Theme
-            </Text>
-          </View>
-
-          <View className="flex-row items-center gap-1 rounded-full bg-neutral-100 p-1 dark:bg-neutral-900">
-            <Pressable
-              onPress={(e) => handleThemeToggle(e)}
-              className={twMerge(
-                'flex-row items-center gap-2 rounded-full px-4 py-2',
-                colorScheme === 'light' && 'bg-white dark:bg-neutral-800',
-              )}
-            >
-              <View ref={lightIconRef}>
-                <Ionicons
-                  name="sunny"
-                  size={18}
-                  color={colorScheme === 'light' ? '#EAB308' : '#737373'}
-                />
-              </View>
-              {colorScheme === 'light' && (
-                <Text className="text-sm font-semibold text-neutral-900 dark:text-white">
-                  Light
-                </Text>
-              )}
-            </Pressable>
-
-            <Pressable
-              onPress={(e) => handleThemeToggle(e)}
-              className={twMerge(
-                'flex-row items-center gap-2 rounded-full px-4 py-2',
-                colorScheme === 'dark' && 'bg-white dark:bg-neutral-800',
-              )}
-            >
-              <View ref={darkIconRef}>
-                <Ionicons
-                  name="moon"
-                  size={18}
-                  color={colorScheme === 'dark' ? '#3b82f6' : '#737373'}
-                />
-              </View>
-              {colorScheme === 'dark' && (
-                <Text className="text-sm font-semibold text-neutral-900 dark:text-white">Dark</Text>
-              )}
-            </Pressable>
-          </View>
-        </View>
+        <UserThemeToggle />
 
         <View className="ml-14 h-[1px] bg-neutral-100 dark:bg-neutral-800" />
 
-        <Button
+        <UserMenuItem
           title="Logout"
-          variant="ghost"
-          className="justify-start py-4"
-          textClassName="text-base font-medium text-red-600 dark:text-red-500"
+          onPress={logout}
+          isDestructive
           leftIcon={
             <AntDesign
               name="logout"
@@ -363,22 +188,13 @@ export default function ProfileScreen() {
               className="ml-[2px] mr-2"
             />
           }
-          rightIcon={
-            <MaterialCommunityIcons
-              name="chevron-right"
-              size={24}
-              color={isDarkMode ? '#525252' : '#A3A3A3'}
-              className="ml-auto"
-            />
-          }
-          onPress={logout}
         />
       </Animated.View>
 
-      <UnitPreferencesSheet ref={unitSheetRef} />
-      <EditProfileSheet ref={editProfileSheetRef} />
-      <MeasurementsSheet ref={measurementsSheetRef} />
-      <FitnessGoalsSheet ref={fitnessGoalsSheetRef} />
+      <UserUnitPreferencesModal ref={unitSheetRef} />
+      <UserEditProfileModal ref={editProfileSheetRef} />
+      <UserMeasurementsModal ref={measurementsSheetRef} />
+      <UserFitnessGoalsModal ref={fitnessGoalsSheetRef} />
     </View>
   )
 }

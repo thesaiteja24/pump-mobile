@@ -12,16 +12,16 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-import { HabitCard } from '@/components/habits/HabitCard'
-import StreakCard, { StreakDay } from '@/components/me/StreakCard'
+import { HabitCard } from '@/components/habit/HabitCard'
+import { Button } from '@/components/ui/buttons/Button'
+import { ShimmerHomeScreen } from '@/components/ui/shimmers/ShimmerHomeScreen'
+import { StreakDay,UserStreakCard } from '@/components/user/UserStreakCard'
 import {
   WeeklyDurationCard,
   WeeklyRepsCard,
   WeeklyVolumeCard,
-} from '@/components/me/TrainingMetricCards'
-import { WeightMetricCard } from '@/components/me/WeightMetricCard'
-import { Button } from '@/components/ui/buttons/Button'
-import ShimmerHomeScreen from '@/components/ui/shimmers/ShimmerHomeScreen'
+} from '@/components/user/UserTrainingMetricCards'
+import { UserWeightMetricCard } from '@/components/user/UserWeightMetricCard'
 import { useAskNotificationPermission } from '@/hooks/notifications/useAskNotificationPermission'
 import { useHabitLogsQuery, useHabitsQuery } from '@/hooks/queries/habits'
 import { useMeasurementsQuery, useProfileQuery, useUserAnalyticsQuery } from '@/hooks/queries/me'
@@ -273,7 +273,7 @@ export default function HomeScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           contentContainerStyle={{ paddingBottom: '50%' }}
         >
-          <StreakCard {...streakData} />
+          <UserStreakCard {...streakData} />
 
           <Animated.View
             entering={FadeInDown.delay(600).duration(500)}
@@ -320,7 +320,7 @@ export default function HomeScreen() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ gap: 10, paddingRight: 20 }}
             >
-              <WeightMetricCard width={width * 0.5} />
+              <UserWeightMetricCard width={width * 0.5} />
               <View
                 style={{ width: width * 0.5, height: width * 0.4 }}
                 className="flex flex-col justify-between rounded-2xl border border-neutral-200 bg-white p-2 px-4 dark:border-neutral-800 dark:bg-neutral-900"

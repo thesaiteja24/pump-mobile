@@ -7,8 +7,8 @@ import Toast from 'react-native-toast-message'
 
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
-import ShimmerTemplateScreen from '@/components/ui/shimmers/ShimmerTemplateScreen'
-import { ReadOnlyExerciseRow } from '@/components/workout-editor/ReadOnlyExerciseRow'
+import { ShimmerTemplateScreen } from '@/components/ui/shimmers/ShimmerTemplateScreen'
+import { WorkoutReadOnlyExerciseRow } from '@/components/workout/WorkoutReadOnlyExerciseRow'
 import { useDeleteTemplateMutation, useTemplateByIdQuery } from '@/hooks/queries/templates'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import { TemplateExerciseGroup } from '@/types/templates'
@@ -133,7 +133,7 @@ export default function TemplateDetails() {
         {/* Read Only Exercise List */}
         <View className="gap-4 p-4">
           {template.exercises.map((ex, idx) => (
-            <ReadOnlyExerciseRow
+            <WorkoutReadOnlyExerciseRow
               key={ex.id || idx}
               exercise={ex}
               group={ex.exerciseGroupId ? groupMap.get(ex.exerciseGroupId) : null}

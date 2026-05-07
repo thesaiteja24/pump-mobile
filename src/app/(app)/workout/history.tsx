@@ -21,7 +21,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 
-import WorkoutCard from '@/components/engagement/WorkoutCard'
+import { SocialWorkoutCard } from '@/components/social/SocialWorkoutCard'
 import { useExercises } from '@/hooks/queries/exercises'
 import { useUserWorkoutHistoryQuery } from '@/hooks/queries/workouts'
 import { useThemeColor } from '@/hooks/theme'
@@ -74,7 +74,7 @@ function SkeletonBlock({
    Workout Card Skeleton
 ────────────────────────────────────────────── */
 
-function SkeletonWorkoutCard() {
+function SkeletonSocialWorkoutCard() {
   return (
     <View className="mb-4 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
       {/* Header */}
@@ -195,7 +195,7 @@ const History = () => {
           <SkeletonBlock width={200} height={32} rounded={8} />
           <View className="mt-8">
             {Array.from({ length: 3 }).map((_, i) => (
-              <SkeletonWorkoutCard key={i} />
+              <SkeletonSocialWorkoutCard key={i} />
             ))}
           </View>
         </View>
@@ -208,7 +208,7 @@ const History = () => {
           renderItem={({ item, index }) => {
             if (item.type === 'section-header') return <SectionHeader />
             return (
-              <WorkoutCard workout={item.workout} exerciseTypeMap={exerciseTypeMap} index={index} />
+              <SocialWorkoutCard workout={item.workout} exerciseTypeMap={exerciseTypeMap} index={index} />
             )
           }}
           stickyHeaderIndices={listData.length > 0 ? [0] : []}

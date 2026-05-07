@@ -361,3 +361,4 @@ export const BaseModal = forwardRef<BaseModalHandle, BaseModalProps>(
 )
 
 BaseModal.displayName = 'BaseModal'
+export default BaseModal

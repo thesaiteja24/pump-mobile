@@ -10,7 +10,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import Toast from 'react-native-toast-message'
 import { vexo } from 'vexo-analytics'
 
-import { CustomToast } from '@/components/ui/CustomToast'
+import { CustomToast } from '@/components/ui/feedback/CustomToast'
 import { useThemeColor } from '@/hooks/theme'
 import { useInAppUpdate } from '@/hooks/useInAppUpdate'
 import { queryClient } from '@/lib/queryClient'

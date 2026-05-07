@@ -2,9 +2,9 @@ import { useRouter } from 'expo-router'
 import React, { useEffect, useMemo } from 'react'
 import { BackHandler, ScrollView, View } from 'react-native'
 
-import { MuscleCompositionCard } from '@/components/me/MuscleCompositionCard'
-import { NutritionTargetsCard } from '@/components/me/NutritionTargetsCard'
-import ShimmerAnalyticsScreen from '@/components/ui/shimmers/ShimmerAnalyticsScreen'
+import { ShimmerAnalyticsScreen } from '@/components/ui/shimmers/ShimmerAnalyticsScreen'
+import { UserMuscleCompositionCard } from '@/components/user/UserMuscleCompositionCard'
+import { UserNutritionTargetsCard } from '@/components/user/UserNutritionTargetsCard'
 import {
   useFitnessProfileQuery,
   useMeasurementsQuery,
@@ -160,13 +160,13 @@ const AnalyticsScreen = () => {
         <ShimmerAnalyticsScreen />
       ) : (
         <View className="flex items-center justify-center gap-4">
-          <MuscleCompositionCard
+          <UserMuscleCompositionCard
             composition={composition}
             gender={gender}
             goal={fitnessGoal}
           />
 
-          <NutritionTargetsCard
+          <UserNutritionTargetsCard
             nutritionPlan={nutritionPlan}
             fitnessProfile={fitnessProfile}
             riskBadge={riskBadge}

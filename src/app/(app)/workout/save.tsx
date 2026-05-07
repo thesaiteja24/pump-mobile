@@ -4,13 +4,11 @@ import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-nativ
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
+import { TimerDurationModal, TimerDurationModalHandle } from '@/components/modals/TimerDurationModal'
+import { VisibilitySelectionModal } from '@/components/modals/VisibilitySelectionModal'
 import { BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
-import DateTimePicker from '@/components/ui/DateTimePicker'
-import TimerDurationModal, {
-  TimerDurationModalHandle,
-} from '@/components/workouts/modals/TimerDurationModal'
-import VisibilitySelectionModal from '@/components/workouts/modals/VisibilitySelectionModal'
+import { DateTimePicker } from '@/components/ui/inputs/DateTimePicker'
 import { useExercises } from '@/hooks/queries/exercises'
 import {
   useCreateWorkoutPayloadMutation,

@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router'
 import React, { useEffect } from 'react'
 
-import AuthGuard from '@/components/auth/AuthGuard'
+import { AuthGuard } from '@/components/user/UserAuthGuard'
 import { useOneSignal } from '@/hooks/notifications/useOneSignal'
 import { useThemeColor } from '@/hooks/theme'
 import { useAuth } from '@/stores/auth.store'

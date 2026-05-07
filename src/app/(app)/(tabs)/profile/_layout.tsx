@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router'
 import React from 'react'
 
-import CustomHeader from '@/components/ui/CustomHeader'
+import { AppHeader } from '@/components/common/AppHeader'
 import { useThemeColor } from '@/hooks/theme'
 
 export default function ProfileLayout() {
@@ -20,7 +20,7 @@ export default function ProfileLayout() {
           if (options.headerShown === false) return null
 
           return (
-            <CustomHeader
+            <AppHeader
               title={options.title ?? ''}
               leftIcon={custom.leftIcon}
               onLeftPress={custom.onLeftPress}

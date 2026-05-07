@@ -57,7 +57,7 @@ function SkeletonBlock({
    Workout Card Skeleton
 ────────────────────────────────────────────── */
 
-function SkeletonWorkoutCard() {
+function SkeletonSocialWorkoutCard() {
   return (
     <View className="mb-4 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
       {/* Header */}
@@ -94,11 +94,11 @@ function SkeletonWorkoutCard() {
    Home Screen Skeleton (export)
 ────────────────────────────────────────────── */
 
-export default function ShimmerDiscoverScreen() {
+export function ShimmerDiscoverScreen() {
   return (
     <Animated.View entering={FadeInDown.duration(300).springify()} className="flex-1">
       {Array.from({ length: 3 }).map((_, i) => (
-        <SkeletonWorkoutCard key={i} />
+        <SkeletonSocialWorkoutCard key={i} />
       ))}
 
       {/* Bottom breathing room to match real list */}
@@ -106,3 +106,4 @@ export default function ShimmerDiscoverScreen() {
     </Animated.View>
   )
 }
+export default ShimmerDiscoverScreen

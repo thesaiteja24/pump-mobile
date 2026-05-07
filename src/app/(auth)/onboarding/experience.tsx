@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
 import { Button } from '@/components/ui/buttons/Button'
-import { SelectableCard } from '@/components/ui/SelectableCard'
+import { SelectableCard } from '@/components/ui/cards/SelectableCard'
 import { useThemeColor } from '@/hooks/theme'
 import { useOnboarding } from '@/stores/me.store'
 import { FitnessLevel } from '@/types/programs'

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { BaseTrainingChart } from '@/components/me/BaseTrainingChart'
+import { BaseTrainingChart } from '@/components/user/UserTrainingChart'
 
 export default function DurationChartScreen() {
   const formatDuration = (seconds: number) => {

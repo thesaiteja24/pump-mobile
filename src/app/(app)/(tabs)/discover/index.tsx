@@ -11,9 +11,9 @@ import Animated, {
 } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import CommentsModal, { CommentsModalHandle } from '@/components/engagement/CommentsModal'
-import WorkoutCard from '@/components/engagement/WorkoutCard'
-import ShimmerDiscoverScreen from '@/components/ui/shimmers/ShimmerDiscoverScreen'
+import CommentsModal, { CommentsModalHandle } from '@/components/modals/SocialCommentsModal'
+import { SocialWorkoutCard } from '@/components/social/SocialWorkoutCard'
+import { ShimmerDiscoverScreen } from '@/components/ui/shimmers/ShimmerDiscoverScreen'
 import { useExercises } from '@/hooks/queries/exercises'
 import { useDiscoverWorkoutsQuery } from '@/hooks/queries/workouts'
 import { useThemeColor } from '@/hooks/theme'
@@ -79,7 +79,7 @@ export default function DiscoverScreen() {
 
   const renderItem = useCallback(
     ({ item, index }: { item: any; index: number }) => (
-      <WorkoutCard
+      <SocialWorkoutCard
         workout={item}
         exerciseTypeMap={exerciseTypeMap}
         index={index}

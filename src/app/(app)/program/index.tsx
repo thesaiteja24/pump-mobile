@@ -17,7 +17,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-import TemplateSelectionModal from '@/components/templates/TemplateSelectionModal'
+import { TemplateSelectionModal } from '@/components/modals/TemplateSelectionModal'
 import { BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import { useCreateProgram, useProgramById, useUpdateProgram } from '@/hooks/queries/programs'

@@ -12,7 +12,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import ExerciseCharts from '@/components/exercises/ExerciseCharts'
+import { ExerciseCharts } from '@/components/exercise/ExerciseCharts'
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { useAnalytics } from '@/hooks/analytics'
 import { useExercises } from '@/hooks/queries/exercises'

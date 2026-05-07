@@ -34,7 +34,7 @@ interface AnimatedButtonProps extends Omit<PressableProps, 'children'> {
   width?: number
 }
 
-export default function AnimatedButton({
+export function AnimatedButton({
   iconName = 'sparkles',
   iconSize = 24,
   iconColor = '#fff',
@@ -98,3 +98,4 @@ export default function AnimatedButton({
     </Pressable>
   )
 }
+export default AnimatedButton

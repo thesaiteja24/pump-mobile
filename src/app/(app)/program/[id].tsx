@@ -4,14 +4,14 @@ import React, { useEffect, useMemo, useRef } from 'react'
 import { BackHandler, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import Toast from 'react-native-toast-message'
 
-import { StartProgramSheet } from '@/components/programs/modals/StartProgramSheet'
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
-import { Button } from '@/components/ui/buttons/Button'
-import ShimmerProgramDetails from '@/components/ui/shimmers/ShimmerProgramDetails'
+import { StartProgramModal } from '@/components/modals/StartProgramModal'
 import {
   WorkoutDetailsModal,
   WorkoutDetailsModalHandle,
-} from '@/components/workouts/modals/WorkoutDetailsModal'
+} from '@/components/modals/WorkoutDetailsModal'
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
+import { Button } from '@/components/ui/buttons/Button'
+import { ShimmerProgramDetails } from '@/components/ui/shimmers/ShimmerProgramDetails'
 import { ROLES } from '@/constants/roles'
 import { useProfileQuery } from '@/hooks/queries/me'
 import {
@@ -225,7 +225,7 @@ export default function ProgramTemplateDetails() {
         // persistOnNavigation={true} TODO: when set to true we cannot dismiss it normally it reopening even after closing manually
       />
 
-      <StartProgramSheet
+      <StartProgramModal
         ref={startProgramSheetRef}
         program={program}
         activeProgram={activeProgram ?? null}

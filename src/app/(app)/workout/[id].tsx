@@ -7,11 +7,11 @@ import { BackHandler, ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
-import { VerifiedBadge } from '@/components/subscriptions/VerifiedBadge'
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
-import ShimmerWorkoutScreen from '@/components/ui/shimmers/ShimmerWorkoutScreen'
-import { ReadOnlyExerciseRow } from '@/components/workout-editor/ReadOnlyExerciseRow'
+import { ShimmerWorkoutScreen } from '@/components/ui/shimmers/ShimmerWorkoutScreen'
+import { UserVerifiedBadge } from '@/components/user/UserVerifiedBadge'
+import { WorkoutReadOnlyExerciseRow } from '@/components/workout/WorkoutReadOnlyExerciseRow'
 import { useExercises } from '@/hooks/queries/exercises'
 import {
   useDeleteWorkoutMutation,
@@ -249,7 +249,7 @@ export default function WorkoutDetails() {
                 {workout?.user?.firstName} {workout?.user?.lastName}
               </Text>
               {workout?.user?.isPro && (
-                <VerifiedBadge tier={workout.user.proSubscriptionType} size={20} />
+                <UserVerifiedBadge tier={workout.user.proSubscriptionType} size={20} />
               )}
             </View>
           </View>
@@ -275,7 +275,7 @@ export default function WorkoutDetails() {
         {workout.exercises.map((ex: WorkoutHistoryExercise) => {
           const groupDetails = ex.exerciseGroupId ? groupMap.get(ex.exerciseGroupId) : null
 
-          return <ReadOnlyExerciseRow key={ex.id} exercise={ex} group={groupDetails} />
+          return <WorkoutReadOnlyExerciseRow key={ex.id} exercise={ex} group={groupDetails} />
         })}
       </ScrollView>
 
