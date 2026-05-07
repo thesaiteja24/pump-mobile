@@ -1,10 +1,11 @@
-import { useCountUp } from '@/hooks/ui-utils'
-import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
+
+import { useCountUp } from '@/hooks/ui-utils'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 
 interface NutritionTargetsCardProps {
   nutritionPlan: any

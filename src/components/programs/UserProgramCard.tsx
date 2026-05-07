@@ -1,11 +1,11 @@
-import { Button } from '@/components/ui/buttons/Button'
-import { UserProgram } from '@/types/programs'
-
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { Link, router } from 'expo-router'
 import React from 'react'
 import { Pressable, Text, View } from 'react-native'
+
+import { Button } from '@/components/ui/buttons/Button'
+import { UserProgram } from '@/types/programs'
 
 export default function UserProgramCard({ program }: { program: UserProgram }) {
   const totalDays = program.durationWeeks * 7

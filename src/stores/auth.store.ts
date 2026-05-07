@@ -1,8 +1,9 @@
+import * as SecureStore from 'expo-secure-store'
+import { create } from 'zustand'
+
 import { registerUnauthorizedHandler } from '@/lib/authSession'
 import { queryClient } from '@/lib/queryClient'
 import { setAccessToken } from '@/services/api'
-import * as SecureStore from 'expo-secure-store'
-import { create } from 'zustand'
 
 type AuthState = {
   userId: string | null

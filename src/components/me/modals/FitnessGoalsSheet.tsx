@@ -1,3 +1,7 @@
+import { forwardRef, useMemo, useState } from 'react'
+import { Keyboard, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
+import Toast from 'react-native-toast-message'
+
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import DateTimePicker from '@/components/ui/DateTimePicker'
 import { SelectableCard } from '@/components/ui/SelectableCard'
@@ -10,16 +14,12 @@ import {
 } from '@/hooks/queries/me'
 import { FitnessGoal, SelfUser } from '@/types/me'
 import { FitnessLevel } from '@/types/programs'
-
 import {
   calculateBMR,
   calculateBodyFat,
   calculateDailyTargets,
   calculateTDEE,
 } from '@/utils/analytics'
-import { forwardRef, useMemo, useState } from 'react'
-import { Keyboard, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
-import Toast from 'react-native-toast-message'
 
 type TargetType = 'weight' | 'bodyFat'
 type PlanningMode = 'rateDriven' | 'dateDriven'

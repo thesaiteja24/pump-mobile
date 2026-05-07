@@ -1,10 +1,11 @@
+import * as Haptics from 'expo-haptics'
+import React, { forwardRef, useState } from 'react'
+import { Pressable, Text, useColorScheme,View } from 'react-native'
+import DatePicker from 'react-native-date-picker'
+
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import { formatSeconds } from '@/utils/workout'
-import * as Haptics from 'expo-haptics'
-import React, { forwardRef, useState } from 'react'
-import { Pressable, Text, View, useColorScheme } from 'react-native'
-import DatePicker from 'react-native-date-picker'
 
 type Props = {
   title?: string

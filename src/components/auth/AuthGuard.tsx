@@ -1,7 +1,8 @@
-import { useAuth } from '@/stores/auth.store'
 import { useRouter } from 'expo-router'
 import { useEffect } from 'react'
 import { ActivityIndicator, View } from 'react-native'
+
+import { useAuth } from '@/stores/auth.store'
 
 type Props = {
   children: React.ReactNode

@@ -1,3 +1,7 @@
+import { useRouter } from 'expo-router'
+import React, { useEffect, useMemo } from 'react'
+import { BackHandler, ScrollView, View } from 'react-native'
+
 import { MuscleCompositionCard } from '@/components/me/MuscleCompositionCard'
 import { NutritionTargetsCard } from '@/components/me/NutritionTargetsCard'
 import ShimmerAnalyticsScreen from '@/components/ui/shimmers/ShimmerAnalyticsScreen'
@@ -7,8 +11,8 @@ import {
   useNutritionPlanQuery,
   useProfileQuery,
 } from '@/hooks/queries/me'
-import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { useThemeColor } from '@/hooks/theme'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { SelfUser } from '@/types/me'
 import {
   calculateBMI,
@@ -17,9 +21,6 @@ import {
   calculateComposition,
   estimateBodyFatFromBMI,
 } from '@/utils/analytics'
-import { useRouter } from 'expo-router'
-import React, { useEffect, useMemo } from 'react'
-import { BackHandler, ScrollView, View } from 'react-native'
 
 const AnalyticsScreen = () => {
   const router = useRouter()

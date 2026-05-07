@@ -1,16 +1,17 @@
+import * as FileSystem from 'expo-file-system/legacy'
+
 import {
   COACH_ACTIVE_CONVERSATION_ENDPOINT,
-  COACH_CONVERSATIONS_ENDPOINT,
   COACH_CONVERSATION_ENDPOINT,
   COACH_CONVERSATION_MESSAGES_ENDPOINT,
+  COACH_CONVERSATIONS_ENDPOINT,
   COACH_SPEECH_ENDPOINT,
   COACH_TRANSCRIPTION_ENDPOINT,
 } from '@/constants/urls'
-import { handleApiResponse } from '@/utils/handleApiResponse'
-import * as FileSystem from 'expo-file-system/legacy'
-import client, { getAccessToken } from './api'
-
 import { ConversationResponse } from '@/types/coach'
+import { handleApiResponse } from '@/utils/handleApiResponse'
+
+import client, { getAccessToken } from './api'
 
 export async function startConversationService(): Promise<{
   id: string

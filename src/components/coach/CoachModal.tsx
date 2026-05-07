@@ -1,14 +1,15 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
+import { useRouter } from 'expo-router'
+import { forwardRef, useEffect, useState } from 'react'
+import { Text, View } from 'react-native'
+
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import { useCoach } from '@/hooks/coach'
 import { useThemeColor } from '@/hooks/theme'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
 import { CoachMessage } from '@/types/coach'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
-import { useRouter } from 'expo-router'
-import { forwardRef, useEffect, useState } from 'react'
-import { Text, View } from 'react-native'
 
 export interface CoachModalHandle {
   present: () => void

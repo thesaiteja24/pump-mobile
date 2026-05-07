@@ -1,7 +1,8 @@
-import { Paywall } from '@/components/subscriptions/Paywall'
 import { useRouter } from 'expo-router'
 import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
+
+import { Paywall } from '@/components/subscriptions/Paywall'
 
 export default function PaywallScreen() {
   const router = useRouter()

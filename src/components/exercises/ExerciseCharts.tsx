@@ -1,5 +1,3 @@
-import { Button } from '@/components/ui/buttons/Button'
-import { useThemeColor } from '@/hooks/theme'
 import { useState } from 'react'
 import { Dimensions, View } from 'react-native'
 import { LineChart } from 'react-native-chart-kit'
@@ -9,6 +7,9 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated'
+
+import { Button } from '@/components/ui/buttons/Button'
+import { useThemeColor } from '@/hooks/theme'
 
 /* --------------------------------------------------
    Types

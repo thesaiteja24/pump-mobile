@@ -1,6 +1,7 @@
-import { useThemeColor } from '@/hooks/theme'
 import React from 'react'
 import { Text, View } from 'react-native'
+
+import { useThemeColor } from '@/hooks/theme'
 
 const PrivacyPolicy: React.FC = () => {
   const colors = useThemeColor()

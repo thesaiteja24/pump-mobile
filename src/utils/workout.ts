@@ -1,6 +1,6 @@
 import { differenceInMinutes } from 'date-fns'
-import { ExerciseType } from '@/types/exercises'
 
+import { ExerciseType } from '@/types/exercises'
 import { WorkoutHistoryItem, WorkoutLog, WorkoutLogSet, WorkoutPruneReport } from '@/types/workouts'
 
 /* ───────────────── Metrics ───────────────── */

@@ -24,8 +24,6 @@ export const useOneSignal = () => {
 
     // Notification clicked
     const clickListener = (event: any) => {
-      console.log('Notification clicked:', event)
-
       const data = event.notification.additionalData
 
       if (data) {
@@ -48,7 +46,7 @@ export const useOneSignal = () => {
 
     // Notification received while app is open
     const foregroundListener = (event: any) => {
-      console.log('Notification received in foreground:', event.notification)
+      console.info('Notification received in foreground:', event.notification)
     }
 
     OneSignal.Notifications.addEventListener('click', clickListener)

@@ -1,3 +1,10 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { useRouter } from 'expo-router'
+import React, { useMemo } from 'react'
+import { ScrollView, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import Toast from 'react-native-toast-message'
+
 import { Button } from '@/components/ui/buttons/Button'
 import { useThemeColor } from '@/hooks/theme'
 import { useOnboarding } from '@/stores/me.store'
@@ -9,12 +16,6 @@ import {
   classifyBMI,
   estimateBodyFatFromBMI,
 } from '@/utils/analytics'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { useRouter } from 'expo-router'
-import React, { useMemo } from 'react'
-import { ScrollView, Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 export default function OnboardingSummary() {
   const router = useRouter()

@@ -1,3 +1,7 @@
+import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Keyboard, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import Toast from 'react-native-toast-message'
+
 import EditableAvatar from '@/components/me/EditableAvatar'
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import DateTimePicker from '@/components/ui/DateTimePicker'
@@ -12,9 +16,6 @@ import { useThemeColor } from '@/hooks/theme'
 import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { SelfUser } from '@/types/me'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
-import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Keyboard, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import Toast from 'react-native-toast-message'
 
 type Props = object
 

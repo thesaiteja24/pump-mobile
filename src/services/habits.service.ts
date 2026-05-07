@@ -11,6 +11,7 @@ import type {
   UpdateHabitPayload,
 } from '@/types/habits'
 import { handleApiResponse } from '@/utils/handleApiResponse'
+
 import client from './api'
 
 export async function getHabitsService(userId: string): Promise<HabitType[]> {

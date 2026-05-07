@@ -1,17 +1,17 @@
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
-import { Button } from '@/components/ui/buttons/Button'
-import { useDeleteTemplateMutation, useTemplateByIdQuery } from '@/hooks/queries/templates'
-import { useWorkoutEditor } from '@/stores/workout-editor.store'
-import { TemplateExerciseGroup } from '@/types/templates'
 import * as Clipboard from 'expo-clipboard'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { BackHandler, ScrollView, Text, View, useColorScheme } from 'react-native'
+import { BackHandler, ScrollView, Text, useColorScheme,View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
+import { Button } from '@/components/ui/buttons/Button'
 import ShimmerTemplateScreen from '@/components/ui/shimmers/ShimmerTemplateScreen'
 import { ReadOnlyExerciseRow } from '@/components/workout-editor/ReadOnlyExerciseRow'
+import { useDeleteTemplateMutation, useTemplateByIdQuery } from '@/hooks/queries/templates'
+import { useWorkoutEditor } from '@/stores/workout-editor.store'
+import { TemplateExerciseGroup } from '@/types/templates'
 
 export default function TemplateDetails() {
   const { id } = useLocalSearchParams<{ id: string }>()

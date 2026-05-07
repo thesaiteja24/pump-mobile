@@ -1,3 +1,24 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { useRouter } from 'expo-router'
+import React, { useEffect, useRef, useState } from 'react'
+import {
+  BackHandler,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
+} from 'react-native'
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withTiming,
+} from 'react-native-reanimated'
+import Carousel from 'react-native-reanimated-carousel'
+
 import { ProgramWorkoutPromptModal } from '@/components/programs/modals/ProgramWorkoutPromptModal'
 import ProgramCard from '@/components/programs/ProgramCard'
 import UserProgramCard from '@/components/programs/UserProgramCard'
@@ -20,26 +41,6 @@ import { useThemeColor } from '@/hooks/theme'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import { SelfUser } from '@/types/me'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { useRouter } from 'expo-router'
-import React, { useEffect, useRef, useState } from 'react'
-import {
-  BackHandler,
-  RefreshControl,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from 'react-native'
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withTiming,
-} from 'react-native-reanimated'
-import Carousel from 'react-native-reanimated-carousel'
 
 export default function WorkoutScreen() {
   const router = useRouter()

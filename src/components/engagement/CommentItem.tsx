@@ -1,11 +1,12 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { formatDistanceToNow } from 'date-fns'
+import { memo, useMemo, useState } from 'react'
+import { Image, Text, TouchableOpacity, useColorScheme,View } from 'react-native'
+
 import { useRepliesQuery, useToggleLikeMutation } from '@/hooks/queries/engagement'
 import { useProfileQuery } from '@/hooks/queries/me'
 import { Comment } from '@/types/engagement'
 import { SelfUser } from '@/types/me'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { formatDistanceToNow } from 'date-fns'
-import { memo, useMemo, useState } from 'react'
-import { Image, Text, TouchableOpacity, View, useColorScheme } from 'react-native'
 
 const CommentItem = ({
   comment,

@@ -1,7 +1,8 @@
-import { useThemeColor } from '@/hooks/theme'
-import { formatSeconds } from '@/utils/workout'
 import { useEffect, useState } from 'react'
 import { Text } from 'react-native'
+
+import { useThemeColor } from '@/hooks/theme'
+import { formatSeconds } from '@/utils/workout'
 
 /* --------------------------------------------------
    Types

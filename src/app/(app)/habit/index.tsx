@@ -1,16 +1,6 @@
-import { Button } from '@/components/ui/buttons/Button'
-import { useCreateHabit, useHabitsQuery, useUpdateHabit } from '@/hooks/queries/habits'
-import {
-  HabitColorScheme,
-  HabitFooterType,
-  HabitSourceType,
-  HabitTrackingType,
-  InternalMetricId,
-  UpdateHabitPayload,
-} from '@/types/habits'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   BackHandler,
   KeyboardAvoidingView,
@@ -22,6 +12,17 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
+
+import { Button } from '@/components/ui/buttons/Button'
+import { useCreateHabit, useHabitsQuery, useUpdateHabit } from '@/hooks/queries/habits'
+import {
+  HabitColorScheme,
+  HabitFooterType,
+  HabitSourceType,
+  HabitTrackingType,
+  InternalMetricId,
+  UpdateHabitPayload,
+} from '@/types/habits'
 
 const COLORS: { name: HabitColorScheme; hex: string }[] = [
   { name: 'blue', hex: '#3b82f6' },
@@ -140,7 +141,7 @@ export default function HabitCreatorScreen() {
 
       router.back()
     } catch (error: any) {
-      console.log('Create Habit Error:', error)
+      console.error('Create Habit Error:', error)
 
       Toast.show({
         type: 'error',

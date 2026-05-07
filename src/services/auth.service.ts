@@ -1,5 +1,6 @@
 import { GOOGLE_LOGIN_ENDPOINT } from '@/constants/urls'
 import { handleApiResponse } from '@/utils/handleApiResponse'
+
 import client from './api'
 
 export async function googleLoginService(

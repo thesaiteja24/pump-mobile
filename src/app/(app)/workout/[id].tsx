@@ -1,11 +1,6 @@
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
-import { Button } from '@/components/ui/buttons/Button'
-import { useExercises } from '@/hooks/queries/exercises'
-import { useWorkoutEditor } from '@/stores/workout-editor.store'
-import { ExerciseType } from '@/types/exercises'
-import { WorkoutHistoryExercise, WorkoutHistorySet, WorkoutLogGroup } from '@/types/workouts'
-import { calculateWorkoutMetrics, formatDurationFromDates } from '@/utils/workout'
+import { formatDistanceToNow } from 'date-fns'
 import * as Crypto from 'expo-crypto'
+import { Image } from 'expo-image'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { BackHandler, ScrollView, Text, View } from 'react-native'
@@ -13,8 +8,11 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 
 import { VerifiedBadge } from '@/components/subscriptions/VerifiedBadge'
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
+import { Button } from '@/components/ui/buttons/Button'
 import ShimmerWorkoutScreen from '@/components/ui/shimmers/ShimmerWorkoutScreen'
 import { ReadOnlyExerciseRow } from '@/components/workout-editor/ReadOnlyExerciseRow'
+import { useExercises } from '@/hooks/queries/exercises'
 import {
   useDeleteWorkoutMutation,
   useDiscoverWorkoutsQuery,
@@ -23,8 +21,10 @@ import {
 } from '@/hooks/queries/workouts'
 import { useThemeColor } from '@/hooks/theme'
 import { useAuth } from '@/stores/auth.store'
-import { formatDistanceToNow } from 'date-fns'
-import { Image } from 'expo-image'
+import { useWorkoutEditor } from '@/stores/workout-editor.store'
+import { ExerciseType } from '@/types/exercises'
+import { WorkoutHistoryExercise, WorkoutHistorySet, WorkoutLogGroup } from '@/types/workouts'
+import { calculateWorkoutMetrics, formatDurationFromDates } from '@/utils/workout'
 
 /* ───────────────── Component ───────────────── */
 

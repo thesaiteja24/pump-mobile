@@ -1,16 +1,3 @@
-import PrivacyPolicyModal from '@/components/auth/PrivacyPolicyModal'
-import { BaseModalHandle } from '@/components/ui/BaseModal'
-import { Button } from '@/components/ui/buttons/Button'
-import { useGoogleLoginMutation } from '@/hooks/queries/auth'
-import {
-  updateFitnessProfileService,
-  updateMeService,
-  updateNutritionPlanService,
-} from '@/services/me.service'
-import { useAuth } from '@/stores/auth.store'
-import { useOnboarding } from '@/stores/me.store'
-import { SelfUser } from '@/types/me'
-import { calculateBMR, calculateDailyTargets, calculateTDEE } from '@/utils/analytics'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { useRouter } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
@@ -25,6 +12,21 @@ import Animated, {
 } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
+
+import PrivacyPolicyModal from '@/components/auth/PrivacyPolicyModal'
+import { BaseModalHandle } from '@/components/ui/BaseModal'
+import { Button } from '@/components/ui/buttons/Button'
+import { useGoogleLoginMutation } from '@/hooks/queries/auth'
+import {
+  updateFitnessProfileService,
+  updateMeService,
+  updateNutritionPlanService,
+} from '@/services/me.service'
+import { useAuth } from '@/stores/auth.store'
+import { useOnboarding } from '@/stores/me.store'
+import { SelfUser } from '@/types/me'
+import { calculateBMR, calculateDailyTargets, calculateTDEE } from '@/utils/analytics'
+
 import GoogleIcon from '../../assets/components/icons/Google'
 
 export default function Login() {

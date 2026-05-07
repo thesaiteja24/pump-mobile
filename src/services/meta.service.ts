@@ -1,5 +1,6 @@
 import { MetaResource } from '@/types/meta'
 import { handleApiResponse } from '@/utils/handleApiResponse'
+
 import client from './api'
 
 const getEndpoint = (resource: MetaResource, id?: string) =>

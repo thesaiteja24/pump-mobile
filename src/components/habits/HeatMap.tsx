@@ -1,6 +1,7 @@
-import { useThemeColor } from '@/hooks/theme'
 import React, { useMemo } from 'react'
 import { StyleSheet, View } from 'react-native'
+
+import { useThemeColor } from '@/hooks/theme'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

@@ -1,8 +1,3 @@
-import EditableAvatar from '@/components/me/EditableAvatar'
-import { useCreateMeta } from '@/hooks/queries/meta'
-
-import { EquipmentType, MetaResource } from '@/types/meta'
-import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import { useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useCallback, useEffect, useState } from 'react'
 import {
@@ -16,6 +11,11 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
+
+import EditableAvatar from '@/components/me/EditableAvatar'
+import { useCreateMeta } from '@/hooks/queries/meta'
+import { EquipmentType, MetaResource } from '@/types/meta'
+import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 
 export default function CreateMeta() {
   const { resource } = useLocalSearchParams<{ resource: MetaResource }>()

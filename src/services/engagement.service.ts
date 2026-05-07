@@ -1,5 +1,4 @@
 import {
-  WORKOUT_COMMENTS_ENDPOINT,
   FOLLOW_USER_ENDPOINT as follow_user_endpoint,
   LIKES_ENDPOINT as likes_endpoint,
   SEARCH_USERS_ENDPOINT as search_users_endpoint,
@@ -7,9 +6,11 @@ import {
   TOGGLE_LIKE_ENDPOINT as toggle_like_endpoint,
   USER_FOLLOWERS_ENDPOINT as user_followers_endpoint,
   USER_FOLLOWING_ENDPOINT as user_following_endpoint,
+  WORKOUT_COMMENTS_ENDPOINT,
 } from '@/constants/urls'
 import { Comment, CommentsPage, Like, RepliesPage, SearchedUser } from '@/types/engagement'
 import { handleApiResponse } from '@/utils/handleApiResponse'
+
 import client from './api'
 
 interface WorkoutCommentPayload {

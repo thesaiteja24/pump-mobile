@@ -1,6 +1,7 @@
-import { revenueCatService } from '@/services/subscriptions.service'
 import Purchases, { CustomerInfo, PurchasesPackage } from 'react-native-purchases'
 import { create } from 'zustand'
+
+import { revenueCatService } from '@/services/subscriptions.service'
 import { type SubscriptionState } from '@/types/subscriptions'
 
 // In RevenueCat, you usually have an entitlement identifier. Replace 'pro' with your actual entitlement ID from the RC dashboard.

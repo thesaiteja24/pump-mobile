@@ -1,10 +1,11 @@
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
-import { useThemeColor } from '@/hooks/theme'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { Image } from 'expo-image'
 import { forwardRef } from 'react'
 import { Text, TouchableOpacity } from 'react-native'
+
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
+import { useThemeColor } from '@/hooks/theme'
 
 type GroupExerciseItem = {
   id: string

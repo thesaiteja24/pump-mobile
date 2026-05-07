@@ -1,4 +1,5 @@
 import * as ImageManipulator from 'expo-image-manipulator'
+
 import { getTargetImageWidth } from './getTargetImageWidth'
 import { ImageUsage } from './imageUploadPresets'
 

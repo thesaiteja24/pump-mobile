@@ -1,4 +1,12 @@
+import {
+  QueryClient,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { OneSignal } from 'react-native-onesignal'
+
 import { queryKeys } from '@/lib/queryKeys'
 import {
   createCommentService,
@@ -26,13 +34,6 @@ import {
   toggleLikeInWorkouts,
   updateCommentAcrossCaches,
 } from '@/utils/queries/engagementCacheUtils'
-import {
-  QueryClient,
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query'
 
 /**
  * Helper function to update user data across all related queries

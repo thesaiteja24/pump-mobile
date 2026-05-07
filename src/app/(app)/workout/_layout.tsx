@@ -1,7 +1,7 @@
+import { router, Stack } from 'expo-router'
+
 import CustomHeader from '@/components/ui/CustomHeader'
 import { useThemeColor } from '@/hooks/theme'
-import { router, Stack } from 'expo-router'
-import React from 'react'
 
 export default function WorkoutLayout() {
   const colors = useThemeColor()

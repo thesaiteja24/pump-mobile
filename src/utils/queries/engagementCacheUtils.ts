@@ -1,3 +1,5 @@
+import { InfiniteData, QueryClient } from '@tanstack/react-query'
+
 import { queryKeys } from '@/lib/queryKeys'
 import {
   Comment,
@@ -7,7 +9,6 @@ import {
   LikeType,
   RepliesPage,
 } from '@/types/engagement'
-import { InfiniteData, QueryClient } from '@tanstack/react-query'
 
 /**
  * Universal Infinite Query Updater

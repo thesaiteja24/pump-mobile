@@ -22,8 +22,8 @@ import {
   Pressable,
   ScrollView,
   Text,
-  View,
   useColorScheme,
+  View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 

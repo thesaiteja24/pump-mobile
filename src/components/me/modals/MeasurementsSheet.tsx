@@ -1,3 +1,10 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
+import * as ImagePicker from 'expo-image-picker'
+import React, { forwardRef, useCallback, useMemo, useState } from 'react'
+import { Image, Keyboard, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import Toast from 'react-native-toast-message'
+
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { useAddMeasurementMutation, useProfileQuery } from '@/hooks/queries/me'
 import { useThemeColor } from '@/hooks/theme'
@@ -5,12 +12,6 @@ import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { SelfUser } from '@/types/me'
 import { calculateBodyFat, calculateComposition } from '@/utils/analytics'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
-import * as ImagePicker from 'expo-image-picker'
-import React, { forwardRef, useCallback, useMemo, useState } from 'react'
-import { Image, Keyboard, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
-import Toast from 'react-native-toast-message'
 
 type MeasurementKey =
   | 'weight'

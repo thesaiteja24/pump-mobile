@@ -1,10 +1,11 @@
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
-import { useThemeColor } from '@/hooks/theme'
-import { MetaItem } from '@/types/meta'
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { Image } from 'expo-image'
 import { forwardRef } from 'react'
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native'
+
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
+import { useThemeColor } from '@/hooks/theme'
+import { MetaItem } from '@/types/meta'
 
 type Props = {
   title: string

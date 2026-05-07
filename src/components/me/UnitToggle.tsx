@@ -1,7 +1,8 @@
-import { useThemeColor } from '@/hooks/theme'
 import SegmentedControl from '@react-native-segmented-control/segmented-control'
 import React from 'react'
 import { useColorScheme } from 'react-native'
+
+import { useThemeColor } from '@/hooks/theme'
 
 interface UnitToggleProps {
   options: string[]

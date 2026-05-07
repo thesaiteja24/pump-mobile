@@ -1,5 +1,3 @@
-import { useTrainingAnalyticsQuery } from '@/hooks/queries/me'
-import { useThemeColor } from '@/hooks/theme'
 import { Ionicons } from '@expo/vector-icons'
 import { format } from 'date-fns'
 import { useRouter } from 'expo-router'
@@ -7,6 +5,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { BackHandler, Dimensions, Pressable, ScrollView, Text, View } from 'react-native'
 import { BarChart, LineChart } from 'react-native-chart-kit'
 import { SafeAreaView } from 'react-native-safe-area-context'
+
+import { useTrainingAnalyticsQuery } from '@/hooks/queries/me'
+import { useThemeColor } from '@/hooks/theme'
 
 export type TimeRange = '1W' | '1M' | '3M' | '6M' | '1Y' | 'All'
 

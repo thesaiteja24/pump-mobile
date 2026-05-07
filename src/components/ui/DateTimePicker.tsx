@@ -1,9 +1,10 @@
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
-import { useThemeColor } from '@/hooks/theme'
 import * as Haptics from 'expo-haptics'
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { Pressable, Text, View, useColorScheme } from 'react-native'
+import { Pressable, Text, useColorScheme,View } from 'react-native'
 import DatePicker from 'react-native-date-picker'
+
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
+import { useThemeColor } from '@/hooks/theme'
 
 /* --------------------------------------------------
    Types

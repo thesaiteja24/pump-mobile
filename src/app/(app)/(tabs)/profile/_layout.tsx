@@ -1,7 +1,8 @@
-import CustomHeader from '@/components/ui/CustomHeader'
-import { useThemeColor } from '@/hooks/theme'
 import { Stack } from 'expo-router'
 import React from 'react'
+
+import CustomHeader from '@/components/ui/CustomHeader'
+import { useThemeColor } from '@/hooks/theme'
 
 export default function ProfileLayout() {
   const colors = useThemeColor()

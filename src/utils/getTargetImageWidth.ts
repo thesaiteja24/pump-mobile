@@ -1,4 +1,5 @@
 import { PixelRatio } from 'react-native'
+
 import { IMAGE_PRESETS, ImageUsage } from './imageUploadPresets'
 
 export function getTargetImageWidth(usage: ImageUsage) {

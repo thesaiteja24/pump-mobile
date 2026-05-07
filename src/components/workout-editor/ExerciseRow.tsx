@@ -1,3 +1,9 @@
+import { Entypo, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
+import { Image } from 'expo-image'
+import { router } from 'expo-router'
+import { memo, useMemo, useRef, useState } from 'react'
+import { Text, TouchableOpacity, useColorScheme,View } from 'react-native'
+
 import ExerciseGroupModal, {
   ExerciseGroupModalHandle,
 } from '@/components/exercises/ExerciseGroupModal'
@@ -11,11 +17,7 @@ import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import type { ExerciseType } from '@/types/exercises'
 import type { ExerciseGroupType } from '@/types/workouts'
-import { Entypo, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
-import { Image } from 'expo-image'
-import { router } from 'expo-router'
-import { memo, useMemo, useRef, useState } from 'react'
-import { Text, TouchableOpacity, View, useColorScheme } from 'react-native'
+
 import { ElapsedTime } from './ElapsedTime'
 import SetRow from './SetRow'
 

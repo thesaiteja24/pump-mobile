@@ -1,14 +1,3 @@
-import RPESelectionModal from '@/components/workouts/modals/RPESelectionModal'
-import SetTypeSelectionModal from '@/components/workouts/modals/SetTypeSelectionModal'
-import { BaseModalHandle } from '@/components/ui/BaseModal'
-import TimerDurationModal, {
-  TimerDurationModalHandle,
-} from '@/components/workouts/modals/TimerDurationModal'
-import { useThemeColor } from '@/hooks/theme'
-import { useWorkoutEditor } from '@/stores/workout-editor.store'
-import type { ExerciseType } from '@/types/exercises'
-import type { ExerciseRestMode } from '@/types/workouts'
-import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
@@ -18,12 +7,25 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
   useColorScheme,
+  View,
 } from 'react-native'
 import type { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable'
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
+
+import { BaseModalHandle } from '@/components/ui/BaseModal'
+import RPESelectionModal from '@/components/workouts/modals/RPESelectionModal'
+import SetTypeSelectionModal from '@/components/workouts/modals/SetTypeSelectionModal'
+import TimerDurationModal, {
+  TimerDurationModalHandle,
+} from '@/components/workouts/modals/TimerDurationModal'
+import { useThemeColor } from '@/hooks/theme'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
+import { useWorkoutEditor } from '@/stores/workout-editor.store'
+import type { ExerciseType } from '@/types/exercises'
+import type { ExerciseRestMode } from '@/types/workouts'
+
 import { ElapsedTime } from './ElapsedTime'
 
 const SCREEN_WIDTH = Dimensions.get('window').width

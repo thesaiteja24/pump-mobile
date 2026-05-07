@@ -1,13 +1,3 @@
-import { UserItem } from '@/components/engagement/UserItem'
-import {
-  useFollowUserMutation,
-  useSearchUsersQuery,
-  useSuggestedUsersQuery,
-  useUnfollowUserMutation,
-} from '@/hooks/queries/engagement'
-import { useThemeColor } from '@/hooks/theme'
-import { useAuth } from '@/stores/auth.store'
-import { SearchedUser } from '@/types/engagement'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -22,6 +12,17 @@ import {
 } from 'react-native'
 import { TextInput } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+import { UserItem } from '@/components/engagement/UserItem'
+import {
+  useFollowUserMutation,
+  useSearchUsersQuery,
+  useSuggestedUsersQuery,
+  useUnfollowUserMutation,
+} from '@/hooks/queries/engagement'
+import { useThemeColor } from '@/hooks/theme'
+import { useAuth } from '@/stores/auth.store'
+import { SearchedUser } from '@/types/engagement'
 
 export default function Search() {
   const router = useRouter()

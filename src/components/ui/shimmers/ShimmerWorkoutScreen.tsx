@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { ScrollView, useColorScheme, View, type DimensionValue, type ViewStyle } from 'react-native'
+import { type DimensionValue, ScrollView, useColorScheme, View, type ViewStyle } from 'react-native'
 import Animated, {
   FadeInDown,
   useAnimatedStyle,

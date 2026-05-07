@@ -1,12 +1,13 @@
+import { FontAwesome6 } from '@expo/vector-icons'
+import { useRouter } from 'expo-router'
+import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import { Text, View } from 'react-native'
+
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import { ReadOnlyExerciseRow } from '@/components/workout-editor/ReadOnlyExerciseRow'
 import { ProgramDay, UserProgramDay } from '@/types/programs'
 import { TemplateExerciseGroup } from '@/types/templates'
-import { FontAwesome6 } from '@expo/vector-icons'
-import { useRouter } from 'expo-router'
-import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { Text, View } from 'react-native'
 
 export interface WorkoutDetailsModalHandle {
   present: (day: ProgramDay | UserProgramDay, isStartable?: boolean) => void

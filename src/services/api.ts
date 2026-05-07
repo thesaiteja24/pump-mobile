@@ -1,16 +1,17 @@
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
+import * as SecureStore from 'expo-secure-store'
+
 import {
   API_BASE_URL as apiBaseUrl,
   REFRESH_TOKEN_ENDPOINT as refreshTokenEndpoint,
 } from '@/constants/urls'
 import { notifyUnauthorized } from '@/lib/authSession'
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
-import * as SecureStore from 'expo-secure-store'
 
 /* ─────────────────────────────────────────────
    Logging (dev-only)
 ───────────────────────────────────────────── */
 const log = {
-  info: (...args: any[]) => __DEV__ && console.log(...args),
+  info: (...args: any[]) => __DEV__ && console.info(...args),
   warn: (...args: any[]) => __DEV__ && console.warn(...args),
   error: (...args: any[]) => __DEV__ && console.error(...args),
 }

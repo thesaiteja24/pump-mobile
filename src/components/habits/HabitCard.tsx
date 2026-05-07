@@ -1,3 +1,11 @@
+import { Ionicons } from '@expo/vector-icons'
+import { format } from 'date-fns'
+import { useRouter } from 'expo-router'
+import { useMemo, useRef, useState } from 'react'
+import { Pressable, Text, useWindowDimensions, View } from 'react-native'
+import Animated, { FadeInDown } from 'react-native-reanimated'
+import Toast from 'react-native-toast-message'
+
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { TextInput } from '@/components/ui/TextInput'
 import {
@@ -7,13 +15,7 @@ import {
   useLogWeight,
 } from '@/hooks/queries/habits'
 import { HabitLogType, HabitType } from '@/types/habits'
-import { Ionicons } from '@expo/vector-icons'
-import { format } from 'date-fns'
-import { useRouter } from 'expo-router'
-import { useMemo, useRef, useState } from 'react'
-import { Pressable, Text, useWindowDimensions, View } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
-import Toast from 'react-native-toast-message'
+
 import HeatMap from './HeatMap'
 
 interface HabitCardProps {

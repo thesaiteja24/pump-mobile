@@ -1,4 +1,3 @@
-import { useThemeColor } from '@/hooks/theme'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import React, { useEffect } from 'react'
@@ -11,6 +10,8 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated'
+
+import { useThemeColor } from '@/hooks/theme'
 
 export interface StreakDay {
   date: string // YYYY-MM-DD

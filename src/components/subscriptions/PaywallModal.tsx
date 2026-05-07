@@ -1,6 +1,7 @@
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { useRouter } from 'expo-router'
 import { forwardRef } from 'react'
+
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 
 type Props = {
   title?: string

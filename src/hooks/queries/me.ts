@@ -1,3 +1,5 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 import { queryKeys } from '@/lib/queryKeys'
 import {
   addMeasurementsService,
@@ -28,7 +30,6 @@ import {
   updateMyNutritionPlanCache,
   updateMyProfileCache,
 } from '@/utils/queries/meCacheUtils'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 export function useProfileQuery() {
   const userId = useAuth((s) => s.userId)

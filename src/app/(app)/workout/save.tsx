@@ -1,10 +1,16 @@
+import { router,Stack } from 'expo-router'
+import { useMemo, useRef } from 'react'
+import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import Toast from 'react-native-toast-message'
+
+import { BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import DateTimePicker from '@/components/ui/DateTimePicker'
 import TimerDurationModal, {
   TimerDurationModalHandle,
 } from '@/components/workouts/modals/TimerDurationModal'
 import VisibilitySelectionModal from '@/components/workouts/modals/VisibilitySelectionModal'
-import { BaseModalHandle } from '@/components/ui/BaseModal'
 import { useExercises } from '@/hooks/queries/exercises'
 import {
   useCreateWorkoutPayloadMutation,
@@ -19,11 +25,6 @@ import {
 import type { ExerciseType } from '@/types/exercises'
 import type { WorkoutPayload } from '@/types/payloads'
 import { formatSeconds } from '@/utils/workout'
-import { Stack, router } from 'expo-router'
-import { useMemo, useRef } from 'react'
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 export default function WorkoutSaveScreen() {
   const insets = useSafeAreaInsets()

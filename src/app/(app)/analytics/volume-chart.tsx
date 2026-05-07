@@ -1,6 +1,7 @@
+import React from 'react'
+
 import { BaseTrainingChart } from '@/components/me/BaseTrainingChart'
 import { useUnitConverter } from '@/hooks/useUnitConverter'
-import React from 'react'
 
 export default function VolumeChartScreen() {
   const { formatWeight, weightUnit: preferredUnit } = useUnitConverter()

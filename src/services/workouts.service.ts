@@ -7,6 +7,7 @@ import {
 import { WorkoutPayload } from '@/types/payloads'
 import { WorkoutHistoryItem, WorkoutsPaginatedResponse } from '@/types/workouts'
 import { handleApiResponse } from '@/utils/handleApiResponse'
+
 import client from './api'
 
 export async function getWorkoutByShareIdService(shareId: string): Promise<WorkoutHistoryItem> {

@@ -4,6 +4,7 @@ import {
 } from '@/constants/urls'
 import { Exercise } from '@/types/exercises'
 import { handleApiResponse } from '@/utils/handleApiResponse'
+
 import client from './api'
 
 export async function getAllExercisesService(): Promise<Exercise[]> {

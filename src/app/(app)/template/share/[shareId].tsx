@@ -1,16 +1,16 @@
+import { usePreventRemove } from '@react-navigation/native'
+import { router, useLocalSearchParams, useNavigation } from 'expo-router'
+import React, { useEffect, useMemo } from 'react'
+import { Alert, ScrollView, Text, TouchableOpacity, useColorScheme,View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
 import { Button } from '@/components/ui/buttons/Button'
+import { ReadOnlyExerciseRow } from '@/components/workout-editor/ReadOnlyExerciseRow'
 import {
   useSaveSharedTemplateMutation,
   useTemplateByShareIdQuery,
   useTemplatesQuery,
 } from '@/hooks/queries/templates'
-import { usePreventRemove } from '@react-navigation/native'
-import { router, useLocalSearchParams, useNavigation } from 'expo-router'
-import React, { useEffect, useMemo } from 'react'
-import { Alert, ScrollView, Text, TouchableOpacity, View, useColorScheme } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-
-import { ReadOnlyExerciseRow } from '@/components/workout-editor/ReadOnlyExerciseRow'
 
 export default function TemplateDetails() {
   const { shareId } = useLocalSearchParams<{ shareId: string }>()

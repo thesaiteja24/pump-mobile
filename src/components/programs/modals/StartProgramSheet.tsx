@@ -1,12 +1,13 @@
+import { Ionicons } from '@expo/vector-icons'
+import { forwardRef, useRef, useState } from 'react'
+import { Text, View } from 'react-native'
+
 import { PaywallModal } from '@/components/subscriptions/PaywallModal'
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import { SelectableCard } from '@/components/ui/SelectableCard'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
 import { Program, UserProgram } from '@/types/programs'
-import { Ionicons } from '@expo/vector-icons'
-import { forwardRef, useRef, useState } from 'react'
-import { Text, View } from 'react-native'
 
 interface StartProgramSheetProps {
   program: Program

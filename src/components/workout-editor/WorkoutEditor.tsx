@@ -1,6 +1,12 @@
+import { router } from 'expo-router'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import Toast from 'react-native-toast-message'
+
+import { BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import WorkoutDurationModal from '@/components/workouts/modals/WorkoutDurationModal'
-import { BaseModalHandle } from '@/components/ui/BaseModal'
 import { useExercises } from '@/hooks/queries/exercises'
 import {
   getWorkoutDurationSeconds,
@@ -10,11 +16,7 @@ import {
 } from '@/stores/workout-editor.store'
 import type { ExerciseType } from '@/types/exercises'
 import { formatSeconds } from '@/utils/workout'
-import { router } from 'expo-router'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
+
 import ExerciseRow from './ExerciseRow'
 import RestTimerBar from './RestTimerBar'
 import WorkoutReorderList from './WorkoutReorderList'

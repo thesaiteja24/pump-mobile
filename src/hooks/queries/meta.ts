@@ -1,3 +1,5 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 import { queryKeys } from '@/lib/queryKeys'
 import {
   createMetaService,
@@ -7,7 +9,6 @@ import {
   updateMetaService,
 } from '@/services/meta.service'
 import { MetaItem, MetaResource } from '@/types/meta'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 /**
  * Generic Meta Hooks

@@ -1,11 +1,3 @@
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
-import { Button } from '@/components/ui/buttons/Button'
-import {
-  useActiveProgram,
-  useDeleteProgram,
-  useProgramById,
-  useStartProgram,
-} from '@/hooks/queries/programs'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useMemo, useRef } from 'react'
@@ -13,6 +5,8 @@ import { BackHandler, ScrollView, Text, TouchableOpacity, View } from 'react-nat
 import Toast from 'react-native-toast-message'
 
 import { StartProgramSheet } from '@/components/programs/modals/StartProgramSheet'
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
+import { Button } from '@/components/ui/buttons/Button'
 import ShimmerProgramDetails from '@/components/ui/shimmers/ShimmerProgramDetails'
 import {
   WorkoutDetailsModal,
@@ -20,6 +14,12 @@ import {
 } from '@/components/workouts/modals/WorkoutDetailsModal'
 import { ROLES } from '@/constants/roles'
 import { useProfileQuery } from '@/hooks/queries/me'
+import {
+  useActiveProgram,
+  useDeleteProgram,
+  useProgramById,
+  useStartProgram,
+} from '@/hooks/queries/programs'
 import { useAuth } from '@/stores/auth.store'
 import { SelfUser } from '@/types/me'
 

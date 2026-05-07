@@ -1,9 +1,10 @@
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
-import { useProfileQuery, useUpdateProfileMutation } from '@/hooks/queries/me'
-import { SelfUser } from '@/types/me'
 import { forwardRef, useEffect, useMemo, useState } from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
 import Toast from 'react-native-toast-message'
+
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
+import { useProfileQuery, useUpdateProfileMutation } from '@/hooks/queries/me'
+import { SelfUser } from '@/types/me'
 
 type WeightUnit = 'kg' | 'lbs'
 type LengthUnit = 'cm' | 'inches'

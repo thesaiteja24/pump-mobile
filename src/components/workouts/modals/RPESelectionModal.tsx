@@ -1,8 +1,9 @@
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
-import { Button } from '@/components/ui/buttons/Button'
 import * as Haptics from 'expo-haptics'
 import { forwardRef, useMemo } from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
+
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
+import { Button } from '@/components/ui/buttons/Button'
 
 /* ───────────────── Constants ───────────────── */
 

@@ -1,11 +1,3 @@
-import { useCommentsQuery, useLikesQuery, useToggleLikeMutation } from '@/hooks/queries/engagement'
-import { useProfileQuery } from '@/hooks/queries/me'
-import { useThemeColor } from '@/hooks/theme'
-import { Comment as AppComment } from '@/types/engagement'
-import { ExerciseType } from '@/types/exercises'
-import { SelfUser } from '@/types/me'
-import { WorkoutHistoryItem } from '@/types/workouts'
-import { formatDurationFromDates, calculateWorkoutMetrics } from '@/utils/workout'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { formatDistanceToNow } from 'date-fns'
 import * as Haptics from 'expo-haptics'
@@ -21,6 +13,16 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import Toast from 'react-native-toast-message'
+
+import { useCommentsQuery, useLikesQuery, useToggleLikeMutation } from '@/hooks/queries/engagement'
+import { useProfileQuery } from '@/hooks/queries/me'
+import { useThemeColor } from '@/hooks/theme'
+import { Comment as AppComment } from '@/types/engagement'
+import { ExerciseType } from '@/types/exercises'
+import { SelfUser } from '@/types/me'
+import { WorkoutHistoryItem } from '@/types/workouts'
+import { calculateWorkoutMetrics,formatDurationFromDates } from '@/utils/workout'
+
 import { VerifiedBadge } from '../subscriptions/VerifiedBadge'
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)

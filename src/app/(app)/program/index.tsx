@@ -1,11 +1,3 @@
-import TemplateSelectionModal from '@/components/templates/TemplateSelectionModal'
-import { BaseModalHandle } from '@/components/ui/BaseModal'
-import { Button } from '@/components/ui/buttons/Button'
-import { useCreateProgram, useProgramById, useUpdateProgram } from '@/hooks/queries/programs'
-import { useTemplatesQuery } from '@/hooks/queries/templates'
-import { useProgram } from '@/stores/programs.store'
-import { DraftProgramDay, DraftProgramWeek } from '@/types/programs'
-import { WorkoutTemplate } from '@/types/templates'
 import { Ionicons } from '@expo/vector-icons'
 import * as Crypto from 'expo-crypto'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
@@ -24,6 +16,15 @@ import {
 } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
+
+import TemplateSelectionModal from '@/components/templates/TemplateSelectionModal'
+import { BaseModalHandle } from '@/components/ui/BaseModal'
+import { Button } from '@/components/ui/buttons/Button'
+import { useCreateProgram, useProgramById, useUpdateProgram } from '@/hooks/queries/programs'
+import { useTemplatesQuery } from '@/hooks/queries/templates'
+import { useProgram } from '@/stores/programs.store'
+import { DraftProgramDay, DraftProgramWeek } from '@/types/programs'
+import { WorkoutTemplate } from '@/types/templates'
 
 export default function ProgramEditor() {
   const insets = useSafeAreaInsets()

@@ -1,6 +1,7 @@
+import { create } from 'zustand'
+
 import type { Gender, HeightUnit, WeightUnit } from '@/types/onboarding'
 import { FitnessLevel } from '@/types/programs'
-import { create } from 'zustand'
 
 interface OnboardingState {
   // Data

@@ -1,9 +1,10 @@
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
-import { WorkoutTemplate } from '@/types/templates'
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import * as Haptics from 'expo-haptics'
 import { forwardRef } from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
+
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
+import { WorkoutTemplate } from '@/types/templates'
 
 type Props = {
   templates: WorkoutTemplate[]

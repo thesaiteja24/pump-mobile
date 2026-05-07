@@ -1,8 +1,9 @@
-import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import React from 'react'
 import { Pressable, Text, View } from 'react-native'
+
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 
 
 interface TrainingMetricCardProps {

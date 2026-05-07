@@ -1,5 +1,6 @@
-import { BaseTrainingChart } from '@/components/me/BaseTrainingChart'
 import React from 'react'
+
+import { BaseTrainingChart } from '@/components/me/BaseTrainingChart'
 
 export default function RepsChartScreen() {
   return (

@@ -1,3 +1,10 @@
+import { usePreventRemove } from '@react-navigation/native'
+import { router, Stack, useLocalSearchParams } from 'expo-router'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ScrollView, Text, TextInput, View } from 'react-native'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import Toast from 'react-native-toast-message'
+
 import { PaywallModal } from '@/components/subscriptions/PaywallModal'
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
@@ -14,12 +21,6 @@ import {
 import { useProgram } from '@/stores/programs.store'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
 import { finalizeTemplateForSave, useWorkoutEditor } from '@/stores/workout-editor.store'
-import { usePreventRemove } from '@react-navigation/native'
-import { Stack, router, useLocalSearchParams } from 'expo-router'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ScrollView, Text, TextInput, View } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 export default function TemplateEditor() {
   const insets = useSafeAreaInsets()

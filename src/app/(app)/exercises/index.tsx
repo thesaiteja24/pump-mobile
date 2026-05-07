@@ -1,22 +1,7 @@
-import ExerciseList from '@/components/exercises/ExerciseList'
-import MetaModal from '@/components/meta/MetaModal'
-
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
-import { Button } from '@/components/ui/buttons/Button'
-
-import { ROLES as roles } from '@/constants/roles'
-import { useDeleteExercise, useExercises } from '@/hooks/queries/exercises'
-import { useProfileQuery } from '@/hooks/queries/me'
-import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'
-import { Exercise } from '@/types/exercises'
-import { SelfUser } from '@/types/me'
-
-import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import { Ionicons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import Fuse from 'fuse.js'
-
 import React, { useEffect, useMemo, useState } from 'react'
 import {
   Keyboard,
@@ -29,6 +14,18 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
+
+import ExerciseList from '@/components/exercises/ExerciseList'
+import MetaModal from '@/components/meta/MetaModal'
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
+import { Button } from '@/components/ui/buttons/Button'
+import { ROLES as roles } from '@/constants/roles'
+import { useDeleteExercise, useExercises } from '@/hooks/queries/exercises'
+import { useProfileQuery } from '@/hooks/queries/me'
+import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'
+import { useWorkoutEditor } from '@/stores/workout-editor.store'
+import { Exercise } from '@/types/exercises'
+import { SelfUser } from '@/types/me'
 
 type NavigationWithRightIcons = {
   setOptions: (options: {

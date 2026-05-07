@@ -1,3 +1,5 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 import { queryClient } from '@/lib/queryClient'
 import { queryKeys } from '@/lib/queryKeys'
 import {
@@ -9,10 +11,9 @@ import {
   updateTemplateService,
 } from '@/services/templates.service'
 import { useAuth } from '@/stores/auth.store'
-import { DraftTemplate, WorkoutTemplate } from '@/types/templates'
 import { SelfUser } from '@/types/me'
+import { DraftTemplate, WorkoutTemplate } from '@/types/templates'
 import { serializeTemplateForApi } from '@/utils/serializeForApi'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 // ─────────────────────────────────────────────────────
 // READ — templates list

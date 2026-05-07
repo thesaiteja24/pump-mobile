@@ -1,6 +1,7 @@
+import { forwardRef } from 'react'
+
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import PrivacyPolicy from '@/components/ui/PrivacyPolicy'
-import { forwardRef } from 'react'
 
 type Props = {
   onAgree: (version?: string) => void

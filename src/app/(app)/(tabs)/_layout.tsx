@@ -1,14 +1,14 @@
-import CoachModal, { CoachModalHandle } from '@/components/coach/CoachModal'
-import AnimatedButton from '@/components/ui/buttons/AnimatedButton'
-import CustomHeader from '@/components/ui/CustomHeader'
-
-import { useThemeColor } from '@/hooks/theme'
 import { Ionicons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { Tabs } from 'expo-router'
 import { useRef } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+import CoachModal, { CoachModalHandle } from '@/components/coach/CoachModal'
+import AnimatedButton from '@/components/ui/buttons/AnimatedButton'
+import CustomHeader from '@/components/ui/CustomHeader'
+import { useThemeColor } from '@/hooks/theme'
 
 export default function TabsLayout() {
   const { isDark, ...colors } = useThemeColor()

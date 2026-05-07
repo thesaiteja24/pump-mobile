@@ -1,10 +1,11 @@
+import { Stack } from 'expo-router'
+import React, { useEffect } from 'react'
+
 import AuthGuard from '@/components/auth/AuthGuard'
 import { useOneSignal } from '@/hooks/notifications/useOneSignal'
 import { useThemeColor } from '@/hooks/theme'
 import { useAuth } from '@/stores/auth.store'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
-import { Stack } from 'expo-router'
-import React, { useEffect } from 'react'
 
 export default function AppLayout() {
   const colors = useThemeColor()

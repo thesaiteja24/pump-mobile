@@ -1,6 +1,7 @@
+import { useQuery } from '@tanstack/react-query'
+
 import { queryKeys } from '@/lib/queryKeys'
 import { getUserByIdService } from '@/services/me.service'
-import { useQuery } from '@tanstack/react-query'
 
 /**
  * Hook to fetch a public user's data

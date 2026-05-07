@@ -1,16 +1,14 @@
-import { Button } from '@/components/ui/buttons/Button'
-import { useUserProgram } from '@/hooks/queries/programs'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import {
   BackHandler,
+  type DimensionValue,
   ScrollView,
   Text,
   TouchableOpacity,
-  View,
   useColorScheme,
-  type DimensionValue,
+  View,
   type ViewStyle,
 } from 'react-native'
 import Animated, {
@@ -22,11 +20,13 @@ import Animated, {
 } from 'react-native-reanimated'
 import Toast from 'react-native-toast-message'
 
+import { Button } from '@/components/ui/buttons/Button'
+import ShimmerProgramDetails from '@/components/ui/shimmers/ShimmerProgramDetails'
 import {
   WorkoutDetailsModal,
   WorkoutDetailsModalHandle,
 } from '@/components/workouts/modals/WorkoutDetailsModal'
-import ShimmerProgramDetails from '@/components/ui/shimmers/ShimmerProgramDetails'
+import { useUserProgram } from '@/hooks/queries/programs'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 
 function SkeletonBlock({

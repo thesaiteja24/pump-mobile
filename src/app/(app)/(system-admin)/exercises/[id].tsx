@@ -1,10 +1,3 @@
-import MetaModal from '@/components/meta/MetaModal'
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
-
-import { useDeleteExercise, useExercises, useUpdateExercise } from '@/hooks/queries/exercises'
-import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'
-import { ExerciseType } from '@/types/exercises'
-import { MetaItem } from '@/types/meta'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
@@ -21,6 +14,13 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
+
+import MetaModal from '@/components/meta/MetaModal'
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
+import { useDeleteExercise, useExercises, useUpdateExercise } from '@/hooks/queries/exercises'
+import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'
+import { ExerciseType } from '@/types/exercises'
+import { MetaItem } from '@/types/meta'
 
 export default function EditExercise() {
   const navigation = useNavigation()

@@ -1,9 +1,10 @@
-import { useProfileQuery } from '@/hooks/queries/me'
-import { useAuth } from '@/stores/auth.store'
-import { SelfUser } from '@/types/me'
 import { Redirect } from 'expo-router'
 import React from 'react'
 import { ActivityIndicator, View } from 'react-native'
+
+import { useProfileQuery } from '@/hooks/queries/me'
+import { useAuth } from '@/stores/auth.store'
+import { SelfUser } from '@/types/me'
 
 export default function Index() {
   const isAuthenticated = useAuth((s) => s.isAuthenticated)

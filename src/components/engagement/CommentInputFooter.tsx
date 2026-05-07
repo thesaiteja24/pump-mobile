@@ -1,8 +1,3 @@
-import {
-  useCommentMutation,
-  useEditCommentMutation,
-  useReplyMutation,
-} from '@/hooks/queries/engagement'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomSheetFooter, BottomSheetTextInput } from '@gorhom/bottom-sheet'
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
@@ -12,10 +7,16 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
   useColorScheme,
+  View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+import {
+  useCommentMutation,
+  useEditCommentMutation,
+  useReplyMutation,
+} from '@/hooks/queries/engagement'
 
 const CommentInputFooter = forwardRef(
   (

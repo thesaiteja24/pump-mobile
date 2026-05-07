@@ -1,11 +1,12 @@
-import { useFitnessProfileQuery, useMeasurementsQuery } from '@/hooks/queries/me'
-import { useUnitConverter } from '@/hooks/useUnitConverter'
-import { useThemeColor } from '@/hooks/theme'
 import { useRouter } from 'expo-router'
 import React, { useMemo } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { LineChart } from 'react-native-chart-kit'
 import Animated, { FadeInDown } from 'react-native-reanimated'
+
+import { useFitnessProfileQuery, useMeasurementsQuery } from '@/hooks/queries/me'
+import { useThemeColor } from '@/hooks/theme'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 
 interface WeightMetricCardProps {
   width: number

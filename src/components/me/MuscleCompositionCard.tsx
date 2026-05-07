@@ -1,7 +1,3 @@
-import { useThemeColor } from '@/hooks/theme'
-import { useCountUp } from '@/hooks/ui-utils'
-import { useUnitConverter } from '@/hooks/useUnitConverter'
-import { BodyFatFeedback, classifyBodyFat } from '@/utils/analytics'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
@@ -16,6 +12,12 @@ import Animated, {
   withDelay,
   withTiming,
 } from 'react-native-reanimated'
+
+import { useThemeColor } from '@/hooks/theme'
+import { useCountUp } from '@/hooks/ui-utils'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
+import { BodyFatFeedback, classifyBodyFat } from '@/utils/analytics'
+
 import { BodyFatRing } from './BodyFatRing'
 
 // Safe Athletic colors (starting point for badge color interpolation)

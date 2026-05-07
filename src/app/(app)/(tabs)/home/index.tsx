@@ -1,3 +1,5 @@
+import { format } from 'date-fns'
+import { useRouter } from 'expo-router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native'
 import Animated, {
@@ -8,11 +10,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
-
-import StreakCard, { StreakDay } from '@/components/me/StreakCard'
-import ShimmerHomeScreen from '@/components/ui/shimmers/ShimmerHomeScreen'
+import Toast from 'react-native-toast-message'
 
 import { HabitCard } from '@/components/habits/HabitCard'
+import StreakCard, { StreakDay } from '@/components/me/StreakCard'
 import {
   WeeklyDurationCard,
   WeeklyRepsCard,
@@ -20,9 +21,11 @@ import {
 } from '@/components/me/TrainingMetricCards'
 import { WeightMetricCard } from '@/components/me/WeightMetricCard'
 import { Button } from '@/components/ui/buttons/Button'
+import ShimmerHomeScreen from '@/components/ui/shimmers/ShimmerHomeScreen'
 import { useAskNotificationPermission } from '@/hooks/notifications/useAskNotificationPermission'
 import { useHabitLogsQuery, useHabitsQuery } from '@/hooks/queries/habits'
 import { useMeasurementsQuery, useProfileQuery, useUserAnalyticsQuery } from '@/hooks/queries/me'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { SelfUser } from '@/types/me'
 import {
   calculateBMI,
@@ -31,10 +34,6 @@ import {
   estimateBodyFatFromBMI,
 } from '@/utils/analytics'
 import { getMotivationLine } from '@/utils/motivation'
-import { useUnitConverter } from '@/hooks/useUnitConverter'
-import { format } from 'date-fns'
-import { useRouter } from 'expo-router'
-import Toast from 'react-native-toast-message'
 
 export default function HomeScreen() {
   const router = useRouter()

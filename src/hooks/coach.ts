@@ -1,14 +1,4 @@
 import {
-  useCoachConversation,
-  useDeleteCoachConversation,
-  useSendCoachMessage,
-  useStartCoachConversation,
-  useTranscribeCoachVoice,
-} from '@/hooks/queries/coach'
-import { downloadSpeechService } from '@/services/coach.service'
-
-import { CoachState, type CoachMessage } from '@/types/coach'
-import {
   AudioModule,
   RecorderState,
   RecordingPresets,
@@ -21,6 +11,16 @@ import {
 import * as Crypto from 'expo-crypto'
 import { useEffect, useState } from 'react'
 import { Alert } from 'react-native'
+
+import {
+  useCoachConversation,
+  useDeleteCoachConversation,
+  useSendCoachMessage,
+  useStartCoachConversation,
+  useTranscribeCoachVoice,
+} from '@/hooks/queries/coach'
+import { downloadSpeechService } from '@/services/coach.service'
+import { type CoachMessage,CoachState } from '@/types/coach'
 
 interface CoachVoice {
   conversationId: string | null

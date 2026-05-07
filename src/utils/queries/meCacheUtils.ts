@@ -1,6 +1,7 @@
+import { QueryClient, QueryKey } from '@tanstack/react-query'
+
 import { queryKeys } from '@/lib/queryKeys'
 import { LatestMeasurements, Measurements, MeasurementsQueryData, User } from '@/types/me'
-import { QueryClient, QueryKey } from '@tanstack/react-query'
 
 /**
  * Standard utility to rollback queries on error

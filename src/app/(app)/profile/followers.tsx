@@ -1,12 +1,3 @@
-import { UserItem } from '@/components/engagement/UserItem'
-import {
-  useFollowUserMutation,
-  useUnfollowUserMutation,
-  useUserFollowersQuery,
-} from '@/hooks/queries/engagement'
-import { useThemeColor } from '@/hooks/theme'
-import { useAuth } from '@/stores/auth.store'
-import { SearchedUser } from '@/types/engagement'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { router, useLocalSearchParams } from 'expo-router'
 import Fuse from 'fuse.js'
@@ -22,6 +13,16 @@ import {
 } from 'react-native'
 import { TextInput } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+import { UserItem } from '@/components/engagement/UserItem'
+import {
+  useFollowUserMutation,
+  useUnfollowUserMutation,
+  useUserFollowersQuery,
+} from '@/hooks/queries/engagement'
+import { useThemeColor } from '@/hooks/theme'
+import { useAuth } from '@/stores/auth.store'
+import { SearchedUser } from '@/types/engagement'
 
 export default function Followers() {
   const colors = useThemeColor()

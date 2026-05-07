@@ -1,9 +1,3 @@
-import CommentInputFooter from '@/components/engagement/CommentInputFooter'
-import CommentItem from '@/components/engagement/CommentItem'
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
-import { useCommentsQuery, useDeleteCommentMutation } from '@/hooks/queries/engagement'
-import { useThemeColor } from '@/hooks/theme'
-import { Comment } from '@/types/engagement'
 import { Ionicons } from '@expo/vector-icons'
 import {
   BottomSheetBackdrop,
@@ -32,6 +26,13 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
+
+import CommentInputFooter from '@/components/engagement/CommentInputFooter'
+import CommentItem from '@/components/engagement/CommentItem'
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
+import { useCommentsQuery, useDeleteCommentMutation } from '@/hooks/queries/engagement'
+import { useThemeColor } from '@/hooks/theme'
+import { Comment } from '@/types/engagement'
 
 export interface CommentsModalHandle {
   present: () => void

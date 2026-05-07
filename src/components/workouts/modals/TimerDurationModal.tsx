@@ -1,4 +1,3 @@
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import * as Haptics from 'expo-haptics'
 import React, {
   forwardRef,
@@ -8,8 +7,10 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { View, useColorScheme } from 'react-native'
+import { useColorScheme,View } from 'react-native'
 import { TimerPicker } from 'react-native-timer-picker'
+
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 
 export interface TimerDurationModalHandle {
   present: (initialSeconds: number) => void

@@ -1,3 +1,5 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 import { queryKeys } from '@/lib/queryKeys'
 import {
   createHabitService,
@@ -15,7 +17,6 @@ import type {
   HabitType,
   UpdateHabitPayload,
 } from '@/types/habits'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 export function useHabitsQuery() {
   const userId = useAuth((s) => s.userId)

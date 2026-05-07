@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react'
 import {
+  type DimensionValue,
   ScrollView,
+  useColorScheme,
   useWindowDimensions,
   View,
-  useColorScheme,
-  type DimensionValue,
   type ViewStyle,
 } from 'react-native'
 import Animated, {

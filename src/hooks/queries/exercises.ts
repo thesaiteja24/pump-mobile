@@ -1,3 +1,5 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 import { queryKeys } from '@/lib/queryKeys'
 import {
   createExerciseService,
@@ -7,7 +9,6 @@ import {
   updateExerciseService,
 } from '@/services/exercises.service'
 import type { Exercise, ExerciseType } from '@/types/exercises'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 /**
  * useExercises / useExerciseById

@@ -1,25 +1,26 @@
 import {
+  MY_ACTIVE_PROGRAM_ENDPOINT,
+  MY_PROGRAM_ITEM_ENDPOINT,
+  MY_PROGRAMS_ENDPOINT,
+  PROGRAM_ITEM_ENDPOINT,
+  PROGRAMS_ENDPOINT,
+  START_PROGRAM_ENDPOINT,
+} from '@/constants/urls'
+import {
+  ActiveUserProgramResponse,
   PaginatedPrograms,
   Program,
   ProgramCreatePayload,
-  ProgramUpdatePayload,
-  UserProgram,
-  UserProgramStartPayload,
   ProgramResponse,
-  UserProgramsResponse,
-  ActiveUserProgramResponse,
-  UserProgramResponse,
+  ProgramUpdatePayload,
   StartProgramResponse,
+  UserProgram,
+  UserProgramResponse,
+  UserProgramsResponse,
+  UserProgramStartPayload,
 } from '@/types/programs'
 import { handleApiResponse } from '@/utils/handleApiResponse'
-import {
-  MY_ACTIVE_PROGRAM_ENDPOINT,
-  MY_PROGRAMS_ENDPOINT,
-  MY_PROGRAM_ITEM_ENDPOINT,
-  PROGRAMS_ENDPOINT,
-  PROGRAM_ITEM_ENDPOINT,
-  START_PROGRAM_ENDPOINT,
-} from '@/constants/urls'
+
 import client from './api'
 
 // SECTION: GLOBAL PROGRAMS (LIBRARY)

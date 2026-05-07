@@ -1,8 +1,9 @@
-import { Exercise } from '@/types/exercises'
 import { Image } from 'expo-image'
 import React, { useCallback } from 'react'
 import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native'
+
 import { useThemeColor } from '@/hooks/theme'
+import { Exercise } from '@/types/exercises'
 
 /* ───────────────── Types ───────────────── */
 

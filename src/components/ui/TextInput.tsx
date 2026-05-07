@@ -1,11 +1,12 @@
-import { useThemeColor } from '@/hooks/theme'
 import React, { forwardRef, useState } from 'react'
 import {
+  Text,
   TextInput as RNTextInput,
   TextInputProps as RNTextInputProps,
-  Text,
   View,
 } from 'react-native'
+
+import { useThemeColor } from '@/hooks/theme'
 
 export interface TextInputProps extends RNTextInputProps {
   label?: string

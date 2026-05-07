@@ -13,14 +13,14 @@ export function useAskNotificationPermission(enabled: boolean) {
         const granted = await OneSignal.Notifications.requestPermission(true)
 
         if (granted) {
-          console.log('🔔 Notification permission granted')
+          console.info('🔔 Notification permission granted')
         } else {
-          console.log('🔕 Notification permission denied')
+          console.info('🔕 Notification permission denied')
         }
 
         hasAsked.current = true
       } catch (err) {
-        console.log('Notification permission error', err)
+        console.error('Notification permission error', err)
       }
     }, 1500) // Play Store style delay
 

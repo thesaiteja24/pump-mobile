@@ -1,9 +1,3 @@
-import ExerciseCharts from '@/components/exercises/ExerciseCharts'
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
-import { useAnalytics } from '@/hooks/analytics'
-import { useExercises } from '@/hooks/queries/exercises'
-import { useThemeColor } from '@/hooks/theme'
-import { useUnitConverter } from '@/hooks/useUnitConverter'
 import { EvilIcons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { useGlobalSearchParams } from 'expo-router'
 import { useVideoPlayer, VideoView } from 'expo-video'
@@ -17,6 +11,13 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+import ExerciseCharts from '@/components/exercises/ExerciseCharts'
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
+import { useAnalytics } from '@/hooks/analytics'
+import { useExercises } from '@/hooks/queries/exercises'
+import { useThemeColor } from '@/hooks/theme'
+import { useUnitConverter } from '@/hooks/useUnitConverter'
 
 const { width } = Dimensions.get('window')
 

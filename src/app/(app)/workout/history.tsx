@@ -1,9 +1,3 @@
-import WorkoutCard from '@/components/engagement/WorkoutCard'
-import { useExercises } from '@/hooks/queries/exercises'
-import { useUserWorkoutHistoryQuery } from '@/hooks/queries/workouts'
-import { useThemeColor } from '@/hooks/theme'
-import { ExerciseType } from '@/types/exercises'
-import { WorkoutHistoryItem } from '@/types/workouts'
 import { useRouter } from 'expo-router'
 import { useCallback, useEffect, useMemo } from 'react'
 import {
@@ -26,6 +20,13 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated'
+
+import WorkoutCard from '@/components/engagement/WorkoutCard'
+import { useExercises } from '@/hooks/queries/exercises'
+import { useUserWorkoutHistoryQuery } from '@/hooks/queries/workouts'
+import { useThemeColor } from '@/hooks/theme'
+import { ExerciseType } from '@/types/exercises'
+import { WorkoutHistoryItem } from '@/types/workouts'
 
 
 /* ──────────────────────────────────────────────

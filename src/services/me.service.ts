@@ -20,6 +20,7 @@ import {
   UpdateUserBody,
 } from '@/types/me'
 import { handleApiResponse } from '@/utils/handleApiResponse'
+
 import client from './api'
 
 export async function getMeService(): Promise<SelfUser> {

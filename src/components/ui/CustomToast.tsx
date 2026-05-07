@@ -1,5 +1,6 @@
-import { useThemeColor } from '@/hooks/theme'
 import { StyleSheet, Text, View } from 'react-native'
+
+import { useThemeColor } from '@/hooks/theme'
 
 export function CustomToast({
   text1,

@@ -1,12 +1,3 @@
-import CommentsModal, { CommentsModalHandle } from '@/components/engagement/CommentsModal'
-import WorkoutCard from '@/components/engagement/WorkoutCard'
-import ShimmerDiscoverScreen from '@/components/ui/shimmers/ShimmerDiscoverScreen'
-import { useExercises } from '@/hooks/queries/exercises'
-import { useDiscoverWorkoutsQuery } from '@/hooks/queries/workouts'
-import { useThemeColor } from '@/hooks/theme'
-
-
-import { queryKeys } from '@/lib/queryKeys'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'expo-router'
@@ -19,6 +10,14 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
+
+import CommentsModal, { CommentsModalHandle } from '@/components/engagement/CommentsModal'
+import WorkoutCard from '@/components/engagement/WorkoutCard'
+import ShimmerDiscoverScreen from '@/components/ui/shimmers/ShimmerDiscoverScreen'
+import { useExercises } from '@/hooks/queries/exercises'
+import { useDiscoverWorkoutsQuery } from '@/hooks/queries/workouts'
+import { useThemeColor } from '@/hooks/theme'
+import { queryKeys } from '@/lib/queryKeys'
 
 export default function DiscoverScreen() {
   const router = useRouter()

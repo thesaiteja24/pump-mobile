@@ -1,3 +1,5 @@
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 import { queryClient } from '@/lib/queryClient'
 import { queryKeys } from '@/lib/queryKeys'
 import {
@@ -16,7 +18,6 @@ import {
   WorkoutLog,
 } from '@/types/workouts'
 import { serializeWorkoutForApi } from '@/utils/serializeForApi'
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 const PAGE_LIMIT = 2
 

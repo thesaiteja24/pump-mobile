@@ -1,7 +1,8 @@
-import { TEMPLATES_ENDPOINT, TEMPLATE_ITEM_ENDPOINT } from '@/constants/urls'
+import { TEMPLATE_ITEM_ENDPOINT,TEMPLATES_ENDPOINT } from '@/constants/urls'
 import { TemplatePayload } from '@/types/payloads'
 import { WorkoutTemplate } from '@/types/templates'
 import { handleApiResponse } from '@/utils/handleApiResponse'
+
 import client from './api'
 
 export async function getAllTemplatesService(): Promise<WorkoutTemplate[]> {

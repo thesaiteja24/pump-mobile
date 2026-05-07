@@ -1,10 +1,11 @@
-import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
-import { useThemeColor } from '@/hooks/theme'
-import type { SetType } from '@/types/workouts'
 import { Ionicons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { forwardRef } from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
+
+import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
+import { useThemeColor } from '@/hooks/theme'
+import type { SetType } from '@/types/workouts'
 
 const SET_TYPES: {
   key: SetType

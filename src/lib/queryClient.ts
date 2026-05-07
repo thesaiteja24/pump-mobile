@@ -12,10 +12,11 @@
  * centrally and with proper TTL / versioning).
  */
 
-import { storage } from '@/lib/storage'
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 import { QueryClient } from '@tanstack/react-query'
 import { persistQueryClient } from '@tanstack/react-query-persist-client'
+
+import { storage } from '@/lib/storage'
 
 // ─────────────────────────────────────────────────────────────────
 // 1. The QueryClient
