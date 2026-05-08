@@ -1,15 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { FlashList } from '@shopify/flash-list'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  ActivityIndicator,
-  BackHandler,
-  FlatList,
-  Platform,
-  RefreshControl,
-  Text,
-  View,
-} from 'react-native'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ActivityIndicator, BackHandler, Platform, RefreshControl, Text, View } from 'react-native'
 import { TextInput } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -112,7 +105,7 @@ export default function Search() {
       </View>
 
       {/* 👥 Users List */}
-      <FlatList
+      <FlashList
         data={data}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}

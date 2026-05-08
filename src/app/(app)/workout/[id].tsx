@@ -15,11 +15,12 @@ import { WorkoutReadOnlyExerciseRow } from '@/components/workout/WorkoutReadOnly
 import { useExercises } from '@/hooks/queries/exercises'
 import {
   useDeleteWorkoutMutation,
-  useDiscoverWorkoutsQuery,
   useUserWorkoutHistoryQuery,
   useWorkoutByIdQuery,
+  useWorkoutsQuery,
 } from '@/hooks/queries/workouts'
 import { useThemeColor } from '@/hooks/theme'
+import { useShare } from '@/hooks/useShare'
 import { useAuth } from '@/stores/auth.store'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import { ExerciseType } from '@/types/exercises'
@@ -33,6 +34,7 @@ export default function WorkoutDetails() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const navigation = useNavigation()
   const isDark = useThemeColor().isDark
+  const { shareEntity } = useShare()
 
   const deleteModalRef = useRef<BaseModalHandle>(null)
   const discardModalRef = useRef<BaseModalHandle>(null)
@@ -43,7 +45,7 @@ export default function WorkoutDetails() {
 
   const deleteMutation = useDeleteWorkoutMutation()
 
-  const { discoverWorkouts, isLoading: isDiscoverLoading } = useDiscoverWorkoutsQuery()
+  const { workouts, isLoading: isDiscoverLoading } = useWorkoutsQuery()
   const { workoutHistory, isLoading: isHistoryLoading } = useUserWorkoutHistoryQuery()
 
   /* Derived State */
@@ -60,8 +62,8 @@ export default function WorkoutDetails() {
     return workoutHistory.find((w) => w.id === id)
   }, [workoutHistory, id])
   const workoutFromDiscover = useMemo(() => {
-    return discoverWorkouts.find((w) => w.id === id)
-  }, [discoverWorkouts, id])
+    return workouts.find((w) => w.id === id)
+  }, [workouts, id])
 
   const hasLocalData = !!(workoutFromStore || workoutFromHistory || workoutFromDiscover)
 
@@ -180,15 +182,35 @@ export default function WorkoutDetails() {
     router.push('/(app)/template/editor')
   }
 
+  const handleShare = useCallback(async () => {
+    if (!workout || !workout.shareId) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Workout cannot be shared',
+      })
+      return
+    }
+
+    await shareEntity('workout', workout.shareId, {
+      title: workout.title || 'Workout',
+      image: workout.user?.profilePicUrl,
+      message: `Check out ${workout.user?.firstName}'s workout on Pump!`,
+    })
+  }, [workout, shareEntity])
+
   useEffect(() => {
-    const rightIcons = [{ name: 'create-outline', onPress: handleEdit }]
+    const rightIcons = [
+      { name: 'share-outline', onPress: handleShare },
+      { name: 'create-outline', onPress: handleEdit },
+    ]
 
     if (isAuthrized) {
       navigation.setOptions({
         rightIcons,
       })
     }
-  }, [id, isAuthrized, navigation, handleEdit, workout, discardModalRef])
+  }, [id, isAuthrized, navigation, handleEdit, handleShare, workout, discardModalRef])
 
   useEffect(() => {
     const onBackPress = () => {

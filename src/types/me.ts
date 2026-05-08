@@ -118,8 +118,10 @@ export interface BaseUser {
   profilePicUrl: string | null
   followersCount: number
   followingCount: number
+  workoutsCount: number
   isPro: boolean
   proSubscriptionType: string | null
+  isFollowing?: boolean
 }
 export type PublicUser = BaseUser
 

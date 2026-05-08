@@ -1,10 +1,10 @@
+import { FlashList } from '@shopify/flash-list'
 import { useRouter } from 'expo-router'
 import { useCallback, useEffect, useMemo } from 'react'
 import {
   ActivityIndicator,
   BackHandler,
   DimensionValue,
-  FlatList,
   RefreshControl,
   Text,
   useColorScheme,
@@ -27,7 +27,6 @@ import { useUserWorkoutHistoryQuery } from '@/hooks/queries/workouts'
 import { useThemeColor } from '@/hooks/theme'
 import { ExerciseType } from '@/types/exercises'
 import { WorkoutHistoryItem } from '@/types/workouts'
-
 
 /* ──────────────────────────────────────────────
    Core Skeleton Block (fade-in + shimmer)
@@ -200,7 +199,7 @@ const History = () => {
           </View>
         </View>
       ) : (
-        <FlatList
+        <FlashList
           data={listData}
           keyExtractor={(item, index) =>
             item.type === 'section-header' ? `section-header-${index}` : item.workout.id
@@ -208,7 +207,11 @@ const History = () => {
           renderItem={({ item, index }) => {
             if (item.type === 'section-header') return <SectionHeader />
             return (
-              <SocialWorkoutCard workout={item.workout} exerciseTypeMap={exerciseTypeMap} index={index} />
+              <SocialWorkoutCard
+                workout={item.workout}
+                exerciseTypeMap={exerciseTypeMap}
+                index={index}
+              />
             )
           }}
           stickyHeaderIndices={listData.length > 0 ? [0] : []}

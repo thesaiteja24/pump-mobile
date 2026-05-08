@@ -1,4 +1,3 @@
-import * as Clipboard from 'expo-clipboard'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { BackHandler, ScrollView, Text, useColorScheme,View } from 'react-native'
@@ -10,6 +9,7 @@ import { Button } from '@/components/ui/buttons/Button'
 import { ShimmerTemplateScreen } from '@/components/ui/shimmers/ShimmerTemplateScreen'
 import { WorkoutReadOnlyExerciseRow } from '@/components/workout/WorkoutReadOnlyExerciseRow'
 import { useDeleteTemplateMutation, useTemplateByIdQuery } from '@/hooks/queries/templates'
+import { useShare } from '@/hooks/useShare'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import { TemplateExerciseGroup } from '@/types/templates'
 
@@ -18,6 +18,7 @@ export default function TemplateDetails() {
   const navigation = useNavigation()
   const isDark = useColorScheme() === 'dark'
   const safeAreaInsets = useSafeAreaInsets()
+  const { shareEntity } = useShare()
 
   // Fetch template directly from TQ cache / server
   const { data: template, isLoading } = useTemplateByIdQuery(id)
@@ -29,7 +30,7 @@ export default function TemplateDetails() {
     router.push(`/(app)/template/editor?id=${id}`)
   }, [id])
 
-  const handleShare = useCallback(() => {
+  const handleShare = useCallback(async () => {
     if (!template?.shareId) {
       Toast.show({
         type: 'error',
@@ -38,14 +39,12 @@ export default function TemplateDetails() {
       })
       return
     }
-    Clipboard.setStringAsync(template.shareId).then(() => {
-      Toast.show({
-        type: 'success',
-        text1: 'Link copied',
-        text2: 'Share link copied to clipboard',
-      })
+
+    await shareEntity('template', template.shareId, {
+      title: template.title || 'Workout Template',
+      message: `Check out this workout template: ${template.title}`,
     })
-  }, [template?.shareId])
+  }, [template, shareEntity])
 
   const deleteModalRef = useRef<BaseModalHandle>(null)
 

@@ -1,5 +1,233 @@
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { FlashList } from '@shopify/flash-list'
+import { router, useLocalSearchParams, useNavigation } from 'expo-router'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
+
+import { HabitHeatMap } from '@/components/habit'
+import { BaseModalHandle, NudgeModal } from '@/components/modals'
+import { SocialWorkoutCard } from '@/components/social/SocialWorkoutCard'
+import { Button } from '@/components/ui/buttons/Button'
+import { ShimmerProfileScreen } from '@/components/ui/shimmers'
+import { TopLifts, UserHeader } from '@/components/user'
+import { useFollowUserMutation, useUnfollowUserMutation } from '@/hooks/queries/engagement'
+import { useExercises } from '@/hooks/queries/exercises'
+import { useNudgeMutation } from '@/hooks/queries/useNudgeMutation'
+import { usePublicUserQuery } from '@/hooks/queries/usePublicUser'
+import { useWorkoutsQuery } from '@/hooks/queries/workouts'
+import { useShare } from '@/hooks/useShare'
+import { useAuth } from '@/stores/auth.store'
+import { useMeStore } from '@/stores/me.store'
 
 export default function UserProfile() {
-  return <SafeAreaView className="flex-1 bg-white dark:bg-black"></SafeAreaView>
+  const { id } = useLocalSearchParams<{ id: string }>()
+  const navigation = useNavigation()
+  const currentUserId = useAuth((state) => state.userId)
+  const { canNudgeUser } = useMeStore()
+  const { shareEntity } = useShare()
+
+  const { data: user, isLoading: isUserLoading } = usePublicUserQuery(id)
+  const nudgeModalRef = useRef<BaseModalHandle>(null)
+  const { data: exerciseList = [] } = useExercises()
+  const nudgeMutation = useNudgeMutation()
+
+  const followMutation = useFollowUserMutation()
+  const unfollowMutation = useUnfollowUserMutation()
+
+  const {
+    workouts,
+    isLoading: isWorkoutsLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useWorkoutsQuery(id)
+
+  const isLoading = isUserLoading || isWorkoutsLoading
+
+  const isSelf = id === currentUserId
+
+  const heatmapData = useMemo(() => {
+    const data = []
+    const today = new Date()
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(today)
+      d.setDate(today.getDate() - i)
+      // Randomly populate some days to simulate history
+      if (Math.random() > 0.8) {
+        data.push({
+          date: d.toISOString().split('T')[0],
+          count: 1,
+          intensity: Math.random(),
+        })
+      }
+    }
+    return data
+  }, [])
+
+  const handleShare = useCallback(async () => {
+    if (!user) return
+
+    await shareEntity('profile', id, {
+      title: `${user.firstName}'s Profile`,
+      image: user.profilePicUrl,
+      message: `Check out ${user.firstName}'s fitness journey on Pump!`,
+    })
+  }, [user, id, shareEntity])
+
+  useEffect(() => {
+    navigation.setOptions({
+      title: isLoading
+        ? 'Profile'
+        : user
+          ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+          : 'Profile',
+      leftIcon: 'chevron-back-outline',
+      onLeftPress: () => {
+        router.back()
+      },
+      rightIcons: isLoading
+        ? []
+        : [
+            {
+              name: 'share-outline',
+              onPress: handleShare,
+            },
+          ],
+    })
+  }, [user, navigation, isLoading, handleShare])
+
+  const exerciseTypeMap = useMemo(() => {
+    const map = new Map<string, any>()
+    exerciseList.forEach((ex) => map.set(ex.id, ex.exerciseType))
+    return map
+  }, [exerciseList])
+
+  const handleToggleFollow = useCallback(() => {
+    if (!user) return
+    if (user.isFollowing) {
+      unfollowMutation.mutate(id)
+    } else {
+      followMutation.mutate(id)
+    }
+  }, [user, id, followMutation, unfollowMutation])
+
+  const renderHeader = useMemo(() => {
+    const isPending = followMutation.isPending || unfollowMutation.isPending
+
+    return (
+      <View className="flex-col gap-4">
+        <UserHeader user={user ?? null} />
+
+        {!isSelf && (
+          <View className="flex-row gap-4">
+            <Button
+              title={user?.isFollowing ? 'Following' : 'Follow'}
+              variant={user?.isFollowing ? 'secondary' : 'primary'}
+              onPress={handleToggleFollow}
+              loading={isPending}
+              className="flex-1 rounded-full"
+            />
+            <Button
+              title={canNudgeUser(id) ? 'Nudge' : 'Sent'}
+              variant="outline"
+              disabled={!canNudgeUser(id)}
+              onPress={() => nudgeModalRef.current?.present()}
+              className="w-1/3 rounded-full"
+            />
+          </View>
+        )}
+
+        <View>
+          <Text className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+            Workout Activity
+          </Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <HabitHeatMap
+              values={heatmapData}
+              numDays={180}
+              layout="fill"
+              activeColor="#22c55e"
+              squareSize={8}
+              numRows={7}
+            />
+          </ScrollView>
+        </View>
+
+        <TopLifts />
+
+        <Text className="pb-2 text-lg font-bold text-neutral-900 dark:text-neutral-100">
+          Recent Workouts
+        </Text>
+      </View>
+    )
+  }, [
+    user,
+    isSelf,
+    heatmapData,
+    id,
+    canNudgeUser,
+    handleToggleFollow,
+    followMutation.isPending,
+    unfollowMutation.isPending,
+  ])
+
+  const renderItem = useCallback(
+    ({ item, index }: { item: any; index: number }) => (
+      <SocialWorkoutCard
+        workout={item}
+        exerciseTypeMap={exerciseTypeMap}
+        index={index}
+        onPressComments={(workoutId: string) => {
+          router.push(`/(app)/workout/${workoutId}`)
+        }}
+      />
+    ),
+    [exerciseTypeMap],
+  )
+
+  const onEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage()
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+
+  return (
+    <View className="flex-1 bg-white px-4 dark:bg-black">
+      {isLoading ? (
+        <ShimmerProfileScreen />
+      ) : (
+        <FlashList
+          data={workouts}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          ListHeaderComponent={renderHeader}
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.5}
+          showsVerticalScrollIndicator={false}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View className="p-4">
+                <ActivityIndicator size="small" />
+              </View>
+            ) : null
+          }
+        />
+      )}
+
+      <NudgeModal
+        ref={nudgeModalRef}
+        targetUserId={id}
+        targetUserName={user?.firstName ?? 'Athlete'}
+        hasStreak={true} // TODO: Replace with real streak boolean from user data
+        isLoading={nudgeMutation.isPending}
+        onSend={(note) => {
+          nudgeMutation.mutate(
+            { userId: id, note },
+            {
+              onSuccess: () => nudgeModalRef.current?.dismiss(),
+            },
+          )
+        }}
+      />
+    </View>
+  )
 }

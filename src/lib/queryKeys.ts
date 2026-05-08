@@ -102,6 +102,7 @@ export const queryKeys = {
   workouts: {
     all: ['workouts'] as const,
     discover: ['discoverWorkouts'] as const,
+    user: (userId: string) => ['workouts', 'user', userId] as const,
     byId: (id: string) => ['workouts', 'detail', id] as const,
   },
 } as const

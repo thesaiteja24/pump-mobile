@@ -1,8 +1,9 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { FlashList } from '@shopify/flash-list'
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'expo-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native'
+import { ActivityIndicator, Pressable, RefreshControl, Text, View } from 'react-native'
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -15,7 +16,7 @@ import CommentsModal, { CommentsModalHandle } from '@/components/modals/SocialCo
 import { SocialWorkoutCard } from '@/components/social/SocialWorkoutCard'
 import { ShimmerDiscoverScreen } from '@/components/ui/shimmers/ShimmerDiscoverScreen'
 import { useExercises } from '@/hooks/queries/exercises'
-import { useDiscoverWorkoutsQuery } from '@/hooks/queries/workouts'
+import { useWorkoutsQuery } from '@/hooks/queries/workouts'
 import { useThemeColor } from '@/hooks/theme'
 import { queryKeys } from '@/lib/queryKeys'
 
@@ -25,12 +26,12 @@ export default function DiscoverScreen() {
 
   // TanStack Query — infinite pagination with pending merge
   const {
-    discoverWorkouts,
+    workouts,
     hasMore: discoverHasMore,
     isLoading: discoverLoading,
     isFetchingNextPage: discoverLoadingNextPage,
     fetchNextPage,
-  } = useDiscoverWorkoutsQuery()
+  } = useWorkoutsQuery()
 
   const qc = useQueryClient()
 
@@ -121,18 +122,14 @@ export default function DiscoverScreen() {
       {refreshing || discoverLoading ? (
         <ShimmerDiscoverScreen />
       ) : (
-        <FlatList
-          data={discoverWorkouts}
+        <FlashList
+          data={workouts}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={discoverLoading} onRefresh={onRefresh} />}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}
-          initialNumToRender={5}
-          maxToRenderPerBatch={5}
-          windowSize={10}
-          removeClippedSubviews={true}
           ListFooterComponent={
             discoverHasMore ? (
               <View className="mb-[100%] items-center justify-center p-4 pb-12 pt-6">

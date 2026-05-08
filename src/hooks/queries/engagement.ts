@@ -130,14 +130,10 @@ export function useFollowUserMutation() {
       setFollowLoading(qc, targetUserId, false)
     },
 
-    onSettled: () => {
-      qc.invalidateQueries({
-        queryKey: queryKeys.engagement.followRoot,
-      })
-
-      qc.invalidateQueries({
-        queryKey: queryKeys.me.profile,
-      })
+    onSettled: (_data, _error, targetUserId) => {
+      qc.invalidateQueries({ queryKey: queryKeys.engagement.followRoot })
+      qc.invalidateQueries({ queryKey: queryKeys.me.profile })
+      qc.invalidateQueries({ queryKey: queryKeys.user.byId(targetUserId) })
     },
   })
 }
@@ -166,14 +162,10 @@ export function useUnfollowUserMutation() {
       setFollowLoading(qc, targetUserId, false)
     },
 
-    onSettled: () => {
-      qc.invalidateQueries({
-        queryKey: queryKeys.engagement.followRoot,
-      })
-
-      qc.invalidateQueries({
-        queryKey: queryKeys.me.profile,
-      })
+    onSettled: (_data, _error, targetUserId) => {
+      qc.invalidateQueries({ queryKey: queryKeys.engagement.followRoot })
+      qc.invalidateQueries({ queryKey: queryKeys.me.profile })
+      qc.invalidateQueries({ queryKey: queryKeys.user.byId(targetUserId) })
     },
   })
 }

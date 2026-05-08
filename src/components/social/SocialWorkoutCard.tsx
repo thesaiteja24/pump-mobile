@@ -4,7 +4,7 @@ import * as Haptics from 'expo-haptics'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import { memo, useCallback, useEffect, useMemo } from 'react'
-import { Alert, Pressable, Share, Text, TouchableOpacity, View } from 'react-native'
+import { Pressable, Text, TouchableOpacity, View } from 'react-native'
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -18,6 +18,7 @@ import { UserVerifiedBadge } from '@/components/user/UserVerifiedBadge'
 import { useCommentsQuery, useLikesQuery, useToggleLikeMutation } from '@/hooks/queries/engagement'
 import { useProfileQuery } from '@/hooks/queries/me'
 import { useThemeColor } from '@/hooks/theme'
+import { useShare } from '@/hooks/useShare'
 import { Comment as AppComment } from '@/types/engagement'
 import { ExerciseType } from '@/types/exercises'
 import { SelfUser } from '@/types/me'
@@ -60,6 +61,7 @@ function SocialWorkoutCardInternal({
   const { data: currentLikes = [] } = useLikesQuery(workout.id, 'workout')
   const { data: commentsPages } = useCommentsQuery(workout.id)
   const toggleLikeMutation = useToggleLikeMutation()
+  const { shareEntity } = useShare()
 
   const isLikedByMe = user && currentLikes.some((like) => like.userId === user.id)
 
@@ -97,18 +99,12 @@ function SocialWorkoutCardInternal({
       return
     }
 
-    try {
-      const webLink = `https://pump.thesaiteja.dev/share/workout/${workout.shareId}`
-      await Share.share({
-        message: `Check out my workout on Pump: ${webLink}`,
-        url: webLink,
-        title: workout.title || 'Workout',
-      })
-    } catch (error) {
-      console.error('Error sharing workout:', error)
-      Alert.alert('Error', 'Failed to share the workout.')
-    }
-  }, [workout.shareId, workout.title])
+    await shareEntity('workout', workout.shareId, {
+      title: workout.title || 'Workout',
+      image: workout.user?.profilePicUrl,
+      message: `Check out ${workout.user?.firstName}'s workout on Pump!`,
+    })
+  }, [workout.shareId, workout.title, workout.user, shareEntity])
 
   // Animation values
   const opacity = useSharedValue(0)

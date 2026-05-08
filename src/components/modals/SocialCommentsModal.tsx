@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons'
 import {
   BottomSheetBackdrop,
-  BottomSheetFlatList,
+  BottomSheetFlashList,
   BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet'
@@ -192,7 +192,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
         </TouchableOpacity>
       </View>
 
-      <BottomSheetFlatList
+      <BottomSheetFlashList
         data={workoutComments}
         keyExtractor={(item: Comment) => item.id}
         renderItem={({ item }: { item: Comment }) => (
@@ -245,7 +245,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
         </Text>
       </View>
 
-      <BottomSheetFlatList
+      <BottomSheetFlashList
         data={activeThreadComment ? [activeThreadComment] : []}
         keyExtractor={(item: Comment) => item.id}
         renderItem={({ item }: { item: Comment }) => (
