@@ -1,6 +1,7 @@
 export * from './ShimmerAnalyticsScreen'
 export * from './ShimmerDiscoverScreen'
 export * from './ShimmerHomeScreen'
+export * from './ShimmerProfileScreen'
 export * from './ShimmerProgramDetails'
 export * from './ShimmerTemplateScreen'
 export * from './ShimmerWorkoutScreen'
