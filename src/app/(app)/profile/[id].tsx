@@ -8,13 +8,14 @@ import { SocialWorkoutCard } from '@/components/social/SocialWorkoutCard'
 import { Button } from '@/components/ui/buttons/Button'
 import { ShimmerProfileScreen } from '@/components/ui/shimmers'
 import { TopLifts, UserHeader } from '@/components/user'
+import { UserTrainingActivity } from '@/components/user/UserTrainingActivity'
 import { useFollowUserMutation, useUnfollowUserMutation } from '@/hooks/queries/engagement'
 import { useExercises } from '@/hooks/queries/exercises'
 import {
   useNudgeMutation,
   usePublicUserQuery,
   useUserTopLiftsQuery,
-  useUserWorkoutActivityQuery,
+  useUserTrainingAnalyticsQuery,
 } from '@/hooks/queries/usePublicUser'
 import { useWorkoutsQuery } from '@/hooks/queries/workouts'
 import { useShare } from '@/hooks/useShare'
@@ -30,9 +31,7 @@ export default function UserProfile() {
   const { shareEntity } = useShare()
 
   const { data: user, isLoading: isUserLoading } = usePublicUserQuery(id)
-  const { data: activity = {} } = useUserWorkoutActivityQuery(id, 100)
   const { data: topLifts = [], isLoading: isTopLiftsLoading } = useUserTopLiftsQuery(id)
-
   const nudgeModalRef = useRef<BaseModalHandle>(null)
   const { data: exerciseList = [] } = useExercises()
   const nudgeMutation = useNudgeMutation()
@@ -48,17 +47,14 @@ export default function UserProfile() {
     isFetchingNextPage,
   } = useWorkoutsQuery(id)
 
-  const isLoading = isUserLoading || isWorkoutsLoading
+  const { data: trainingAnalytics, isLoading: isTrainingLoading } = useUserTrainingAnalyticsQuery(
+    id,
+    'all',
+  )
+
+  const isLoading = isUserLoading || isWorkoutsLoading || isTopLiftsLoading || isTrainingLoading
 
   const isSelf = id === currentUserId
-
-  const heatmapData = useMemo(() => {
-    return Object.entries(activity).map(([date, data]) => ({
-      date,
-      count: data.count,
-      intensity: data.volume > 0 ? Math.min(1, data.volume / 10000) : 0,
-    }))
-  }, [activity])
 
   const handleShare = useCallback(async () => {
     if (!user) return
@@ -133,7 +129,7 @@ export default function UserProfile() {
           </View>
         )}
 
-        <View></View>
+        <UserTrainingActivity userId={id} analytics={trainingAnalytics} />
 
         <TopLifts lifts={topLifts} isLoading={isTopLiftsLoading} />
 
@@ -145,7 +141,6 @@ export default function UserProfile() {
   }, [
     user,
     isSelf,
-    heatmapData,
     id,
     canNudgeUser,
     handleToggleFollow,
@@ -189,11 +184,17 @@ export default function UserProfile() {
           onEndReachedThreshold={0.5}
           showsVerticalScrollIndicator={false}
           ListFooterComponent={
-            isFetchingNextPage ? (
-              <View className="p-4">
-                <ActivityIndicator size="small" />
+            hasNextPage ? (
+              <View className="mb-[100%] items-center justify-center p-4 pb-12 pt-6">
+                {isFetchingNextPage && <ActivityIndicator size="small" />}
               </View>
-            ) : null
+            ) : (
+              <View className="mb-[50%] items-center justify-center p-4 pb-12 pt-6">
+                <Text className="text-neutral-500 dark:text-neutral-400">
+                  You&apos;ve conquered all the workouts here 🏆
+                </Text>
+              </View>
+            )
           }
         />
       )}
