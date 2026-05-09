@@ -1,8 +1,11 @@
-import React from 'react'
-
-import { BaseTrainingChart } from '@/components/user/UserTrainingChart'
+import { UserMetricChart } from '@/components/user/UserMetricChart'
+import { useUserTrainingAnalyticsQuery } from '@/hooks/queries/usePublicUser'
+import { useAuth } from '@/stores/auth.store'
 
 export default function DurationChartScreen() {
+  const userId = useAuth((s) => s.userId)
+  const { data: analytics, isLoading } = useUserTrainingAnalyticsQuery(userId!, 'all')
+
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(Math.abs(seconds) / 60)
     if (mins < 60) return `${mins}m`
@@ -13,13 +16,15 @@ export default function DurationChartScreen() {
   }
 
   return (
-    <BaseTrainingChart
+    <UserMetricChart
       title="Workout Duration"
-      metricKey="duration"
+      data={analytics?.duration || []}
+      isLoading={isLoading}
       unit=""
-      lineColor="#8b5cf6"
+      accentColor="#8b5cf6"
       icon="time-outline"
       formatValue={formatDuration}
+      defaultChartType="bar"
     />
   )
 }
