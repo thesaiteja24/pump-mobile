@@ -13,6 +13,7 @@ import { vexo } from 'vexo-analytics'
 import { CustomToast } from '@/components/ui/feedback/CustomToast'
 import { useThemeColor } from '@/hooks/theme'
 import { useInAppUpdate } from '@/hooks/useInAppUpdate'
+import { AriseRoot } from '@/lib/arise'
 import { queryClient } from '@/lib/queryClient'
 import { useAuth } from '@/stores/auth.store'
 
@@ -119,6 +120,7 @@ export default function RootLayout() {
                 info: (props) => <CustomToast {...props} type="info" />,
               }}
             />
+            <AriseRoot />
           </>
         </BottomSheetModalProvider>
       </GestureHandlerRootView>
