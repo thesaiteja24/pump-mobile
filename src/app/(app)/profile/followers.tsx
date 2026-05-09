@@ -74,7 +74,7 @@ export default function Followers() {
   return (
     <View
       style={{ paddingBottom: safeAreaInsets.bottom }}
-      className="flex-1 bg-white px-4 pt-4 dark:bg-black"
+      className="flex-1 gap-6 bg-white px-4 dark:bg-black"
     >
       <View className="flex-row items-center justify-center gap-2">
         <MaterialCommunityIcons

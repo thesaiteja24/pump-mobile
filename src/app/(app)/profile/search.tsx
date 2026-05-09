@@ -78,9 +78,9 @@ export default function Search() {
   return (
     <View
       style={{ paddingBottom: safeAreaInsets.bottom }}
-      className="flex-1 bg-white px-4 pt-4 dark:bg-black"
+      className="flex-1 gap-6 bg-white px-4 dark:bg-black"
     >
-      <View className="flex-row items-center justify-center gap-2 pb-4">
+      <View className="flex-row items-center justify-center gap-2">
         {searchLoading ? (
           <ActivityIndicator
             size="small"
@@ -111,7 +111,7 @@ export default function Search() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           isSearching ? null : (
-            <View className="mt-4">
+            <View className="mb-4">
               <Text className="font-semibold text-black dark:text-white">Suggested Users</Text>
             </View>
           )

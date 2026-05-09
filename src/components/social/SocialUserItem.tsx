@@ -4,6 +4,7 @@ import { Text, View } from 'react-native'
 import { Button } from '@/components/ui/buttons/Button'
 import { UserVerifiedBadge } from '@/components/user/UserVerifiedBadge'
 import { useThemeColor } from '@/hooks/theme'
+import { useAuth } from '@/stores/auth.store'
 import { SearchedUser } from '@/types/engagement'
 
 export const SocialUserItem = ({
@@ -20,8 +21,10 @@ export const SocialUserItem = ({
   onPressFollow: () => void
 }) => {
   const isDark = useThemeColor().isDark
+  const currentUserId = useAuth((state) => state.userId)
+  const isSelf = id === currentUserId
   return (
-    <View className="w-full flex-row items-center justify-between px-4 py-3" key={id}>
+    <View className="w-full flex-row items-center justify-between py-2" key={id}>
       {/* LEFT SECTION */}
       <View className="w-2/3 flex-row items-center gap-3">
         <Image
@@ -55,13 +58,15 @@ export const SocialUserItem = ({
 
       {/* RIGHT SECTION */}
       <View className="w-1/3">
-        <Button
-          className="rounded-full"
-          variant={isFollowing ? 'secondary' : 'primary'}
-          title={isFollowing ? 'Following' : 'Follow'}
-          onPress={onPressFollow}
-          loading={followLoading}
-        />
+        {!isSelf && (
+          <Button
+            className="rounded-full"
+            variant={isFollowing ? 'secondary' : 'primary'}
+            title={isFollowing ? 'Following' : 'Follow'}
+            onPress={onPressFollow}
+            loading={followLoading}
+          />
+        )}
       </View>
     </View>
   )

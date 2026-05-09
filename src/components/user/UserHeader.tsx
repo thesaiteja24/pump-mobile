@@ -45,7 +45,7 @@ export function UserHeader({ user }: UserHeaderProps) {
             </Text>
           </View>
 
-          <Pressable onPress={() => router.push('/(app)/profile/followers')}>
+          <Pressable onPress={() => router.push(`/(app)/profile/followers?userId=${user.id}`)}>
             <Text className="text-xs font-normal text-neutral-500 dark:text-neutral-400">
               Followers
             </Text>
@@ -54,7 +54,7 @@ export function UserHeader({ user }: UserHeaderProps) {
             </Text>
           </Pressable>
 
-          <Pressable onPress={() => router.push('/(app)/profile/following')}>
+          <Pressable onPress={() => router.push(`/(app)/profile/following?userId=${user.id}`)}>
             <Text className="text-xs font-normal text-neutral-500 dark:text-neutral-400">
               Following
             </Text>
