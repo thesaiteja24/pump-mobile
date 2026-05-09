@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { memo, useEffect } from 'react'
 import { type DimensionValue, useColorScheme, View, type ViewStyle } from 'react-native'
 import Animated, {
   FadeInDown,
@@ -13,15 +13,13 @@ import Animated, {
    Core Skeleton Block (fade-in + shimmer)
 ────────────────────────────────────────────── */
 
-function SkeletonBlock({
-  width = '100%',
-  height = 14,
-  rounded = 8,
-}: {
+interface SkeletonBlockProps {
   width?: DimensionValue
-  height?: number
+  height?: number | DimensionValue
   rounded?: number
-}) {
+}
+
+const SkeletonBlock = memo(({ width = '100%', height = 14, rounded = 8 }: SkeletonBlockProps) => {
   const scheme = useColorScheme()
 
   const fade = useSharedValue(0)
@@ -42,19 +40,19 @@ function SkeletonBlock({
 
   const blockStyle: ViewStyle = {
     width,
-    height,
+    height: height as any,
     borderRadius: rounded,
     backgroundColor: scheme === 'dark' ? '#3F3F46' : '#E5E7EB',
   }
 
   return <Animated.View style={[animatedStyle, blockStyle]} />
-}
+})
 
 /* ──────────────────────────────────────────────
    Workout Card Skeleton
 ────────────────────────────────────────────── */
 
-function SkeletonSocialWorkoutCard() {
+const SkeletonSocialWorkoutCard = memo(() => {
   return (
     <View className="mb-4 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
       <View className="mb-4 flex-row items-center gap-3">
@@ -79,13 +77,67 @@ function SkeletonSocialWorkoutCard() {
       ))}
     </View>
   )
-}
+})
+
+/* ──────────────────────────────────────────────
+   Training Activity Skeleton
+────────────────────────────────────────────── */
+
+const SkeletonTrainingActivity = memo(() => {
+  return (
+    <View className="mb-6 h-72 gap-6 rounded-3xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+      <SkeletonBlock width="40%" height={20} />
+      <View className="flex-1 flex-row items-end justify-between gap-2 px-2 pb-4">
+        {[40, 70, 69, 45, 90, 55, 60, 80].map((h, i) => (
+          <SkeletonBlock key={i} width="8%" height={`${h}%` as any} rounded={0} />
+        ))}
+      </View>
+      <View className="flex-row justify-center gap-2">
+        {[0, 1, 2].map((i) => (
+          <SkeletonBlock key={i} width={8} height={8} rounded={999} />
+        ))}
+      </View>
+    </View>
+  )
+})
+
+/* ──────────────────────────────────────────────
+   Top Lifts Skeleton
+────────────────────────────────────────────── */
+
+const SkeletonTopLifts = memo(() => {
+  return (
+    <View className="mb-6 gap-4">
+      <View className="flex-row items-center justify-between">
+        <SkeletonBlock width="30%" height={24} />
+      </View>
+      <View className="flex-row gap-4">
+        {[0, 1].map((i) => (
+          <View
+            key={i}
+            className="w-44 rounded-3xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+          >
+            <SkeletonBlock width="100%" height={80} rounded={12} />
+            <View className="mt-3 gap-2">
+              <SkeletonBlock width="70%" height={14} />
+              <SkeletonBlock width="50%" height={20} />
+              <SkeletonBlock width="35%" height={16} />
+            </View>
+            <View className="mt-4">
+              <SkeletonBlock width={70} height={22} rounded={999} />
+            </View>
+          </View>
+        ))}
+      </View>
+    </View>
+  )
+})
 
 /* ──────────────────────────────────────────────
    Profile Screen Skeleton (export)
 ────────────────────────────────────────────── */
 
-export function ShimmerProfileScreen() {
+export const ShimmerProfileScreen = memo(() => {
   return (
     <Animated.View entering={FadeInDown.duration(300).springify()} className="flex-1">
       {/* Header Skeleton */}
@@ -110,9 +162,21 @@ export function ShimmerProfileScreen() {
         </View>
       </View>
 
-      {/* Follow Button Skeleton */}
-      <View className="mb-6">
-        <SkeletonBlock width="100%" height={48} rounded={12} />
+      {/* Action Buttons Skeleton */}
+      <View className="mb-6 flex-row gap-4">
+        <SkeletonBlock width="65%" height={42} rounded={999} />
+        <SkeletonBlock width="30%" height={42} rounded={999} />
+      </View>
+
+      {/* Training Activity Skeleton */}
+      <SkeletonTrainingActivity />
+
+      {/* Top Lifts Skeleton */}
+      <SkeletonTopLifts />
+
+      {/* Section Title */}
+      <View className="mb-4">
+        <SkeletonBlock width="40%" height={24} />
       </View>
 
       {/* Workouts List Skeleton */}
@@ -121,6 +185,6 @@ export function ShimmerProfileScreen() {
       ))}
     </Animated.View>
   )
-}
+})
 
 export default ShimmerProfileScreen
