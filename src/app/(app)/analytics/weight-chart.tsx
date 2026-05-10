@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import BaseScreen from '@/components/ui/BaseScreen'
 import { UserMetricChart } from '@/components/user/UserMetricChart'
 import { useMeasurementsQuery } from '@/hooks/queries/me'
 import { useUnitConverter } from '@/hooks/useUnitConverter'
@@ -18,16 +19,18 @@ const WeightChart = () => {
   }, [measurementsData?.history, formatWeight])
 
   return (
-    <UserMetricChart
-      title="Body Weight"
-      data={chartData}
-      isLoading={isLoading}
-      unit={preferredUnit}
-      accentColor="#10b981"
-      icon="scale-outline"
-      formatValue={(val) => val.toFixed(1)}
-      defaultChartType="line"
-    />
+    <BaseScreen title="Weight Trend" backButton>
+      <UserMetricChart
+        title="Body Weight"
+        data={chartData}
+        isLoading={isLoading}
+        unit={preferredUnit}
+        accentColor="#10b981"
+        icon="scale-outline"
+        formatValue={(val) => val.toFixed(1)}
+        defaultChartType="line"
+      />
+    </BaseScreen>
   )
 }
 

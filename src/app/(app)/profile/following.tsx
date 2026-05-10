@@ -1,4 +1,4 @@
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
+import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { FlashList } from '@shopify/flash-list'
 import { router, useLocalSearchParams } from 'expo-router'
 import Fuse from 'fuse.js'
@@ -7,7 +7,6 @@ import { ActivityIndicator, BackHandler, Platform, RefreshControl, Text, View } 
 import { TextInput } from 'react-native-gesture-handler'
 
 import { SocialUserItem } from '@/components/social/SocialUserItem'
-import { Button } from '@/components/ui'
 import BaseScreen from '@/components/ui/BaseScreen'
 import {
   useFollowUserMutation,
@@ -72,24 +71,7 @@ export default function Following() {
   }, [])
 
   return (
-    <BaseScreen
-      title="Following"
-      left={
-        <Button
-          title=""
-          variant="ghost"
-          leftIcon={
-            <Ionicons
-              name="chevron-back-outline"
-              size={28}
-              color={colors.isDark ? 'white' : 'black'}
-            />
-          }
-          onPress={() => router.back()}
-          className="p-0"
-        />
-      }
-    >
+    <BaseScreen title="Following" backButton>
       <View className="flex-row items-center justify-center gap-2 pb-6">
         <MaterialCommunityIcons
           name="magnify"

@@ -1,3 +1,4 @@
+import BaseScreen from '@/components/ui/BaseScreen'
 import { UserMetricChart } from '@/components/user/UserMetricChart'
 import { useUserTrainingAnalyticsQuery } from '@/hooks/queries/usePublicUser'
 import { useAuth } from '@/stores/auth.store'
@@ -16,15 +17,17 @@ export default function DurationChartScreen() {
   }
 
   return (
-    <UserMetricChart
-      title="Workout Duration"
-      data={analytics?.duration || []}
-      isLoading={isLoading}
-      unit=""
-      accentColor="#8b5cf6"
-      icon="time-outline"
-      formatValue={formatDuration}
-      defaultChartType="bar"
-    />
+    <BaseScreen title="Duration Trend" backButton>
+      <UserMetricChart
+        title="Workout Duration"
+        data={analytics?.duration || []}
+        isLoading={isLoading}
+        unit=""
+        accentColor="#8b5cf6"
+        icon="time-outline"
+        formatValue={formatDuration}
+        defaultChartType="bar"
+      />
+    </BaseScreen>
   )
 }

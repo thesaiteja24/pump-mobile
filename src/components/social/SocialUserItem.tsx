@@ -1,11 +1,13 @@
 import { Image } from 'expo-image'
-import { Text, View } from 'react-native'
+import { Pressable, Text, View } from 'react-native'
 
 import { Button } from '@/components/ui'
 import { UserVerifiedBadge } from '@/components/user/UserVerifiedBadge'
 import { useThemeColor } from '@/hooks/theme'
 import { useAuth } from '@/stores/auth.store'
 import { SearchedUser } from '@/types/engagement'
+import * as Haptics from 'expo-haptics'
+import { useRouter } from 'expo-router'
 
 export const SocialUserItem = ({
   id,
@@ -21,12 +23,20 @@ export const SocialUserItem = ({
   onPressFollow: () => void
 }) => {
   const isDark = useThemeColor().isDark
+  const router = useRouter()
+
   const currentUserId = useAuth((state) => state.userId)
   const isSelf = id === currentUserId
   return (
     <View className="w-full flex-row items-center justify-between py-2" key={id}>
       {/* LEFT SECTION */}
-      <View className="w-2/3 flex-row items-center gap-3">
+      <Pressable
+        onPress={() => {
+          router.push(`/profile/${id}`)
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+        }}
+        className="w-2/3 flex-row items-center gap-3"
+      >
         <Image
           source={profilePicUrl ? { uri: profilePicUrl } : require('../../assets/images/icon.png')}
           style={{
@@ -54,7 +64,7 @@ export const SocialUserItem = ({
             </View>
           )}
         </View>
-      </View>
+      </Pressable>
 
       {/* RIGHT SECTION */}
       <View className="w-1/3">

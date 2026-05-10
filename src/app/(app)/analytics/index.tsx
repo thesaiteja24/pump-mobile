@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router'
-import React, { useEffect, useMemo } from 'react'
-import { BackHandler, ScrollView, View } from 'react-native'
+import { useEffect, useMemo } from 'react'
+import { BackHandler } from 'react-native'
 
+import BaseScreen from '@/components/ui/BaseScreen'
 import { ShimmerAnalyticsScreen } from '@/components/ui/shimmers/ShimmerAnalyticsScreen'
 import { UserMuscleCompositionCard } from '@/components/user/UserMuscleCompositionCard'
 import { UserNutritionTargetsCard } from '@/components/user/UserNutritionTargetsCard'
@@ -155,27 +156,22 @@ const AnalyticsScreen = () => {
   }, [router])
 
   return (
-    <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
-      {isLoading ? (
-        <ShimmerAnalyticsScreen />
-      ) : (
-        <View className="flex items-center justify-center gap-4">
-          <UserMuscleCompositionCard
-            composition={composition}
-            gender={gender}
-            goal={fitnessGoal}
-          />
+    <BaseScreen
+      title="Analytics"
+      isLoading={isLoading}
+      shimmer={<ShimmerAnalyticsScreen />}
+      backButton
+    >
+      <UserMuscleCompositionCard composition={composition} gender={gender} goal={fitnessGoal} />
 
-          <UserNutritionTargetsCard
-            nutritionPlan={nutritionPlan}
-            fitnessProfile={fitnessProfile}
-            riskBadge={riskBadge}
-            bmr={bmr}
-            colors={colors}
-          />
-        </View>
-      )}
-    </ScrollView>
+      <UserNutritionTargetsCard
+        nutritionPlan={nutritionPlan}
+        fitnessProfile={fitnessProfile}
+        riskBadge={riskBadge}
+        bmr={bmr}
+        colors={colors}
+      />
+    </BaseScreen>
   )
 }
 

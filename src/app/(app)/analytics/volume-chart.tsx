@@ -1,3 +1,4 @@
+import BaseScreen from '@/components/ui/BaseScreen'
 import { UserMetricChart } from '@/components/user/UserMetricChart'
 import { useUserTrainingAnalyticsQuery } from '@/hooks/queries/usePublicUser'
 import { useUnitConverter } from '@/hooks/useUnitConverter'
@@ -14,15 +15,17 @@ export default function VolumeChartScreen() {
   }
 
   return (
-    <UserMetricChart
-      title="Training Volume"
-      data={analytics?.volume || []}
-      isLoading={isLoading}
-      unit={preferredUnit}
-      accentColor="#10b981"
-      icon="bar-chart-outline"
-      formatValue={formatVolume}
-      defaultChartType="bar"
-    />
+    <BaseScreen title="Volume Trend" backButton>
+      <UserMetricChart
+        title="Training Volume"
+        data={analytics?.volume || []}
+        isLoading={isLoading}
+        unit={preferredUnit}
+        accentColor="#10b981"
+        icon="bar-chart-outline"
+        formatValue={formatVolume}
+        defaultChartType="bar"
+      />
+    </BaseScreen>
   )
 }

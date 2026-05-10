@@ -172,21 +172,7 @@ export default function UserProfile() {
   return (
     <BaseScreen
       title={headerTitle}
-      left={
-        <Button
-          title=""
-          variant="ghost"
-          leftIcon={
-            <Ionicons
-              name="chevron-back-outline"
-              size={28}
-              color={isDarkMode ? 'white' : 'black'}
-            />
-          }
-          onPress={() => router.back()}
-          className="p-0"
-        />
-      }
+      backButton
       right={
         !isLoading && (
           <Button

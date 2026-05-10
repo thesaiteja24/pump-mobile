@@ -1,3 +1,4 @@
+import BaseScreen from '@/components/ui/BaseScreen'
 import { UserMetricChart } from '@/components/user/UserMetricChart'
 import { useUserTrainingAnalyticsQuery } from '@/hooks/queries/usePublicUser'
 import { useAuth } from '@/stores/auth.store'
@@ -7,15 +8,17 @@ export default function RepsChartScreen() {
   const { data: analytics, isLoading } = useUserTrainingAnalyticsQuery(userId!, 'all')
 
   return (
-    <UserMetricChart
-      title="Total Repetitions"
-      data={analytics?.reps || []}
-      isLoading={isLoading}
-      unit="reps"
-      accentColor="#f59e0b"
-      icon="repeat-outline"
-      formatValue={(val) => Math.round(val).toLocaleString()}
-      defaultChartType="bar"
-    />
+    <BaseScreen title="Reps Trend" backButton>
+      <UserMetricChart
+        title="Total Repetitions"
+        data={analytics?.reps || []}
+        isLoading={isLoading}
+        unit="reps"
+        accentColor="#f59e0b"
+        icon="repeat-outline"
+        formatValue={(val) => Math.round(val).toLocaleString()}
+        defaultChartType="bar"
+      />
+    </BaseScreen>
   )
 }

@@ -109,7 +109,7 @@ export default function DiscoverScreen() {
               {discoverLoadingNextPage && <ActivityIndicator size="small" color={colors.primary} />}
             </View>
           ) : (
-            <View className="mb-[50%] items-center justify-center p-4 pb-12 pt-6">
+            <View className="mb-[100%] items-center justify-center p-4 pb-12 pt-6">
               <Text className="text-neutral-500 dark:text-neutral-400">
                 You&apos;ve conquered all the workouts here 🏆
               </Text>
