@@ -3,12 +3,12 @@ import { useRouter } from 'expo-router'
 import React, { useState } from 'react'
 import { ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { Button } from '@/components/ui/buttons/Button'
 import { SelectableCard } from '@/components/ui/cards/SelectableCard'
 import { TextInput } from '@/components/ui/inputs/TextInput'
 import { useThemeColor } from '@/hooks/theme'
+import { Arise } from '@/lib/arise'
 import { useOnboarding } from '@/stores/me.store'
 
 export default function OnboardingTarget() {
@@ -36,13 +36,13 @@ export default function OnboardingTarget() {
 
   const handleNext = () => {
     if (!targetType) {
-      Toast.show({ type: 'error', text1: 'Please select what you would like to target' })
+      Arise.error({ heading: 'Please select what you would like to target' })
       return
     }
 
     const val = parseFloat(inputValue)
     if (!inputValue || isNaN(val) || val <= 0) {
-      Toast.show({ type: 'error', text1: 'Please enter a valid target value' })
+      Arise.error({ heading: 'Please enter a valid target value' })
       return
     }
 

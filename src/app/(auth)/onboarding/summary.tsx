@@ -3,10 +3,10 @@ import { useRouter } from 'expo-router'
 import React, { useMemo } from 'react'
 import { ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { Button } from '@/components/ui/buttons/Button'
 import { useThemeColor } from '@/hooks/theme'
+import { Arise } from '@/lib/arise'
 import { useOnboarding } from '@/stores/me.store'
 import {
   calculateBMI,
@@ -95,7 +95,7 @@ export default function OnboardingSummary() {
 
   const handleFinish = () => {
     if (!stats) {
-      Toast.show({ type: 'error', text1: 'Missing data to complete setup' })
+      Arise.error({ heading: 'Missing data to complete setup' })
       return
     }
 

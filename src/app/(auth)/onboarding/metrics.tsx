@@ -3,12 +3,12 @@ import { useRouter } from 'expo-router'
 import React, { useState } from 'react'
 import { ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { Button } from '@/components/ui/buttons/Button'
 import { TextInput } from '@/components/ui/inputs/TextInput'
 import { UnitToggle } from '@/components/user/UserUnitToggle'
 import { useThemeColor } from '@/hooks/theme'
+import { Arise } from '@/lib/arise'
 import { useOnboarding } from '@/stores/me.store'
 
 export default function OnboardingMetrics() {
@@ -33,11 +33,11 @@ export default function OnboardingMetrics() {
     const h = parseFloat(heightInput)
 
     if (!weightInput || isNaN(w) || w <= 0) {
-      Toast.show({ type: 'error', text1: 'Please enter a valid weight' })
+      Arise.error({ heading: 'Please enter a valid weight' })
       return
     }
     if (!heightInput || isNaN(h) || h <= 0) {
-      Toast.show({ type: 'error', text1: 'Please enter a valid height' })
+      Arise.error({ heading: 'Please enter a valid height' })
       return
     }
 

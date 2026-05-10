@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useMemo, useRef } from 'react'
 import { BackHandler, ScrollView, Text, TouchableOpacity, View } from 'react-native'
-import Toast from 'react-native-toast-message'
 
 import { StartProgramModal } from '@/components/modals/StartProgramModal'
 import {
@@ -20,6 +19,7 @@ import {
   useProgramById,
   useStartProgram,
 } from '@/hooks/queries/programs'
+import { Arise } from '@/lib/arise'
 import { useAuth } from '@/stores/auth.store'
 import { SelfUser } from '@/types/me'
 
@@ -48,10 +48,9 @@ export default function ProgramTemplateDetails() {
       {
         onSuccess: () => {
           startProgramSheetRef.current?.dismiss()
-          Toast.show({
-            type: 'success',
-            text1: 'Program Started!',
-            text2: 'Redirecting to your workout dashboard...',
+          Arise.success({
+            heading: 'Program Started!',
+            content: 'Redirecting to your workout dashboard...',
           })
 
           // Wait a bit for the animation and sync
@@ -60,10 +59,9 @@ export default function ProgramTemplateDetails() {
           }, 500)
         },
         onError: (error: any) => {
-          Toast.show({
-            type: 'error',
-            text1: 'Failed to start program',
-            text2: error.message || 'Please try again',
+          Arise.error({
+            heading: 'Failed to start program',
+            content: error.message || 'Please try again',
           })
         },
       },
@@ -214,15 +212,14 @@ export default function ProgramTemplateDetails() {
 
             deleteProgramMutation.mutate(program.id, {
               onSuccess: () => {
-                Toast.show({ type: 'success', text1: 'Program deleted' })
+                Arise.success({ heading: 'Program deleted' })
                 deleteModalRef.current?.dismiss()
                 router.back()
               },
               onError: (error: any) => {
-                Toast.show({
-                  type: 'error',
-                  text1: 'Failed to delete program',
-                  text2: error.message || 'Please try again',
+                Arise.error({
+                  heading: 'Failed to delete program',
+                  content: error.message || 'Please try again',
                 })
               },
             })

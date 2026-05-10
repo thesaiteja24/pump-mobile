@@ -2,7 +2,6 @@ import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { BackHandler, ScrollView, Text, useColorScheme,View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
@@ -10,6 +9,7 @@ import { ShimmerTemplateScreen } from '@/components/ui/shimmers/ShimmerTemplateS
 import { WorkoutReadOnlyExerciseRow } from '@/components/workout/WorkoutReadOnlyExerciseRow'
 import { useDeleteTemplateMutation, useTemplateByIdQuery } from '@/hooks/queries/templates'
 import { useShare } from '@/hooks/useShare'
+import { Arise } from '@/lib/arise'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import { TemplateExerciseGroup } from '@/types/templates'
 
@@ -32,10 +32,9 @@ export default function TemplateDetails() {
 
   const handleShare = useCallback(async () => {
     if (!template?.shareId) {
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Template has no share link',
+      Arise.error({
+        heading: 'Error',
+        content: 'Template has no share link',
       })
       return
     }

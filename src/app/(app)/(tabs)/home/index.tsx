@@ -12,11 +12,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { HabitCard } from '@/components/habit/HabitCard'
-import { queryKeys } from '@/lib/queryKeys'
-import { getUserWorkoutsService } from '@/services/workouts.service'
 import { Button } from '@/components/ui/buttons/Button'
 import { ShimmerHomeScreen } from '@/components/ui/shimmers/ShimmerHomeScreen'
 import { TopLifts } from '@/components/user'
@@ -32,6 +29,9 @@ import { useHabitLogsQuery, useHabitsQuery } from '@/hooks/queries/habits'
 import { useMeasurementsQuery, useProfileQuery, useUserAnalyticsQuery } from '@/hooks/queries/me'
 import { useUserTopLiftsQuery } from '@/hooks/queries/usePublicUser'
 import { useUnitConverter } from '@/hooks/useUnitConverter'
+import { Arise } from '@/lib/arise'
+import { queryKeys } from '@/lib/queryKeys'
+import { getUserWorkoutsService } from '@/services/workouts.service'
 import { SelfUser } from '@/types/me'
 import {
   calculateBMI,
@@ -383,10 +383,7 @@ export default function HomeScreen() {
                 <Button
                   title="View All"
                   onPress={() => {
-                    Toast.show({
-                      type: 'info',
-                      text1: 'Coming Soon',
-                    })
+                    Arise.info({ heading: 'Coming Soon' })
                   }}
                   variant="outline"
                   textClassName="text-sm"

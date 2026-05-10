@@ -3,12 +3,12 @@ import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
 import * as ImagePicker from 'expo-image-picker'
 import React, { forwardRef, useCallback, useMemo, useState } from 'react'
 import { Image, Keyboard, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
-import Toast from 'react-native-toast-message'
 
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { useAddMeasurementMutation, useProfileQuery } from '@/hooks/queries/me'
 import { useThemeColor } from '@/hooks/theme'
 import { useUnitConverter } from '@/hooks/useUnitConverter'
+import { Arise } from '@/lib/arise'
 import { SelfUser } from '@/types/me'
 import { calculateBodyFat, calculateComposition } from '@/utils/analytics'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
@@ -195,7 +195,7 @@ export const UserMeasurementsModal = forwardRef<BaseModalHandle, Props>((_, ref)
         )
         setProgressPics((prev) => [...prev, ...processedPics])
       } catch (error) {
-        Toast.show({ type: 'error', text1: 'Failed to process some images' })
+        Arise.error({ heading: 'Failed to process some images' })
         console.error('Error processing images:', error)
       }
     }
@@ -211,7 +211,7 @@ export const UserMeasurementsModal = forwardRef<BaseModalHandle, Props>((_, ref)
     const hasAnyInput = Object.values(measurements).some((v) => v.trim().length > 0)
 
     if (!hasAnyInput && !notes && progressPics.length === 0) {
-      Toast.show({ type: 'error', text1: 'Please enter at least one measurement before saving.' })
+      Arise.error({ heading: 'Please enter at least one measurement before saving.' })
       return
     }
 
@@ -243,7 +243,7 @@ export const UserMeasurementsModal = forwardRef<BaseModalHandle, Props>((_, ref)
 
     addMeasurementMutation.mutate(payload as any, {
       onSuccess: () => {
-        Toast.show({ type: 'success', text1: 'Measurements saved successfully!' })
+        Arise.success({ heading: 'Measurements saved successfully!' })
         const modalRef = ref as React.RefObject<BaseModalHandle>
         modalRef.current?.dismiss()
         setMeasurements(INITIAL_MEASUREMENTS)
@@ -251,7 +251,7 @@ export const UserMeasurementsModal = forwardRef<BaseModalHandle, Props>((_, ref)
         setProgressPics([])
       },
       onError: () => {
-        Toast.show({ type: 'error', text1: 'Failed to save check-in' })
+        Arise.error({ heading: 'Failed to save check-in' })
       },
     })
   }, [

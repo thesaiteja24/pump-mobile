@@ -44,9 +44,9 @@ const SkeletonBlock = memo(({ width = '100%', height = 14, rounded = 8 }: Skelet
     borderRadius: rounded,
     backgroundColor: scheme === 'dark' ? '#3F3F46' : '#E5E7EB',
   }
-
   return <Animated.View style={[animatedStyle, blockStyle]} />
 })
+SkeletonBlock.displayName = 'SkeletonBlock'
 
 /* ──────────────────────────────────────────────
    Workout Card Skeleton
@@ -78,6 +78,7 @@ const SkeletonSocialWorkoutCard = memo(() => {
     </View>
   )
 })
+SkeletonSocialWorkoutCard.displayName = 'SkeletonSocialWorkoutCard'
 
 /* ──────────────────────────────────────────────
    Training Activity Skeleton
@@ -186,5 +187,6 @@ export const ShimmerProfileScreen = memo(() => {
     </Animated.View>
   )
 })
+ShimmerProfileScreen.displayName = 'ShimmerProfileScreen'
 
 export default ShimmerProfileScreen

@@ -3,7 +3,6 @@ import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ScrollView, Text, TextInput, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { UserSubscriptionPaywallModal } from '@/components/modals/SubscriptionPaywallModal'
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
@@ -18,6 +17,7 @@ import {
   useTemplatesQuery,
   useUpdateTemplateMutation,
 } from '@/hooks/queries/templates'
+import { Arise } from '@/lib/arise'
 import { useProgram } from '@/stores/programs.store'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
 import { finalizeTemplateForSave, useWorkoutEditor } from '@/stores/workout-editor.store'
@@ -82,7 +82,7 @@ export default function TemplateEditor() {
   useEffect(() => {
     if (isEditing) {
       if (!params.id) {
-        Toast.show({ type: 'error', text1: 'Error', text2: 'No template ID provided' })
+        Arise.error({ heading: 'Error', content: 'No template ID provided' })
         router.back()
         return
       }
@@ -90,7 +90,7 @@ export default function TemplateEditor() {
       if (templateLoading) return
 
       if (!templateFromQuery) {
-        Toast.show({ type: 'error', text1: 'Error', text2: 'Template not found' })
+        Arise.error({ heading: 'Error', content: 'Template not found' })
         router.back()
         return
       }
@@ -239,9 +239,8 @@ export default function TemplateEditor() {
             }
           }
 
-          Toast.show({
-            type: 'success',
-            text1: mode === 'template-edit' ? 'Template updated' : 'Template created',
+          Arise.success({
+            heading: mode === 'template-edit' ? 'Template updated' : 'Template created',
           })
 
           discardWorkout()
@@ -265,10 +264,9 @@ export default function TemplateEditor() {
         },
         onError: (error: any) => {
           const message = error instanceof Error ? error.message : 'The template request failed.'
-          Toast.show({
-            type: 'error',
-            text1: 'Failed to save template',
-            text2: message,
+          Arise.error({
+            heading: 'Failed to save template',
+            content: message,
           })
         },
       }
@@ -300,19 +298,17 @@ export default function TemplateEditor() {
     if (!workout) return
 
     if (!workout.title.trim()) {
-      Toast.show({
-        type: 'error',
-        text1: 'Title required',
-        text2: 'Please enter a name for your template.',
+      Arise.error({
+        heading: 'Title required',
+        content: 'Please enter a name for your template.',
       })
       return
     }
 
     if (workout.exerciseOrder.length === 0) {
-      Toast.show({
-        type: 'error',
-        text1: 'No exercises',
-        text2: 'Add at least one exercise to your template.',
+      Arise.error({
+        heading: 'No exercises',
+        content: 'Add at least one exercise to your template.',
       })
       return
     }
@@ -320,10 +316,9 @@ export default function TemplateEditor() {
     const finalized = finalizeTemplateForSave(workout, validExerciseIds, source)
 
     if (finalized.template.exercises.length === 0) {
-      Toast.show({
-        type: 'error',
-        text1: 'No valid exercises',
-        text2: 'All exercises in this template are unavailable. Add valid exercises and try again.',
+      Arise.error({
+        heading: 'No valid exercises',
+        content: 'All exercises in this template are unavailable. Add valid exercises and try again.',
       })
       return
     }

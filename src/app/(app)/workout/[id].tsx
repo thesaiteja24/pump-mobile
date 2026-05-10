@@ -5,7 +5,6 @@ import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { BackHandler, ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
@@ -21,6 +20,7 @@ import {
 } from '@/hooks/queries/workouts'
 import { useThemeColor } from '@/hooks/theme'
 import { useShare } from '@/hooks/useShare'
+import { Arise } from '@/lib/arise'
 import { useAuth } from '@/stores/auth.store'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import { ExerciseType } from '@/types/exercises'
@@ -119,8 +119,8 @@ export default function WorkoutDetails() {
     if (!workout) return
     router.back()
     deleteMutation.mutate(workout.id, {
-      onSuccess: () => Toast.show({ type: 'success', text1: 'Workout deleted' }),
-      onError: () => Toast.show({ type: 'error', text1: 'Failed to delete workout' }),
+      onSuccess: () => Arise.success({ heading: 'Workout deleted' }),
+      onError: () => Arise.error({ heading: 'Failed to delete workout' }),
     })
   }
 
@@ -184,10 +184,9 @@ export default function WorkoutDetails() {
 
   const handleShare = useCallback(async () => {
     if (!workout || !workout.shareId) {
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Workout cannot be shared',
+      Arise.error({
+        heading: 'Error',
+        content: 'Workout cannot be shared',
       })
       return
     }

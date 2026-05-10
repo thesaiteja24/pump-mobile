@@ -25,13 +25,13 @@ import {
   View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { SocialCommentInputFooter } from '@/components/social/SocialCommentInputFooter'
 import { SocialCommentItem } from '@/components/social/SocialCommentItem'
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { useCommentsQuery, useDeleteCommentMutation } from '@/hooks/queries/engagement'
 import { useThemeColor } from '@/hooks/theme'
+import { Arise } from '@/lib/arise'
 import { Comment } from '@/types/engagement'
 
 export interface CommentsModalHandle {
@@ -339,7 +339,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
                   deleteModalRef.current?.dismiss()
                 },
                 onError: (error: any) => {
-                  Toast.show({ type: 'error', text1: 'Error', text2: error as string })
+                  Arise.error({ heading: 'Error', content: error as string })
                 },
               })
             }

@@ -5,6 +5,7 @@ import {
 } from '@/constants/urls'
 import { TopLift, TrainingAnalytics } from '@/types/me'
 import { handleApiResponse } from '@/utils/handleApiResponse'
+
 import client from './api'
 
 export async function nudgeUserService(id: string, note?: string): Promise<void> {

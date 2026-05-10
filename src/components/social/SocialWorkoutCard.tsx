@@ -12,13 +12,13 @@ import Animated, {
   withDelay,
   withTiming,
 } from 'react-native-reanimated'
-import Toast from 'react-native-toast-message'
 
 import { UserVerifiedBadge } from '@/components/user/UserVerifiedBadge'
 import { useCommentsQuery, useLikesQuery, useToggleLikeMutation } from '@/hooks/queries/engagement'
 import { useProfileQuery } from '@/hooks/queries/me'
 import { useThemeColor } from '@/hooks/theme'
 import { useShare } from '@/hooks/useShare'
+import { Arise } from '@/lib/arise'
 import { Comment as AppComment } from '@/types/engagement'
 import { ExerciseType } from '@/types/exercises'
 import { SelfUser } from '@/types/me'
@@ -91,10 +91,9 @@ function SocialWorkoutCardInternal({
 
   const handleShare = useCallback(async () => {
     if (!workout.shareId) {
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Workout cannot be shared ',
+      Arise.error({
+        heading: 'Error',
+        content: 'Workout cannot be shared',
       })
       return
     }

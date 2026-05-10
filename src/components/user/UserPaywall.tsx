@@ -3,10 +3,10 @@ import React, { useEffect, useState } from 'react'
 import { ActivityIndicator, Pressable, Text, View } from 'react-native'
 import { PurchasesPackage } from 'react-native-purchases'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { Button } from '@/components/ui/buttons/Button'
 import { useThemeColor } from '@/hooks/theme'
+import { Arise } from '@/lib/arise'
 import { useSubscriptionStore } from '@/stores/subscriptions.store'
 
 interface UserPaywallProps {
@@ -64,19 +64,17 @@ export function UserPaywall({ isVisible = true, onSuccess, onCancel }: UserPaywa
       const success = await purchasePackage(selected)
 
       if (success) {
-        Toast.show({
-          type: 'success',
-          text1: 'Welcome to Pro',
+        Arise.success({
+          heading: 'Welcome to Pro',
         })
 
         onSuccess?.()
       }
     } catch (error: any) {
       if (!error.userCancelled) {
-        Toast.show({
-          type: 'error',
-          text1: 'Purchase failed',
-          text2: error.message,
+        Arise.error({
+          heading: 'Purchase failed',
+          content: error.message,
         })
       }
     }

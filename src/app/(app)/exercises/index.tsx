@@ -13,7 +13,6 @@ import {
   View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { ExerciseList } from '@/components/exercise/ExerciseList'
 import { MetaModal } from '@/components/modals/ExerciseMetaModal'
@@ -23,6 +22,7 @@ import { ROLES as roles } from '@/constants/roles'
 import { useDeleteExercise, useExercises } from '@/hooks/queries/exercises'
 import { useProfileQuery } from '@/hooks/queries/me'
 import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'
+import { Arise } from '@/lib/arise'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 import { Exercise } from '@/types/exercises'
 import { SelfUser } from '@/types/me'
@@ -207,10 +207,9 @@ export default function ExercisesScreen() {
         initialSelectedIds.has(exercise.id)
       ) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
-        Toast.show({
-          type: 'error',
-          text1: 'Duplicate Exercise',
-          text2: 'This exercise is already in your template.',
+        Arise.error({
+          heading: 'Duplicate Exercise',
+          content: 'This exercise is already in your template.',
         })
         return
       }
@@ -468,20 +467,16 @@ export default function ExercisesScreen() {
               onSuccess: () => {
                 setDeleteExerciseId(null)
                 deleteConfirmModalRef.current?.dismiss()
-                Toast.show({
-                  type: 'success',
-                  text1: 'Exercise deleted successfully',
-                })
+                Arise.success({ heading: 'Exercise deleted successfully' })
               },
               onError: (e) => {
                 const message =
                   e instanceof Error ? e.message : 'Unexpected error deleting exercise'
                 setDeleteExerciseId(null)
                 deleteConfirmModalRef.current?.dismiss()
-                Toast.show({
-                  type: 'error',
-                  text1: 'Error deleting exercise',
-                  text2: message,
+                Arise.error({
+                  heading: 'Error deleting exercise',
+                  content: message,
                 })
               },
             })

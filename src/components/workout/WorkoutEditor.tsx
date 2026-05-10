@@ -2,12 +2,12 @@ import { router } from 'expo-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { WorkoutDurationModal } from '@/components/modals/WorkoutDurationModal'
 import { BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import { useExercises } from '@/hooks/queries/exercises'
+import { Arise } from '@/lib/arise'
 import {
   getWorkoutDurationSeconds,
   getWorkoutSaveState,
@@ -137,10 +137,9 @@ export function WorkoutEditor() {
     const validation = getWorkoutSaveState(workout, exerciseTypeMap)
 
     if (validation.validSetIds.length === 0) {
-      Toast.show({
-        type: 'error',
-        text1: 'Nothing ready to save',
-        text2:
+      Arise.error({
+        heading: 'Nothing ready to save',
+        content:
           validation.stats.completedSetCount > 0
             ? 'Complete at least one set with all required values before saving.'
             : 'Complete at least one valid set before moving to save.',

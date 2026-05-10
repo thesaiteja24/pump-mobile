@@ -13,9 +13,9 @@ import {
   useLogHabit,
   useLogWeight,
 } from '@/hooks/queries/habits'
+import { Arise } from '@/lib/arise'
 import { HabitLogType, HabitType } from '@/types/habits'
 
-import { Arise } from '@/lib/arise'
 import { HabitHeatMap } from './HabitHeatMap'
 
 interface HabitCardProps {

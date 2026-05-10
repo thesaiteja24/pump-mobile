@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useNavigation } from 'expo-router'
-import React, { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   Keyboard,
   Platform,
@@ -10,10 +10,10 @@ import {
   View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { UserEditableAvatar } from '@/components/user/UserEditableAvatar'
 import { useCreateMeta } from '@/hooks/queries/meta'
+import { Arise } from '@/lib/arise'
 import { EquipmentType, MetaResource } from '@/types/meta'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 
@@ -39,7 +39,7 @@ export default function CreateMeta() {
 
   const onSave = useCallback(async () => {
     if (!title.trim() || createMutation.isPending) {
-      Toast.show({ type: 'info', text1: 'Title is required' })
+      Arise.error({ heading: 'Title is required' })
       return
     }
 
@@ -65,21 +65,21 @@ export default function CreateMeta() {
 
       createMutation.mutate(formData, {
         onSuccess: () => {
-          Toast.show({ type: 'success', text1: `${label} created successfully` })
+          Arise.success({ heading: `${label} created successfully` })
           navigation.goBack()
         },
         onError: (e: any) => {
-          Toast.show({
-            type: 'error',
-            text1: e.message || `Failed to create ${label.toLowerCase()}`,
+          Arise.error({
+            heading: `Failed to create ${label.toLowerCase()}`,
           })
+          console.error(e)
         },
         onSettled: () => {
           setUploading(false)
         },
       })
     } catch (e: any) {
-      Toast.show({ type: 'error', text1: e.message || `Failed to create ${label.toLowerCase()}` })
+      Arise.error({ heading: e.message || `Failed to create ${label.toLowerCase()}` })
       setUploading(false)
     }
   }, [title, equipmentType, thumbnailUri, createMutation, navigation, isEquipment, label, resource])

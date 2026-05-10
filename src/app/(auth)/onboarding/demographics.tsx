@@ -3,12 +3,12 @@ import { useRouter } from 'expo-router'
 import React from 'react'
 import { ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { Button } from '@/components/ui/buttons/Button'
 import { SelectableCard } from '@/components/ui/cards/SelectableCard'
 import { DateTimePicker } from '@/components/ui/inputs/DateTimePicker'
 import { useThemeColor } from '@/hooks/theme'
+import { Arise } from '@/lib/arise'
 import { useOnboarding } from '@/stores/me.store'
 
 export default function OnboardingDemographics() {
@@ -18,16 +18,14 @@ export default function OnboardingDemographics() {
 
   const handleNext = () => {
     if (!gender) {
-      Toast.show({
-        type: 'error',
-        text1: 'Please select your gender',
+      Arise.error({
+        heading: 'Please select your gender',
       })
       return
     }
     if (!dateOfBirth) {
-      Toast.show({
-        type: 'error',
-        text1: 'Please select your date of birth',
+      Arise.error({
+        heading: 'Please select your date of birth',
       })
       return
     }
@@ -36,9 +34,8 @@ export default function OnboardingDemographics() {
     const now = new Date()
     const age = now.getFullYear() - dateOfBirth.getFullYear()
     if (age < 10) {
-      Toast.show({
-        type: 'error',
-        text1: 'You must be at least 10 years old.',
+      Arise.error({
+        heading: 'You must be at least 10 years old.',
       })
       return
     }

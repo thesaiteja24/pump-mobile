@@ -7,10 +7,8 @@ import { SplashScreen, Stack } from 'expo-router'
 import { useEffect } from 'react'
 import { ActivityIndicator, StatusBar, View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import Toast from 'react-native-toast-message'
 import { vexo } from 'vexo-analytics'
 
-import { CustomToast } from '@/components/ui/feedback/CustomToast'
 import { useThemeColor } from '@/hooks/theme'
 import { useInAppUpdate } from '@/hooks/useInAppUpdate'
 import { AriseRoot } from '@/lib/arise'
@@ -113,13 +111,6 @@ export default function RootLayout() {
               backgroundColor={colors.background}
             />
 
-            <Toast
-              config={{
-                success: (props) => <CustomToast {...props} type="success" />,
-                error: (props) => <CustomToast {...props} type="error" />,
-                info: (props) => <CustomToast {...props} type="info" />,
-              }}
-            />
             <AriseRoot />
           </>
         </BottomSheetModalProvider>

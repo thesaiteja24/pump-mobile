@@ -1,4 +1,4 @@
-export type AriseType = 'success' | 'error' | 'custom'
+export type AriseType = 'success' | 'error' | 'info' | 'warn' | 'custom'
 
 export interface AriseOptions {
   heading: string

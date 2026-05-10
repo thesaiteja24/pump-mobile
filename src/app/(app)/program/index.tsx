@@ -15,13 +15,13 @@ import {
   View,
 } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { TemplateSelectionModal } from '@/components/modals/TemplateSelectionModal'
 import { BaseModalHandle } from '@/components/ui/BaseModal'
 import { Button } from '@/components/ui/buttons/Button'
 import { useCreateProgram, useProgramById, useUpdateProgram } from '@/hooks/queries/programs'
 import { useTemplatesQuery } from '@/hooks/queries/templates'
+import { Arise } from '@/lib/arise'
 import { useProgram } from '@/stores/programs.store'
 import { DraftProgramDay, DraftProgramWeek } from '@/types/programs'
 import { WorkoutTemplate } from '@/types/templates'
@@ -59,12 +59,12 @@ export default function ProgramEditor() {
   const isTemplatesSynced = useCallback(() => {
     if (!draftProgram) return true
     const templateIds = draftProgram.weeks
-      .flatMap((w) => w.days)
-      .map((d) => d.templateId)
-      .filter(Boolean)
+      .flatMap((w: DraftProgramWeek) => w.days)
+      .map((d: DraftProgramDay) => d.templateId)
+      .filter((id): id is string => Boolean(id))
 
     // All templates from TQ have real server IDs; just verify they exist in the list
-    return templateIds.every((id) => templates.some((t) => t.id === id))
+    return templateIds.every((id: string) => templates.some((t: WorkoutTemplate) => t.id === id))
   }, [draftProgram, templates])
 
   // Init Draft
@@ -96,19 +96,17 @@ export default function ProgramEditor() {
     if (!draftProgram) return
 
     if (!draftProgram.title.trim()) {
-      Toast.show({
-        type: 'error',
-        text1: 'Title required',
-        text2: 'Please enter a name for your program.',
+      Arise.error({
+        heading: 'Title required',
+        content: 'Please enter a name for your program.',
       })
       return
     }
 
     if (!isTemplatesSynced()) {
-      Toast.show({
-        type: 'info',
-        text1: 'Syncing templates...',
-        text2: 'Please wait until all templates are synced with the backend.',
+      Arise.info({
+        heading: 'Syncing templates...',
+        content: 'Please wait until all templates are synced with the backend.',
       })
       return
     }
@@ -117,10 +115,7 @@ export default function ProgramEditor() {
 
     const options = {
       onSuccess: () => {
-        Toast.show({
-          type: 'success',
-          text1: isEditing ? 'Program updated' : 'Program created',
-        })
+        Arise.success({ heading: isEditing ? 'Program updated' : 'Program created' })
         discardDraftProgram()
         requestAnimationFrame(() => {
           router.back()
@@ -128,10 +123,9 @@ export default function ProgramEditor() {
       },
       onError: (error: any) => {
         console.error('Error in program handleSave', error)
-        Toast.show({
-          type: 'error',
-          text1: 'Save error',
-          text2: error.message || 'An unexpected error occurred.',
+        Arise.error({
+          heading: 'Save error',
+          content: error.message || 'An unexpected error occurred.',
         })
       },
       onSettled: () => {

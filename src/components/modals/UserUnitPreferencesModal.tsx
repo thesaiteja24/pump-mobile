@@ -1,9 +1,9 @@
 import { forwardRef, useEffect, useMemo, useState } from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
-import Toast from 'react-native-toast-message'
 
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { useProfileQuery, useUpdateProfileMutation } from '@/hooks/queries/me'
+import { Arise } from '@/lib/arise'
 import { SelfUser } from '@/types/me'
 
 type WeightUnit = 'kg' | 'lbs'
@@ -47,17 +47,15 @@ export const UserUnitPreferencesModal = forwardRef<BaseModalHandle, Props>((_, r
       },
       {
         onSuccess: () => {
-          Toast.show({
-            type: 'success',
-            text1: 'Preferences updated',
+          Arise.success({
+            heading: 'Preferences updated',
           })
           const modalRef = ref as React.RefObject<BaseModalHandle>
           modalRef.current?.dismiss()
         },
         onError: () => {
-          Toast.show({
-            type: 'error',
-            text1: 'Failed to update preferences',
+          Arise.error({
+            heading: 'Failed to update preferences',
           })
         },
       },

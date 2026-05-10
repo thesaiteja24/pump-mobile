@@ -1,9 +1,9 @@
 import * as FileSystem from 'expo-file-system/legacy'
 import { useCallback } from 'react'
 import { Platform, Share } from 'react-native'
-import Toast from 'react-native-toast-message'
 
 import { SHARE_BASE_URL } from '@/constants/urls'
+import { Arise } from '@/lib/arise'
 
 export type ShareType = 'workout' | 'template' | 'profile'
 
@@ -77,10 +77,9 @@ export function useShare() {
       }
     } catch (error) {
       console.error('Error sharing:', error)
-      Toast.show({
-        type: 'error',
-        text1: 'Sharing failed',
-        text2: 'Something went wrong while opening the share dialog.',
+      Arise.error({
+        heading: 'Sharing failed',
+        content: 'Something went wrong while opening the share dialog.',
       })
     }
   }, [])

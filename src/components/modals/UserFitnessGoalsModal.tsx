@@ -1,6 +1,5 @@
 import { forwardRef, useMemo, useState } from 'react'
 import { Keyboard, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
-import Toast from 'react-native-toast-message'
 
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { SelectableCard } from '@/components/ui/cards/SelectableCard'
@@ -12,6 +11,7 @@ import {
   useUpdateFitnessProfileMutation,
   useUpdateNutritionPlanMutation,
 } from '@/hooks/queries/me'
+import { Arise } from '@/lib/arise'
 import { FitnessGoal, SelfUser } from '@/types/me'
 import { FitnessLevel } from '@/types/programs'
 import {
@@ -207,19 +207,17 @@ export const UserFitnessGoalsModal = forwardRef<BaseModalHandle, Props>((_, ref)
       setIsLoading(false)
 
       if (res) {
-        Toast.show({
-          type: 'success',
-          text1: 'Goals updated successfully',
+        Arise.success({
+          heading: 'Goals updated successfully',
         })
         const modalRef = ref as React.RefObject<BaseModalHandle>
         modalRef.current?.dismiss()
       }
     } catch (error: any) {
       setIsLoading(false)
-      Toast.show({
-        type: 'error',
-        text1: 'Failed to update goals',
-        text2: error?.message || 'Please try again',
+      Arise.error({
+        heading: 'Failed to update goals',
+        content: error?.message || 'Please try again',
       })
     }
   }

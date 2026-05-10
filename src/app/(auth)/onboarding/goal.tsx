@@ -3,11 +3,11 @@ import { useRouter } from 'expo-router'
 import React from 'react'
 import { ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { Button } from '@/components/ui/buttons/Button'
 import { SelectableCard } from '@/components/ui/cards/SelectableCard'
 import { useThemeColor } from '@/hooks/theme'
+import { Arise } from '@/lib/arise'
 import { useOnboarding } from '@/stores/me.store'
 
 export default function OnboardingGoal() {
@@ -17,9 +17,8 @@ export default function OnboardingGoal() {
 
   const handleNext = () => {
     if (!fitnessGoal) {
-      Toast.show({
-        type: 'error',
-        text1: 'Please select a primary goal',
+      Arise.error({
+        heading: 'Please select a primary goal',
       })
       return
     }

@@ -18,7 +18,6 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated'
-import Toast from 'react-native-toast-message'
 
 import {
   WorkoutDetailsModal,
@@ -27,6 +26,7 @@ import {
 import { Button } from '@/components/ui/buttons/Button'
 import { ShimmerProgramDetails } from '@/components/ui/shimmers/ShimmerProgramDetails'
 import { useUserProgram } from '@/hooks/queries/programs'
+import { Arise } from '@/lib/arise'
 import { useWorkoutEditor } from '@/stores/workout-editor.store'
 
 function SkeletonBlock({
@@ -150,7 +150,7 @@ export default function UserProgramDashboard() {
         rightIcons: [
           {
             name: 'settings-outline',
-            onPress: () => Toast.show({ type: 'info', text1: 'Program settings coming soon' }),
+            onPress: () => Arise.info({ heading: 'Program settings coming soon' }),
             color: '#6366f1',
           },
         ],

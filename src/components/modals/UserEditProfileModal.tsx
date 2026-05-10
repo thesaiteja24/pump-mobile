@@ -1,6 +1,5 @@
 import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Keyboard, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import Toast from 'react-native-toast-message'
 
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { SelectableCard } from '@/components/ui/cards/SelectableCard'
@@ -14,6 +13,7 @@ import {
 } from '@/hooks/queries/me'
 import { useThemeColor } from '@/hooks/theme'
 import { useUnitConverter } from '@/hooks/useUnitConverter'
+import { Arise } from '@/lib/arise'
 import { SelfUser } from '@/types/me'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 
@@ -141,7 +141,7 @@ export const UserEditProfileModal = forwardRef<BaseModalHandle, Props>((_, ref) 
 
     updateUserDataMutation.mutate(payload, {
       onSuccess: () => {
-        Toast.show({ type: 'success', text1: 'Profile updated successfully' })
+        Arise.success({ heading: 'Profile updated successfully' })
         originalRef.current = {
           firstName,
           lastName,
@@ -154,7 +154,7 @@ export const UserEditProfileModal = forwardRef<BaseModalHandle, Props>((_, ref) 
         modalRef.current?.dismiss()
       },
       onError: () => {
-        Toast.show({ type: 'error', text1: 'Profile update failed, try again' })
+        Arise.error({ heading: 'Profile update failed, try again' })
       },
     })
   }, [
@@ -187,17 +187,17 @@ export const UserEditProfileModal = forwardRef<BaseModalHandle, Props>((_, ref) 
 
       updateProfilePicMutation.mutate(formData, {
         onSuccess: () => {
-          Toast.show({ type: 'success', text1: 'Profile picture updated' })
+          Arise.success({ heading: 'Profile picture updated' })
         },
         onError: (error: any) => {
-          Toast.show({ type: 'error', text1: error?.message || 'Profile picture update failed' })
+          Arise.error({ heading: error?.message || 'Profile picture update failed' })
         },
         onSettled: () => {
           setUploading(false)
         },
       })
     } catch (error: any) {
-      Toast.show({ type: 'error', text1: error?.message || 'Image processing failed' })
+      Arise.error({ heading: error?.message || 'Image processing failed' })
       setUploading(false)
     }
   }
@@ -226,10 +226,10 @@ export const UserEditProfileModal = forwardRef<BaseModalHandle, Props>((_, ref) 
               setUploading(true)
               deleteProfilePicMutation.mutate(undefined, {
                 onSuccess: () => {
-                  Toast.show({ type: 'success', text1: 'Avatar removed successfully' })
+                  Arise.success({ heading: 'Avatar removed successfully' })
                 },
                 onError: () => {
-                  Toast.show({ type: 'error', text1: 'Failed to remove avatar' })
+                  Arise.error({ heading: 'Failed to remove avatar' })
                 },
                 onSettled: () => {
                   setUploading(false)

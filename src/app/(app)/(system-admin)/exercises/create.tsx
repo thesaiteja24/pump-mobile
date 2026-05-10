@@ -13,12 +13,12 @@ import {
   View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { MetaModal } from '@/components/modals/ExerciseMetaModal'
 import { BaseModalHandle } from '@/components/ui/BaseModal'
 import { useCreateExercise } from '@/hooks/queries/exercises'
 import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'
+import { Arise } from '@/lib/arise'
 import { ExerciseType } from '@/types/exercises'
 import { MetaItem } from '@/types/meta'
 
@@ -54,9 +54,8 @@ export default function CreateExercise() {
       !primaryMuscleGroupId ||
       createExerciseMutation.isPending
     ) {
-      Toast.show({
-        type: 'info',
-        text1: 'Title, Equipment, and Primary Muscle Group are required',
+      Arise.error({
+        heading: 'Title, Equipment, and Primary Muscle Group are required',
       })
       return
     }
@@ -81,18 +80,16 @@ export default function CreateExercise() {
 
     createExerciseMutation.mutate(formData, {
       onSuccess: () => {
-        Toast.show({
-          type: 'success',
-          text1: 'Exercise created successfully',
+        Arise.success({
+          heading: 'Exercise created successfully',
         })
         navigation.goBack()
       },
       onError: (e: any) => {
-        Toast.show({
-          type: 'error',
-          text1: 'Failed to create exercise',
-          text2: e.message,
+        Arise.error({
+          heading: 'Failed to create exercise',
         })
+        console.error(e)
       },
       onSettled: () => {
         setUploading(false)

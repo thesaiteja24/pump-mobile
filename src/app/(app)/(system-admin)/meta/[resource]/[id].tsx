@@ -11,11 +11,11 @@ import {
   View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { UserEditableAvatar } from '@/components/user/UserEditableAvatar'
 import { useDeleteMeta, useMetaById, useUpdateMeta } from '@/hooks/queries/meta'
+import { Arise } from '@/lib/arise'
 import { EquipmentType, MetaResource } from '@/types/meta'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 
@@ -99,7 +99,7 @@ export default function EditMeta() {
         { id, data: formData },
         {
           onSuccess: (data) => {
-            Toast.show({ type: 'success', text1: `${label} updated` })
+            Arise.success({ heading: `${label} updated` })
             setOriginal({
               title: data.title,
               thumbnailUrl: data.thumbnailUrl,
@@ -110,7 +110,8 @@ export default function EditMeta() {
             setThumbnailUri(data.thumbnailUrl)
           },
           onError: (e: any) => {
-            Toast.show({ type: 'error', text1: e.message || `${label} update failed` })
+            Arise.error({ heading: `${label} update failed` })
+            console.error(e)
           },
           onSettled: () => {
             setUploading(false)
@@ -118,7 +119,8 @@ export default function EditMeta() {
         },
       )
     } catch (e: any) {
-      Toast.show({ type: 'error', text1: e.message || `${label} update failed` })
+      Arise.error({ heading: `${label} update failed` })
+      console.error(e)
       setUploading(false)
     }
   }, [
@@ -232,15 +234,13 @@ export default function EditMeta() {
           onPress: () => {
             deleteMutation.mutate(id, {
               onSuccess: () => {
-                Toast.show({ type: 'success', text1: `${label} deleted` })
+                Arise.success({ heading: `${label} deleted` })
                 deleteConfirmModalRef.current?.dismiss()
                 navigation.goBack()
               },
               onError: (e: any) => {
-                Toast.show({
-                  type: 'error',
-                  text1: e.message || `Failed to delete ${label.toLowerCase()}`,
-                })
+                Arise.error({ heading: `Failed to delete ${label.toLowerCase()}` })
+                console.error(e)
               },
             })
           },

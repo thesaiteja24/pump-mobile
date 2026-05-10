@@ -2,7 +2,6 @@ import { router,Stack } from 'expo-router'
 import { useMemo, useRef } from 'react'
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { TimerDurationModal, TimerDurationModalHandle } from '@/components/modals/TimerDurationModal'
 import { VisibilitySelectionModal } from '@/components/modals/VisibilitySelectionModal'
@@ -14,6 +13,7 @@ import {
   useCreateWorkoutPayloadMutation,
   useUpdateWorkoutPayloadMutation,
 } from '@/hooks/queries/workouts'
+import { Arise } from '@/lib/arise'
 import {
   finalizeWorkoutForSave,
   getWorkoutDurationSeconds,
@@ -103,12 +103,9 @@ export default function WorkoutSaveScreen() {
       const hasOnlyInvalidCompletedSets =
         invalidCompletedSetCount > 0 && validation.validSetIds.length === 0
 
-      Toast.show({
-        type: 'error',
-        text1: hasOnlyInvalidCompletedSets
-          ? 'Completed sets need fixes'
-          : 'Workout cannot be saved',
-        text2:
+      Arise.error({
+        heading: hasOnlyInvalidCompletedSets ? 'Completed sets need fixes' : 'Workout cannot be saved',
+        content:
           invalidCompletedSetCount > 0
             ? `${invalidCompletedSetCount} completed set${invalidCompletedSetCount === 1 ? ' is' : 's are'} missing required values. Fix them or uncheck them before saving.`
             : validation.reasons.join(' '),
@@ -119,19 +116,17 @@ export default function WorkoutSaveScreen() {
     const finalized = finalizeWorkoutForSave(workout, exerciseTypeMap, source)
 
     if (finalized.warnings.length > 0) {
-      Toast.show({
-        type: 'info',
-        text1: 'Workout finalized',
-        text2: finalized.warnings.join(' '),
+      Arise.info({
+        heading: 'Workout finalized',
+        content: finalized.warnings.join(' '),
       })
     }
 
     if (mode === 'edit-history') {
       if (!workout.id) {
-        Toast.show({
-          type: 'error',
-          text1: 'Missing workout id',
-          text2: 'This history workout cannot be updated because its id is missing.',
+        Arise.error({
+          heading: 'Missing workout id',
+          content: 'This history workout cannot be updated because its id is missing.',
         })
         return
       }
@@ -143,10 +138,9 @@ export default function WorkoutSaveScreen() {
         },
         {
           onSuccess: () => {
-            Toast.show({
-              type: 'success',
-              text1: 'Workout updated',
-              text2: 'The updated workout payload was logged and sent to the API.',
+            Arise.success({
+              heading: 'Workout updated',
+              content: 'The updated workout payload was logged and sent to the API.',
             })
 
             discardWorkout()
@@ -158,10 +152,9 @@ export default function WorkoutSaveScreen() {
           onError: (error) => {
             const message =
               error instanceof Error ? error.message : 'The workout update request failed.'
-            Toast.show({
-              type: 'error',
-              text1: 'Failed to update workout',
-              text2: message,
+            Arise.error({
+              heading: 'Failed to update workout',
+              content: message,
             })
           },
         },
@@ -173,10 +166,9 @@ export default function WorkoutSaveScreen() {
       onSuccess: (response) => {
         const createdWorkoutId = response?.id ?? null
 
-        Toast.show({
-          type: 'success',
-          text1: mode === 'program-workout' ? 'Program workout saved' : 'Workout saved',
-          text2: 'The workout payload was logged and sent to the API.',
+        Arise.success({
+          heading: mode === 'program-workout' ? 'Program workout saved' : 'Workout saved',
+          content: 'The workout payload was logged and sent to the API.',
         })
 
         discardWorkout()
@@ -193,10 +185,9 @@ export default function WorkoutSaveScreen() {
       },
       onError: (error) => {
         const message = error instanceof Error ? error.message : 'The workout save request failed.'
-        Toast.show({
-          type: 'error',
-          text1: 'Failed to save workout',
-          text2: message,
+        Arise.error({
+          heading: 'Failed to save workout',
+          content: message,
         })
       },
     })

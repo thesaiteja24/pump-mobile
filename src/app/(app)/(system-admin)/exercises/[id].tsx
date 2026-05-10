@@ -13,12 +13,12 @@ import {
   View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { MetaModal } from '@/components/modals/ExerciseMetaModal'
 import { BaseModal, BaseModalHandle } from '@/components/ui/BaseModal'
 import { useDeleteExercise, useExercises, useUpdateExercise } from '@/hooks/queries/exercises'
 import { useEquipment, useMuscleGroups } from '@/hooks/queries/meta'
+import { Arise } from '@/lib/arise'
 import { ExerciseType } from '@/types/exercises'
 import { MetaItem } from '@/types/meta'
 
@@ -88,9 +88,8 @@ export default function EditExercise() {
       updateExerciseMutation.isPending ||
       !original
     ) {
-      Toast.show({
-        type: 'info',
-        text1: 'Title, Equipment, and Primary Muscle Group are required',
+      Arise.error({
+        heading: 'Title, Equipment, and Primary Muscle Group are required',
       })
       return
     }
@@ -117,18 +116,16 @@ export default function EditExercise() {
       { id, data: formData },
       {
         onSuccess: () => {
-          Toast.show({
-            type: 'success',
-            text1: 'Exercise updated successfully',
+          Arise.success({
+            heading: 'Exercise updated successfully',
           })
           navigation.goBack()
         },
         onError: (e: any) => {
-          Toast.show({
-            type: 'error',
-            text1: 'Failed to update exercise',
-            text2: e.message,
+          Arise.error({
+            heading: 'Failed to update exercise',
           })
+          console.error(e)
         },
         onSettled: () => {
           setUploading(false)
@@ -345,19 +342,17 @@ export default function EditExercise() {
           onPress: () => {
             deleteExerciseMutation.mutate(id, {
               onSuccess: () => {
-                Toast.show({
-                  type: 'success',
-                  text1: 'Exercise deleted successfully',
+                Arise.success({
+                  heading: 'Exercise deleted successfully',
                 })
                 deleteModalRef.current?.dismiss()
                 router.back()
               },
               onError: (e: any) => {
-                Toast.show({
-                  type: 'error',
-                  text1: 'Failed to delete exercise',
-                  text2: e.message,
+                Arise.error({
+                  heading: 'Failed to delete exercise',
                 })
+                console.error(e)
               },
             })
           },

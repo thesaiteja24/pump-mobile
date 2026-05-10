@@ -3,12 +3,12 @@ import { useRouter } from 'expo-router'
 import React, { useState } from 'react'
 import { ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import Toast from 'react-native-toast-message'
 
 import { Button } from '@/components/ui/buttons/Button'
 import { SelectableCard } from '@/components/ui/cards/SelectableCard'
 import { DateTimePicker } from '@/components/ui/inputs/DateTimePicker'
 import { useThemeColor } from '@/hooks/theme'
+import { Arise } from '@/lib/arise'
 import { useOnboarding } from '@/stores/me.store'
 import { estimateBodyFatFromBMI } from '@/utils/analytics'
 
@@ -77,11 +77,11 @@ export default function OnboardingPace() {
 
     if (mode === 'manual') {
       if (!manualDate) {
-        Toast.show({ type: 'error', text1: 'Please select a target date' })
+        Arise.error({ heading: 'Please select a target date' })
         return
       }
       if (manualDate < new Date()) {
-        Toast.show({ type: 'error', text1: 'Please select a future date' })
+        Arise.error({ heading: 'Please select a future date' })
         return
       }
 
