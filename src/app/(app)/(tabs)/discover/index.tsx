@@ -38,7 +38,6 @@ export default function DiscoverScreen() {
   const { data: exerciseList = [] } = useExercises()
 
   const [refreshing, setRefreshing] = useState(false)
-  const [activeWorkoutId, setActiveWorkoutId] = useState<string | null>(null)
   const commentsModalRef = useRef<CommentsModalHandle>(null)
 
   // ───────────────── Derived data ─────────────────
@@ -85,8 +84,7 @@ export default function DiscoverScreen() {
         exerciseTypeMap={exerciseTypeMap}
         index={index}
         onPressComments={(id: string) => {
-          setActiveWorkoutId(id)
-          commentsModalRef.current?.present()
+          commentsModalRef.current?.present(id)
         }}
       />
     ),
@@ -148,11 +146,7 @@ export default function DiscoverScreen() {
         />
       )}
 
-      <CommentsModal
-        ref={commentsModalRef}
-        workoutId={activeWorkoutId || ''}
-        onClose={() => setActiveWorkoutId(null)}
-      />
+      <CommentsModal ref={commentsModalRef} />
     </SafeAreaView>
   )
 }

@@ -59,8 +59,6 @@ export default function WorkoutScreen() {
   const userRole = user?.role
   const hasActiveWorkout = Boolean(workout)
 
-  // Template Store — draft/write actions only
-  // Templates list and loading state come from TanStack Query
   const {
     data: templates = [],
     isLoading: templateLoading,

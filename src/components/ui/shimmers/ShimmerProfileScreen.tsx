@@ -101,6 +101,7 @@ const SkeletonTrainingActivity = memo(() => {
     </View>
   )
 })
+SkeletonTrainingActivity.displayName = 'SkeletonTrainingActivity'
 
 /* ──────────────────────────────────────────────
    Top Lifts Skeleton
@@ -118,21 +119,21 @@ const SkeletonTopLifts = memo(() => {
             key={i}
             className="w-44 rounded-3xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
           >
-            <SkeletonBlock width="100%" height={80} rounded={12} />
-            <View className="mt-3 gap-2">
-              <SkeletonBlock width="70%" height={14} />
-              <SkeletonBlock width="50%" height={20} />
-              <SkeletonBlock width="35%" height={16} />
+            <View className="mb-4 flex-row items-center gap-3">
+              <SkeletonBlock width={40} height={40} rounded={12} />
+              <View className="gap-1">
+                <SkeletonBlock width={60} height={16} />
+                <SkeletonBlock width={40} height={12} />
+              </View>
             </View>
-            <View className="mt-4">
-              <SkeletonBlock width={70} height={22} rounded={999} />
-            </View>
+            <SkeletonBlock width="100%" height={32} />
           </View>
         ))}
       </View>
     </View>
   )
 })
+SkeletonTopLifts.displayName = 'SkeletonTopLifts'
 
 /* ──────────────────────────────────────────────
    Profile Screen Skeleton (export)

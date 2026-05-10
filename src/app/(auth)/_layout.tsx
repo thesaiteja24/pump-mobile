@@ -15,7 +15,6 @@ export default function Layout() {
         }}
       >
         <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="verify-otp" options={{ headerShown: false }} />
       </Stack>
     </>
   )

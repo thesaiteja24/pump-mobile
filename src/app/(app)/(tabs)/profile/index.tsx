@@ -51,32 +51,21 @@ export default function ProfileScreen() {
   }, [router])
 
   return (
-    <View className="flex-1 bg-white p-4 dark:bg-black" style={{ paddingBottom: insets.bottom }}>
+    <View
+      className="flex-1 gap-6 bg-white p-4 dark:bg-black"
+      style={{ paddingBottom: insets.bottom }}
+    >
       <UserHeader user={user ?? null} />
 
       {/* Info Card / Action List */}
-      <View className="mt-4 gap-2">
+      <View className="flex-1 gap-1">
         <UserMenuItem
           title="Account Details"
           onPress={() => editProfileSheetRef.current?.present()}
-          leftIcon={<AntDesign name="user" size={20} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />}
+          leftIcon={<AntDesign name="user" size={20} color={isDarkMode ? '#D4D4D4' : '#525252'} />}
         />
 
-        <View className="ml-14 h-[1px] bg-neutral-100 dark:bg-neutral-800" />
-
-        <UserMenuItem
-          title="Unit Preferences"
-          onPress={() => unitSheetRef.current?.present()}
-          leftIcon={
-            <MaterialCommunityIcons
-              name="scale"
-              size={20}
-              color={isDarkMode ? '#9CA3AF' : '#6B7280'}
-            />
-          }
-        />
-
-        <View className="ml-14 h-[1px] bg-neutral-100 dark:bg-neutral-800" />
+        <View className="h-[1px] bg-neutral-100 dark:bg-neutral-800" />
 
         <UserMenuItem
           title="Measurements"
@@ -85,12 +74,12 @@ export default function ProfileScreen() {
             <MaterialCommunityIcons
               name="ruler"
               size={20}
-              color={isDarkMode ? '#9CA3AF' : '#6B7280'}
+              color={isDarkMode ? '#D4D4D4' : '#525252'}
             />
           }
         />
 
-        <View className="ml-14 h-[1px] bg-neutral-100 dark:bg-neutral-800" />
+        <View className="h-[1px] bg-neutral-100 dark:bg-neutral-800" />
 
         <UserMenuItem
           title="Fitness Goals"
@@ -105,7 +94,7 @@ export default function ProfileScreen() {
           }
         />
 
-        <View className="ml-14 h-[1px] bg-neutral-100 dark:bg-neutral-800" />
+        <View className="h-[1px] bg-neutral-100 dark:bg-neutral-800" />
 
         <UserMenuItem
           title="Unit Preferences"
@@ -120,11 +109,11 @@ export default function ProfileScreen() {
           }
         />
 
-        <View className="ml-14 h-[1px] bg-neutral-100 dark:bg-neutral-800" />
+        <View className="h-[1px] bg-neutral-100 dark:bg-neutral-800" />
 
         <UserThemeToggle />
 
-        <View className="ml-14 h-[1px] bg-neutral-100 dark:bg-neutral-800" />
+        <View className="h-[1px] bg-neutral-100 dark:bg-neutral-800" />
 
         <UserMenuItem
           title="Logout"

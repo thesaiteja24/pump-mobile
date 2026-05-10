@@ -35,16 +35,16 @@ import { Arise } from '@/lib/arise'
 import { Comment } from '@/types/engagement'
 
 export interface CommentsModalHandle {
-  present: () => void
+  present: (workoutId: string) => void
   dismiss: () => void
 }
 
 type Props = {
-  workoutId: string
   onClose?: () => void
 }
 
-const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClose }, ref) => {
+const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ onClose }, ref) => {
+  const [internalWorkoutId, setInternalWorkoutId] = useState<string | null>(null)
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const insets = useSafeAreaInsets()
   const colors = useThemeColor()
@@ -58,7 +58,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useCommentsQuery(workoutId)
+  } = useCommentsQuery(internalWorkoutId || '')
 
   const deleteCommentMutation = useDeleteCommentMutation()
 
@@ -80,7 +80,9 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
   const optionsBottomSheetRef = useRef<BottomSheetModal>(null)
   const deleteModalRef = useRef<BaseModalHandle>(null)
 
-  const present = useCallback(() => {
+  const present = useCallback((id: string) => {
+    if (!id) return
+    setInternalWorkoutId(id)
     bottomSheetModalRef.current?.present()
   }, [])
 
@@ -151,7 +153,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
       <SocialCommentInputFooter
         {...props}
         ref={footerRef}
-        workoutId={workoutId}
+        workoutId={internalWorkoutId || ''}
         viewingThreadId={viewingThreadId}
         replyingTo={replyingTo}
         setReplyingTo={setReplyingTo}
@@ -159,7 +161,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
         setEditingComment={setEditingComment}
       />
     ),
-    [workoutId, viewingThreadId, replyingTo, editingComment],
+    [internalWorkoutId, viewingThreadId, replyingTo, editingComment],
   )
 
   // Manual custom back handler for nested thread navigation
@@ -198,7 +200,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
         renderItem={({ item }: { item: Comment }) => (
           <SocialCommentItem
             comment={item}
-            workoutId={workoutId}
+            workoutId={internalWorkoutId || ''}
             onViewReplies={handleViewReplies}
             onReplyPress={handleReplyPress}
             onOptionsPress={handleOptionsPress}
@@ -251,7 +253,7 @@ const CommentsModal = forwardRef<CommentsModalHandle, Props>(({ workoutId, onClo
         renderItem={({ item }: { item: Comment }) => (
           <SocialCommentItem
             comment={item}
-            workoutId={workoutId}
+            workoutId={internalWorkoutId || ''}
             depth={0}
             isThreadParent={true}
             onReplyPress={handleReplyPress}

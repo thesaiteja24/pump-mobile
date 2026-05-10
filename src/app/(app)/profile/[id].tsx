@@ -158,6 +158,7 @@ export default function UserProfile() {
     unfollowMutation.isPending,
     topLifts,
     isTopLiftsLoading,
+    trainingAnalytics,
   ])
 
   const renderItem = useCallback(
