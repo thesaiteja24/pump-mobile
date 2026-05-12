@@ -1,9 +1,9 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { Link, router } from 'expo-router'
-import { Pressable, Text, View } from 'react-native'
+import { View } from 'react-native'
 
-import { Button } from '@/components/ui'
+import { BaseCard, Button } from '@/components/ui'
 import { Program } from '@/types/programs'
 
 export function ProgramCard({ program }: { program: Program }) {
@@ -17,44 +17,26 @@ export function ProgramCard({ program }: { program: Program }) {
       onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
       asChild
     >
-      <Pressable className="h-40 w-full gap-2 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
-        {/* Header */}
-        <View className="flex-col justify-between gap-1">
-          <View className="flex-row items-center justify-between gap-4">
-            <Text className="line-clamp-1 text-lg font-medium text-black dark:text-white">
-              {program.title}
-            </Text>
-          </View>
-          {program.description ? (
-            <Text className="line-clamp-2 text-sm font-normal text-neutral-500 dark:text-neutral-400">
-              {program.description}
-            </Text>
-          ) : null}
-        </View>
-        <View className="flex-row items-center justify-between gap-2">
+      <BaseCard className="h-48">
+        <BaseCard.Header
+          title={program.title}
+          subtitle={program.description || undefined}
+          className="mb-0"
+        />
+
+        <BaseCard.Footer className="mt-auto justify-between">
           <View className="flex-row items-center gap-2">
-            <View>
-              {program.experienceLevel === 'beginner' && (
-                <Text className="self-start rounded-full bg-green-200 px-2 py-1 text-right text-xs font-normal text-green-600">
-                  {program.experienceLevel}
-                </Text>
-              )}
-              {program.experienceLevel === 'intermediate' && (
-                <Text className="self-start rounded-full bg-yellow-200 px-2 py-1 text-right text-xs font-normal text-yellow-600">
-                  {program.experienceLevel}
-                </Text>
-              )}
-              {program.experienceLevel === 'advanced' && (
-                <Text className="self-start rounded-full bg-red-200 px-2 py-1 text-right text-xs font-normal text-red-600">
-                  {program.experienceLevel}
-                </Text>
-              )}
-            </View>
-            <View>
-              <Text className="self-start rounded-full bg-purple-200 px-2 py-1 text-right text-xs font-normal text-purple-600">
-                {program.enrolledCountLabel} enrolled
-              </Text>
-            </View>
+            <BaseCard.Badge
+              label={program.experienceLevel}
+              variant={
+                program.experienceLevel === 'beginner'
+                  ? 'success'
+                  : program.experienceLevel === 'intermediate'
+                    ? 'warning'
+                    : 'error'
+              }
+            />
+            <BaseCard.Badge label={`${program.enrolledCountLabel} enrolled`} variant="purple" />
           </View>
 
           <Button
@@ -67,8 +49,8 @@ export function ProgramCard({ program }: { program: Program }) {
             variant="primary"
             className="rounded-full"
           />
-        </View>
-      </Pressable>
+        </BaseCard.Footer>
+      </BaseCard>
     </Link>
   )
 }
