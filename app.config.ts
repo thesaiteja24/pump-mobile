@@ -80,12 +80,8 @@ export default ({ config }: { config: ExpoConfig }): ExpoConfig => {
 						-keep class io.opentelemetry.** { *; }
 						-dontwarn io.opentelemetry.**
 					`,
-            useHermesV1: true,
           },
-          ios: {
-            useHermesV1: true,
-          },
-          buildReactNativeFromSource: true,
+          ios: {},
         },
       ],
       [
