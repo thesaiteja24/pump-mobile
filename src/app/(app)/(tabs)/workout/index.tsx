@@ -1,12 +1,9 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import React, { useEffect, useRef, useState } from 'react'
 import {
   BackHandler,
   RefreshControl,
   ScrollView,
-  Text,
-  TouchableOpacity,
   useWindowDimensions,
   View,
 } from 'react-native'
@@ -23,7 +20,7 @@ import { UserSubscriptionPaywallModal } from '@/components/modals/SubscriptionPa
 import { ProgramCard } from '@/components/program/ProgramCard'
 import { UserProgramCard } from '@/components/program/UserProgramCard'
 import { TemplateCard } from '@/components/template/TemplateCard'
-import { Button } from '@/components/ui'
+import { BaseEmptyState, Button, SectionHeader } from '@/components/ui'
 import { BaseModalHandle } from '@/components/ui/BaseModal'
 import BaseScreen from '@/components/ui/BaseScreen'
 import {
@@ -239,9 +236,7 @@ export default function WorkoutScreen() {
         </Animated.View>
 
         <Animated.View style={programsStyle} className="mb-8 flex flex-col gap-4">
-          <View className="flex flex-row items-center justify-between">
-            <Text className="text-xl font-semibold text-black dark:text-white">Active Program</Text>
-          </View>
+          <SectionHeader title="Active Program" />
 
           {/* Active Program Card or Dotted Interface */}
           <View className="">
@@ -252,30 +247,24 @@ export default function WorkoutScreen() {
                 <UserProgramCard program={activeProgram} />
               </>
             ) : (
-              <View className="h-44 items-center justify-center rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700">
-                <Text className="mb-2 text-neutral-500 dark:text-neutral-400">
-                  No active program. Choose one below!
-                </Text>
-              </View>
+              <BaseEmptyState message="No active program. Choose one below!" className="h-44" />
             )}
           </View>
         </Animated.View>
 
         {/* Programs Section */}
         <Animated.View style={programsStyle} className="mb-8 flex flex-col gap-4">
-          <View className="flex flex-row items-center justify-between">
-            <Text className="text-xl font-semibold text-black dark:text-white">Programs</Text>
-
-            {isPro && userRole === ROLES.systemAdmin && (
-              <TouchableOpacity
-                onPress={() => {
-                  router.push('/(app)/program')
-                }}
-              >
-                <MaterialCommunityIcons name="folder-plus" size={24} color={colors.icon} />
-              </TouchableOpacity>
-            )}
-          </View>
+          <SectionHeader
+            title="Programs"
+            actionIcon={
+              isPro && userRole === ROLES.systemAdmin ? 'folder-plus' : undefined
+            }
+            onActionPress={
+              isPro && userRole === ROLES.systemAdmin
+                ? () => router.push('/(app)/program')
+                : undefined
+            }
+          />
 
           {programLoading || refreshing ? (
             <ScrollView
@@ -293,11 +282,7 @@ export default function WorkoutScreen() {
               ))}
             </ScrollView>
           ) : programs.length === 0 ? (
-            <View className="h-40 items-center justify-center rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700">
-              <Text className="text-neutral-500 dark:text-neutral-400">
-                No programs available. Create one!
-              </Text>
-            </View>
+            <BaseEmptyState message="No programs available. Create one!" className="h-40" />
           ) : (
             <ScrollView
               horizontal
@@ -318,21 +303,17 @@ export default function WorkoutScreen() {
 
         {/* Templates Section */}
         <Animated.View style={templatesStyle} className="flex flex-col gap-4">
-          <View className="flex flex-row items-center justify-between">
-            <Text className="text-xl font-semibold text-black dark:text-white">My Templates</Text>
-
-            <TouchableOpacity
-              onPress={() => {
-                if (!isPro && templates.length >= FREE_TIER_LIMITS.MAX_CUSTOM_TEMPLATES) {
-                  paywallModalRef.current?.present()
-                } else {
-                  router.push('/(app)/template/editor')
-                }
-              }}
-            >
-              <MaterialCommunityIcons name="folder-plus" size={24} color={colors.icon} />
-            </TouchableOpacity>
-          </View>
+          <SectionHeader
+            title="My Templates"
+            actionIcon="folder-plus"
+            onActionPress={() => {
+              if (!isPro && templates.length >= FREE_TIER_LIMITS.MAX_CUSTOM_TEMPLATES) {
+                paywallModalRef.current?.present()
+              } else {
+                router.push('/(app)/template/editor')
+              }
+            }}
+          />
 
           {templateLoading || refreshing ? (
             <ScrollView
@@ -350,11 +331,7 @@ export default function WorkoutScreen() {
               ))}
             </ScrollView>
           ) : templates.length === 0 ? (
-            <View className="h-40 items-center justify-center rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700">
-              <Text className="text-neutral-500 dark:text-neutral-400">
-                No templates yet. Create one!
-              </Text>
-            </View>
+            <BaseEmptyState message="No templates yet. Create one!" className="h-40" />
           ) : (
             <ScrollView
               horizontal
@@ -376,11 +353,7 @@ export default function WorkoutScreen() {
         {/* Past Programs Section */}
         {pastPrograms.length > 0 && (
           <Animated.View style={programsStyle} className="mt-8 flex flex-col gap-4">
-            <View className="flex flex-row items-center justify-between">
-              <Text className="text-xl font-semibold text-black dark:text-white">
-                Past Programs
-              </Text>
-            </View>
+            <SectionHeader title="Past Programs" />
 
             {userProgramsLoading || refreshing ? (
               <UserProgramCardShimmer />

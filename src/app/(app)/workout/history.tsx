@@ -1,11 +1,12 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import { SocialWorkoutCard } from '@/components/social/SocialWorkoutCard'
-import BaseListScreen from '@/components/ui/BaseListScreen'
+import { BaseListScreen } from '@/components/ui'
 import { WorkoutHistoryShimmer } from '@/components/ui/shimmers/WorkoutHistoryShimmer'
 import { useExercises } from '@/hooks/queries/exercises'
 import { useWorkoutHistoryQuery } from '@/hooks/queries/workouts'
 import { ExerciseType } from '@/types/exercises'
+import { WorkoutHistoryItem } from '@/types/workouts'
 
 const History = () => {
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -34,7 +35,7 @@ const History = () => {
   }, [refetchHistory])
 
   return (
-    <BaseListScreen
+    <BaseListScreen<WorkoutHistoryItem>
       title="Workout History"
       backButton
       isLoading={isLoading}

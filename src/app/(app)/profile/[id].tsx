@@ -4,12 +4,11 @@ import { isThisWeek } from 'date-fns'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useColorScheme } from 'nativewind'
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { Text, View } from 'react-native'
+import { View } from 'react-native'
 
 import { BaseModalHandle, NudgeModal } from '@/components/modals'
 import { SocialWorkoutCard } from '@/components/social/SocialWorkoutCard'
-import { Button } from '@/components/ui'
-import BaseListScreen from '@/components/ui/BaseListScreen'
+import { BaseListScreen, Button, SectionHeader } from '@/components/ui'
 import { ProfileScreenShimmer } from '@/components/ui/shimmers'
 import { TopLifts, UserHeader } from '@/components/user'
 import { UserTrainingActivity } from '@/components/user/UserTrainingActivity'
@@ -140,9 +139,7 @@ export default function UserProfile() {
 
         <TopLifts lifts={topLifts} isLoading={isTopLiftsLoading} />
 
-        <Text className="pb-4 text-lg font-thin text-neutral-900 dark:text-neutral-100">
-          Recent Workouts
-        </Text>
+        <SectionHeader title="Recent Workouts" className="pb-4" />
       </View>
     )
   }, [
@@ -174,7 +171,7 @@ export default function UserProfile() {
 
   return (
     <>
-      <BaseListScreen
+      <BaseListScreen<WorkoutHistoryItem>
         title={headerTitle}
         backButton
         right={

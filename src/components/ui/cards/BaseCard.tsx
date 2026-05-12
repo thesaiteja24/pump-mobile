@@ -19,14 +19,56 @@ import Animated, {
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
+/**
+ * BaseCard component that serves as a container for grouped information.
+ * It follows a compound component pattern, allowing for modular construction
+ * using sub-components like Header, Content, Footer, Badge, and Progress.
+ *
+ * @component
+ * @example
+ * // Basic card with header and content
+ * <BaseCard>
+ *   <BaseCard.Header title="Workout Plan" subtitle="Push Day" />
+ *   <BaseCard.Content>
+ *     <Text>Exercises: Bench Press, Overhead Press...</Text>
+ *   </BaseCard.Content>
+ * </BaseCard>
+ *
+ * @example
+ * // Clickable card with animation, badge, and progress bar
+ * <BaseCard
+ *   animated={true}
+ *   index={0}
+ *   onPress={() => console.log('Card Pressed')}
+ * >
+ *   <BaseCard.Header
+ *     title="Weight Loss Journey"
+ *     right={<BaseCard.Badge label="Active" variant="success" />}
+ *   />
+ *   <BaseCard.Content>
+ *     <BaseCard.Progress progress={75} color="green" />
+ *   </BaseCard.Content>
+ *   <BaseCard.Footer>
+ *     <Text>Last updated: 2 days ago</Text>
+ *   </BaseCard.Footer>
+ * </BaseCard>
+ */
 export interface BaseCardProps extends PressableProps {
+  /** The children to render within the card. Usually sub-components like BaseCard.Header. */
   children: React.ReactNode
+  /** Optional Tailwind CSS classes for the card container. */
   className?: string
+  /** Whether to apply a slide-in and fade-in animation when the card mounts. */
   animated?: boolean
+  /** The index of the card in a list, used to calculate animation delays for a staggered effect. */
   index?: number
+  /** Custom styles for the card's container view. */
   containerStyle?: StyleProp<ViewStyle>
 }
 
+/**
+ * @param {BaseCardProps} props - The props for the BaseCard component.
+ */
 const BaseCardRoot = ({
   children,
   className = '',
@@ -91,15 +133,28 @@ const BaseCardRoot = ({
    Sub-components
 ────────────────────────────────────────────── */
 
+/**
+ * Props for the CardHeader sub-component.
+ */
 export interface CardHeaderProps {
+  /** Title text or custom component. */
   title?: React.ReactNode
+  /** Subtitle text or custom component. */
   subtitle?: React.ReactNode
+  /** Optional component to render on the left of the text (e.g., an icon or avatar). */
   left?: React.ReactNode
+  /** Optional component to render on the right side of the header. */
   right?: React.ReactNode
+  /** Optional callback when the header area is pressed. */
   onPress?: () => void
+  /** Optional Tailwind CSS classes for the header container. */
   className?: string
 }
 
+/**
+ * Header sub-component for BaseCard.
+ * @param {CardHeaderProps} props - The props for the CardHeader component.
+ */
 const CardHeader = ({ title, subtitle, left, right, onPress, className = '' }: CardHeaderProps) => {
   const content = (
     <View className={`mb-4 flex-row items-center justify-between gap-4 ${className}`}>
@@ -131,20 +186,36 @@ const CardHeader = ({ title, subtitle, left, right, onPress, className = '' }: C
   return content
 }
 
+/**
+ * Content sub-component for BaseCard. Usually contains the primary body text or information.
+ */
 const CardContent = ({ children, className = '' }: ViewProps) => (
   <View className={`flex-1 ${className}`}>{children}</View>
 )
 
+/**
+ * Footer sub-component for BaseCard. Renders at the bottom with a top margin.
+ */
 const CardFooter = ({ children, className = '' }: ViewProps) => (
   <View className={`mt-4 flex-row items-center gap-4 ${className}`}>{children}</View>
 )
 
+/**
+ * Props for the CardBadge sub-component.
+ */
 export interface CardBadgeProps {
+  /** The text label for the badge. */
   label: string
+  /** Visual variant affecting the badge color scheme. Defaults to 'neutral'. */
   variant?: 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'purple'
+  /** Optional Tailwind CSS classes for the badge container. */
   className?: string
 }
 
+/**
+ * Badge sub-component for BaseCard, used to show statuses or categories.
+ * @param {CardBadgeProps} props - The props for the CardBadge component.
+ */
 const CardBadge = ({ label, variant = 'neutral', className = '' }: CardBadgeProps) => {
   const getVariantStyles = () => {
     switch (variant) {
@@ -195,12 +266,22 @@ const CardBadge = ({ label, variant = 'neutral', className = '' }: CardBadgeProp
   )
 }
 
+/**
+ * Props for the CardProgress sub-component.
+ */
 export interface CardProgressProps {
-  progress: number // 0 to 100
+  /** The progress percentage (0 to 100). */
+  progress: number
+  /** The Tailwind color name for the progress bar. Defaults to 'blue'. */
   color?: string
+  /** Optional Tailwind CSS classes for the progress container. */
   className?: string
 }
 
+/**
+ * Progress bar sub-component for BaseCard.
+ * @param {CardProgressProps} props - The props for the CardProgress component.
+ */
 const CardProgress = ({ progress, color = 'blue', className = '' }: CardProgressProps) => (
   <View
     className={`h-2 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800 ${className}`}
@@ -212,11 +293,19 @@ const CardProgress = ({ progress, color = 'blue', className = '' }: CardProgress
   </View>
 )
 
+/**
+ * Standardized Card component with support for headers, content, footers, badges, and progress bars.
+ */
 export const BaseCard = Object.assign(memo(BaseCardRoot), {
+  /** Renders a standard header for the card. */
   Header: CardHeader,
+  /** Renders the main content area of the card. */
   Content: CardContent,
+  /** Renders a footer area at the bottom of the card. */
   Footer: CardFooter,
+  /** Renders a status badge within the card. */
   Badge: CardBadge,
+  /** Renders a progress bar within the card. */
   Progress: CardProgress,
 })
 

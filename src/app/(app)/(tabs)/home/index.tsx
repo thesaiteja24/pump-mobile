@@ -7,7 +7,7 @@ import { RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'rea
 import Animated, { FadeInDown } from 'react-native-reanimated'
 
 import { HabitCard } from '@/components/habit/HabitCard'
-import { Button } from '@/components/ui'
+import { BaseEmptyState, Button, SectionHeader } from '@/components/ui'
 import BaseScreen from '@/components/ui/BaseScreen'
 import { HomeScreenShimmer } from '@/components/ui/shimmers'
 import { TopLifts } from '@/components/user'
@@ -295,13 +295,8 @@ export default function HomeScreen() {
     >
       <UserStreakCard {...streakData} />
 
-      <Animated.View
-        entering={FadeInDown.delay(600).duration(500)}
-        className="mb-4 flex-row items-center justify-between"
-      >
-        <View>
-          <Text className="text-xl font-bold text-black dark:text-white">Habits</Text>
-        </View>
+      <Animated.View entering={FadeInDown.delay(600).duration(500)}>
+        <SectionHeader title="Habits" className="mb-4" />
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(700).duration(500)}>
@@ -331,7 +326,7 @@ export default function HomeScreen() {
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(800).duration(500)}>
-        <Text className="my-4 text-xl font-semibold text-black dark:text-white">Metrics</Text>
+        <SectionHeader title="Metrics" className="my-4" />
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(900).duration(500)}>
@@ -370,7 +365,7 @@ export default function HomeScreen() {
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(800).duration(500)}>
-        <Text className="my-4 text-xl font-semibold text-black dark:text-white">Training</Text>
+        <SectionHeader title="Training" className="my-4" />
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(900).duration(500)}>
@@ -408,32 +403,26 @@ export default function HomeScreen() {
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(800).duration(500)}>
-        <Text className="my-4 text-xl font-semibold text-black dark:text-white">Top Lifts</Text>
+        <SectionHeader title="Top Lifts" className="my-4" />
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(900).duration(500)} className="mb-12">
         {topLifts.length > 0 ? (
           <TopLifts lifts={topLifts} isLoading={isTopLiftsLoading} showTitle={false} />
         ) : (
-          <View className="flex flex-col items-center justify-center rounded-3xl border border-neutral-100 bg-neutral-50/50 px-8 py-10 dark:border-neutral-800 dark:bg-neutral-900/50">
-            <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-              <Ionicons name="trophy-outline" size={32} color="#A3A3A3" />
-            </View>
-            <Text className="mb-2 text-center text-lg font-bold text-black dark:text-white">
-              No Personal Records Yet
-            </Text>
-            <Text className="mb-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
-              Finish your first workout to start tracking your strongest lifts here.
-            </Text>
-            <Button
-              title="Start Your First Workout"
-              onPress={() => {
-                router.push('/(app)/(tabs)/workout')
-              }}
-              variant="primary"
-              className="w-full rounded-2xl"
-            />
-          </View>
+          <BaseEmptyState
+            message="No Personal Records Yet"
+            description="Finish your first workout to start tracking your strongest lifts here."
+            actionLabel="Start Your First Workout"
+            onActionPress={() => router.push('/(app)/(tabs)/workout')}
+            icon={
+              <View className="h-16 w-16 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
+                <Ionicons name="trophy-outline" size={32} color="#A3A3A3" />
+              </View>
+            }
+            dashed={false}
+            className="bg-neutral-50/50 dark:bg-neutral-900/50"
+          />
         )}
       </Animated.View>
     </BaseScreen>

@@ -1,12 +1,12 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { FlashList } from '@shopify/flash-list'
 import { useRouter } from 'expo-router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ActivityIndicator, BackHandler, Platform, RefreshControl, Text, View } from 'react-native'
+import { ActivityIndicator, BackHandler, Platform, Text, View } from 'react-native'
 import { TextInput } from 'react-native-gesture-handler'
 
 import { SocialUserItem } from '@/components/social/SocialUserItem'
-import BaseScreen from '@/components/ui/BaseScreen'
+import { BaseListScreen } from '@/components/ui'
+import { UserListShimmer } from '@/components/ui/shimmers'
 import {
   useFollowUserMutation,
   useSearchUsersQuery,
@@ -74,8 +74,54 @@ export default function Search() {
     }
   }, [isSearching, refetchSuggested, refetchSearch])
 
+  const emptyText = useMemo(() => {
+    if (searchLoading) return 'Searching...'
+    if (isSearching) return 'No users found'
+    if (suggestedLoading) return 'Loading suggestions...'
+    return 'No suggestions available'
+  }, [searchLoading, isSearching, suggestedLoading])
+
   return (
-    <BaseScreen title="Search" backButton>
+    <BaseListScreen<SearchedUser>
+      title="Search"
+      backButton
+      data={data}
+      keyExtractor={(item) => item.id}
+      isLoading={searchLoading || (suggestedLoading && !isSearching)}
+      shimmer={<UserListShimmer />}
+      isRefreshing={refreshing}
+      onRefresh={onRefresh}
+      emptyText={emptyText}
+      estimatedItemSize={80}
+      flashListProps={{
+        ListHeaderComponent: isSearching ? null : (
+          <View className="mb-4">
+            <Text className="font-semibold text-black dark:text-white">Suggested Users</Text>
+          </View>
+        ),
+      }}
+      renderItem={({ item }) => (
+        <SocialUserItem
+          id={item.id}
+          firstName={item.firstName}
+          lastName={item.lastName}
+          profilePicUrl={item.profilePicUrl}
+          isFollowing={item.isFollowing}
+          isPro={item.isPro}
+          proSubscriptionType={item.proSubscriptionType}
+          followLoading={item.followLoading}
+          onPressFollow={() => {
+            if (!currentUserId) return
+
+            if (item.isFollowing) {
+              unfollowMutation.mutate(item.id)
+            } else {
+              followMutation.mutate(item.id)
+            }
+          }}
+        />
+      )}
+    >
       <View className="flex-row items-center justify-center gap-2 pb-6">
         {searchLoading ? (
           <ActivityIndicator
@@ -99,60 +145,6 @@ export default function Search() {
           style={{ lineHeight: lineHeight }}
         />
       </View>
-
-      {/* 👥 Users List */}
-      <FlashList
-        data={data}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          isSearching ? null : (
-            <View className="mb-4">
-              <Text className="font-semibold text-black dark:text-white">Suggested Users</Text>
-            </View>
-          )
-        }
-        renderItem={({ item }) => (
-          <SocialUserItem
-            id={item.id}
-            firstName={item.firstName}
-            lastName={item.lastName}
-            profilePicUrl={item.profilePicUrl}
-            isFollowing={item.isFollowing}
-            isPro={item.isPro}
-            proSubscriptionType={item.proSubscriptionType}
-            followLoading={item.followLoading}
-            onPressFollow={() => {
-              if (!currentUserId) return
-
-              if (item.isFollowing) {
-                unfollowMutation.mutate(item.id)
-              } else {
-                followMutation.mutate(item.id)
-              }
-            }}
-          />
-        )}
-        contentContainerStyle={{ paddingBottom: 40 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        ListEmptyComponent={
-          suggestedLoading && isSearching ? (
-            <ActivityIndicator style={{ marginTop: 40 }} />
-          ) : (
-            <View className="mt-20 items-center">
-              <Text className="text-black dark:text-white">
-                {searchLoading
-                  ? 'Searching...'
-                  : isSearching
-                    ? 'No users found'
-                    : suggestedLoading
-                      ? 'Loading suggestions...'
-                      : 'No suggestions available'}
-              </Text>
-            </View>
-          )
-        }
-      />
-    </BaseScreen>
+    </BaseListScreen>
   )
 }

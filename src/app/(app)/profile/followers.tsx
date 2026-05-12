@@ -1,13 +1,13 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { FlashList } from '@shopify/flash-list'
 import { router, useLocalSearchParams } from 'expo-router'
 import Fuse from 'fuse.js'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ActivityIndicator, BackHandler, Platform, RefreshControl, Text, View } from 'react-native'
+import { ActivityIndicator, BackHandler, Platform, View } from 'react-native'
 import { TextInput } from 'react-native-gesture-handler'
 
 import { SocialUserItem } from '@/components/social/SocialUserItem'
-import BaseScreen from '@/components/ui/BaseScreen'
+import { BaseListScreen } from '@/components/ui'
+import { UserListShimmer } from '@/components/ui/shimmers'
 import {
   useFollowUserMutation,
   useUnfollowUserMutation,
@@ -25,40 +25,36 @@ export default function Followers() {
 
   const [query, setQuery] = useState('')
   const [refreshing, setRefreshing] = useState(false)
-  const [loading, setLoading] = useState(true)
 
   const currentUserId = useAuth((state) => state.userId)
-
   const targetUserId = userId || currentUserId
 
-  const { data: fetchedUsers = [], isLoading, refetch } = useUserFollowersQuery(targetUserId!)
+  const {
+    data: fetchedUsers = [],
+    isFetching,
+    refetch,
+  } = useUserFollowersQuery(targetUserId!)
   const users: SearchedUser[] = fetchedUsers as SearchedUser[]
   const followMutation = useFollowUserMutation()
   const unfollowMutation = useUnfollowUserMutation()
-
-  const displayUsers = users
 
   const onRefresh = useCallback(() => {
     setRefreshing(true)
     refetch().finally(() => setRefreshing(false))
   }, [refetch])
 
-  useEffect(() => {
-    if (!isLoading) setLoading(false)
-  }, [isLoading])
-
   // 🔍 Fuzzy Search
   const fuse = useMemo(() => {
-    return new Fuse(displayUsers, {
+    return new Fuse(users, {
       keys: ['firstName', 'lastName', 'username'],
       threshold: 0.3,
     })
-  }, [displayUsers])
+  }, [users])
 
   const filteredUsers = useMemo(() => {
-    if (!query.trim()) return displayUsers
+    if (!query.trim()) return users
     return fuse.search(query).map((result) => result.item)
-  }, [query, displayUsers, fuse])
+  }, [query, users, fuse])
 
   useEffect(() => {
     const onBackPress = () => {
@@ -72,13 +68,53 @@ export default function Followers() {
   }, [])
 
   return (
-    <BaseScreen title="Followers" backButton>
-      <View className="flex-row items-center justify-center gap-2 pb-6">
-        <MaterialCommunityIcons
-          name="magnify"
-          size={24}
-          color={colors.isDark ? 'white' : 'black'}
+    <BaseListScreen<SearchedUser>
+      title="Followers"
+      backButton
+      data={filteredUsers}
+      keyExtractor={(item) => item.id}
+      isLoading={isFetching}
+      shimmer={<UserListShimmer />}
+      isRefreshing={refreshing}
+      onRefresh={onRefresh}
+      emptyText={query.trim() ? 'No users found' : 'No followers yet'}
+      estimatedItemSize={80}
+      renderItem={({ item }) => (
+        <SocialUserItem
+          id={item.id}
+          firstName={item.firstName}
+          lastName={item.lastName}
+          profilePicUrl={item.profilePicUrl}
+          isFollowing={item.isFollowing}
+          isPro={item.isPro}
+          proSubscriptionType={item.proSubscriptionType}
+          followLoading={item.followLoading}
+          onPressFollow={() => {
+            if (!currentUserId) return
+
+            if (item.isFollowing) {
+              unfollowMutation.mutate(item.id)
+            } else {
+              followMutation.mutate(item.id)
+            }
+          }}
         />
+      )}
+    >
+      <View className="flex-row items-center justify-center gap-2 pb-6">
+        {isFetching && !refreshing ? (
+          <ActivityIndicator
+            size="small"
+            color={colors.primary}
+            style={{ width: 24, height: 24 }}
+          />
+        ) : (
+          <MaterialCommunityIcons
+            name="magnify"
+            size={24}
+            color={colors.isDark ? 'white' : 'black'}
+          />
+        )}
         <TextInput
           value={query}
           onChangeText={(text) => setQuery(text)}
@@ -88,46 +124,6 @@ export default function Followers() {
           style={{ lineHeight: lineHeight }}
         />
       </View>
-
-      {/* 👥 Users List */}
-      <FlashList
-        data={filteredUsers}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <SocialUserItem
-            id={item.id}
-            firstName={item.firstName}
-            lastName={item.lastName}
-            profilePicUrl={item.profilePicUrl}
-            isFollowing={item.isFollowing}
-            isPro={item.isPro}
-            proSubscriptionType={item.proSubscriptionType}
-            followLoading={item.followLoading}
-            onPressFollow={() => {
-              if (!currentUserId) return
-
-              if (item.isFollowing) {
-                unfollowMutation.mutate(item.id)
-              } else {
-                followMutation.mutate(item.id)
-              }
-            }}
-          />
-        )}
-        contentContainerStyle={{ paddingBottom: 40 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        ListEmptyComponent={
-          loading ? (
-            <ActivityIndicator style={{ marginTop: 40 }} />
-          ) : (
-            <View className="mt-20 items-center">
-              <Text className="text-black dark:text-white">
-                {query.trim() ? 'No users found' : 'No followers yet'}
-              </Text>
-            </View>
-          )
-        }
-      />
-    </BaseScreen>
+    </BaseListScreen>
   )
 }

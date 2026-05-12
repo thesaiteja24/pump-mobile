@@ -3,68 +3,77 @@ import { ActivityIndicator, RefreshControl, Text, View } from 'react-native'
 
 import { useThemeColor } from '@/hooks/theme'
 
+import { BaseEmptyState } from './BaseEmptyState'
 import BaseScreen, { BaseScreenProps } from './BaseScreen'
 
+/**
+ * BaseListScreen component that provides a standardized layout for screens centered around a list of items.
+ * It leverages Shopify's FlashList for high-performance rendering and includes built-in support for
+ * pagination, pull-to-refresh, empty states, and standard screen headers.
+ *
+ * @component
+ * @example
+ * // Simple list with a title
+ * <BaseListScreen
+ *   title="My Workouts"
+ *   data={workouts}
+ *   renderItem={({ item }) => <WorkoutCard workout={item} />}
+ *   keyExtractor={(item) => item.id}
+ * />
+ *
+ * @example
+ * // Advanced list with pagination and custom header content
+ * <BaseListScreen
+ *   title="Discover"
+ *   data={discoverWorkouts}
+ *   renderItem={({ item }) => <SocialCard workout={item} />}
+ *   isLoading={loading}
+ *   hasNextPage={true}
+ *   onEndReached={fetchNextPage}
+ *   isFetchingNextPage={isFetching}
+ *   emptyText="No workouts found"
+ * >
+ *   <FilterBar />
+ * </BaseListScreen>
+ */
 export interface BaseListScreenProps<T> extends Omit<
   BaseScreenProps,
-  'scroll' | 'refreshControl' | 'children'
+  'scroll' | 'refreshControl'
 > {
-  /**
-   * The array of data to render in the list.
-   */
+  /** The array of data to render in the list. */
   data: readonly T[] | null | undefined
-  /**
-   * Render function for list items.
-   */
+  /** Render function for list items, identical to FlashList's renderItem. */
   renderItem: FlashListProps<T>['renderItem']
-  /**
-   * Key extractor function.
-   */
+  /** Key extractor function for the list items. */
   keyExtractor?: FlashListProps<T>['keyExtractor']
-  /**
-   * Estimated item size for FlashList performance.
-   * Defaults to 100.
-   */
+  /** Estimated item size for FlashList performance optimization. Defaults to 100. */
   estimatedItemSize?: number
-  /**
-   * Refresh callback.
-   */
+  /** Callback function triggered when the user pulls down to refresh the list. */
   onRefresh?: () => void | Promise<void>
-  /**
-   * Is refreshing state.
-   */
+  /** Whether the list is currently refreshing. */
   isRefreshing?: boolean
-  /**
-   * Infinite scroll load next page callback.
-   */
+  /** Callback function triggered when the list reaches the end of the data. Use for infinite scrolling. */
   onEndReached?: () => void
-  /**
-   * Is fetching next page state.
-   */
+  /** Whether a next page is currently being fetched. */
   isFetchingNextPage?: boolean
-  /**
-   * Has next page boolean.
-   */
+  /** Whether there are more pages to load. */
   hasNextPage?: boolean
-  /**
-   * Text to show when the list is empty.
-   */
+  /** Text to display when the data array is empty. Defaults to 'No items found.'. */
   emptyText?: string
-  /**
-   * Text to show when all items are loaded at the bottom.
-   */
+  /** Text to display at the bottom of the list when all items are loaded. Defaults to "You've reached the end.". */
   endReachedText?: string
-  /**
-   * Number of columns.
-   */
+  /** The number of columns to render in the list. */
   numColumns?: number
-  /**
-   * Additional props to pass to FlashList.
-   */
+  /** Additional props to pass directly to the underlying FlashList component. */
   flashListProps?: Partial<FlashListProps<T>>
+  /** Optional static content to render above the list. */
+  children?: React.ReactNode
 }
 
-function BaseListScreen<T>({
+/**
+ * @param {BaseListScreenProps<T>} props - The props for the BaseListScreen component.
+ */
+export function BaseListScreen<T>({
   data,
   renderItem,
   keyExtractor,
@@ -78,6 +87,7 @@ function BaseListScreen<T>({
   endReachedText = "You've reached the end.",
   numColumns,
   flashListProps,
+  children,
   ...baseScreenProps
 }: BaseListScreenProps<T>) {
   const colors = useThemeColor()
@@ -102,45 +112,53 @@ function BaseListScreen<T>({
 
   const renderEmpty = () => {
     if (baseScreenProps.isLoading) return null
-    return (
-      <View className="flex-1 items-center justify-center pt-20">
-        <Text className="text-lg text-neutral-500 dark:text-neutral-400">{emptyText}</Text>
-      </View>
-    )
+    return <BaseEmptyState message={emptyText} dashed={false} />
   }
 
   return (
-    <BaseScreen {...baseScreenProps} scroll={false}>
-      <FlashList
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        showsVerticalScrollIndicator={false}
-        numColumns={numColumns}
-        onEndReached={() => {
-          if (!isFetchingNextPage && hasNextPage && onEndReached) {
-            onEndReached()
+    <BaseScreen {...baseScreenProps} isLoading={false} scroll={false}>
+      {children}
+      {baseScreenProps.isLoading ? (
+        <View className={baseScreenProps.padded ? 'flex-1 px-4' : 'flex-1'}>
+          {baseScreenProps.shimmer ? (
+            baseScreenProps.shimmer
+          ) : (
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+          )}
+        </View>
+      ) : (
+        <FlashList
+          data={data}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          showsVerticalScrollIndicator={false}
+          numColumns={numColumns}
+          onEndReached={() => {
+            if (!isFetchingNextPage && hasNextPage && onEndReached) {
+              onEndReached()
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter()}
+          ListEmptyComponent={renderEmpty()}
+          refreshControl={
+            onRefresh ? (
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.primary}
+              />
+            ) : undefined
           }
-        }}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={renderFooter()}
-        ListEmptyComponent={renderEmpty()}
-        refreshControl={
-          onRefresh ? (
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={onRefresh}
-              tintColor={colors.primary}
-            />
-          ) : undefined
-        }
-        contentContainerStyle={
-          baseScreenProps.padded ? { paddingHorizontal: 16, paddingBottom: 16 } : undefined
-        }
-        {...flashListProps}
-      />
+          contentContainerStyle={
+            baseScreenProps.padded ? { paddingHorizontal: 16, paddingBottom: 16 } : undefined
+          }
+          {...flashListProps}
+        />
+      )}
     </BaseScreen>
   )
 }
 
-export default BaseListScreen

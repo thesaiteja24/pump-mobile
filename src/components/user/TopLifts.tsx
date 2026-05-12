@@ -3,6 +3,8 @@ import { ScrollView } from 'react-native-gesture-handler'
 
 import type { TopLift } from '@/types/me'
 
+import { SectionHeader } from '../ui'
+
 interface LiftCardProps {
   lift: TopLift
 }
@@ -55,11 +57,7 @@ export function TopLifts({ lifts, isLoading, showTitle = true }: TopLiftsProps) 
 
   return (
     <View className="gap-4">
-      {showTitle && (
-        <View className="flex-row items-center justify-between">
-          <Text className="text-lg font-thin text-neutral-900 dark:text-white">Top Lifts</Text>
-        </View>
-      )}
+      {showTitle && <SectionHeader title="Top Lifts" />}
 
       <ScrollView
         horizontal

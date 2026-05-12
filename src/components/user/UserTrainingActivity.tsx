@@ -6,6 +6,8 @@ import { BarChart } from 'react-native-chart-kit'
 import { useThemeColor } from '@/hooks/theme'
 import { TrainingAnalytics } from '@/types/me'
 
+import { SectionHeader } from '../ui'
+
 interface AthleteTrainingAnalyticsProps {
   userId: string
   analytics?: TrainingAnalytics
@@ -84,9 +86,7 @@ export function UserTrainingActivity({ userId, analytics }: AthleteTrainingAnaly
 
   return (
     <View className="h-72 gap-2 rounded-3xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
-      <Text className="text-lg font-bold text-neutral-900 dark:text-white">
-        {chartPages[activeIndex].title}
-      </Text>
+      <SectionHeader title={chartPages[activeIndex].title} />
 
       <ScrollView
         horizontal
