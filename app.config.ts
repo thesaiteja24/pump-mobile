@@ -7,7 +7,7 @@ export default ({ config }: { config: ExpoConfig }): ExpoConfig => {
   return {
     name: 'PUMP',
     slug: 'pump',
-    version: '0.1.0',
+    version: '0.1.0-beta.1',
     orientation: 'portrait',
     icon: './src/assets/images/icon.png',
     scheme: 'pump',
