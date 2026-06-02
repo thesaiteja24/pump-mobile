@@ -1,14 +1,5 @@
 import { Stack } from 'expo-router'
 
 export default function ProfileLayout() {
-  return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      {/* PROFILE HOME */}
-      <Stack.Screen name="index" />
-    </Stack>
-  )
+  return <Stack screenOptions={{ headerShown: false }} />
 }

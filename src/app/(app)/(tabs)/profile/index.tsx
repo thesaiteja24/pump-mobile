@@ -1,186 +1,208 @@
-import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons'
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react'
-import { BackHandler, View } from 'react-native'
+import React, { memo, useRef } from 'react'
+import { ActivityIndicator, Text, View } from 'react-native'
 
-import { UserEditProfileModal } from '@/components/modals/UserEditProfileModal'
-import { UserFitnessGoalsModal } from '@/components/modals/UserFitnessGoalsModal'
-import { UserMeasurementsModal } from '@/components/modals/UserMeasurementsModal'
-import { UserUnitPreferencesModal } from '@/components/modals/UserUnitPreferencesModal'
-import { Button } from '@/components/ui'
-import { BaseModalHandle } from '@/components/ui/BaseModal'
-import BaseScreen from '@/components/ui/BaseScreen'
-import { UserHeader } from '@/components/user/UserHeader'
-import { UserThemeToggle } from '@/components/user/UserThemeToggle'
-import { useProfileQuery } from '@/hooks/queries/me'
-import { useThemeColor } from '@/hooks/theme'
-import { useAuth } from '@/stores/auth.store'
+import { EditProfileModal } from '@/components/profile/edit-profile-modal'
+import { FitnessProfileModal } from '@/components/profile/fitness-profile-modal'
+import { MeasurementsModal } from '@/components/profile/measurements-modal'
+import { NutritionPlanModal } from '@/components/profile/nutrition-plan-modal'
+import { ProfileCard } from '@/components/profile/profile-card'
+import { BaseScreen } from '@/components/ui/base-screen'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { SegmentedControl } from '@/components/ui/segmented-control'
+import { useProfileQuery, useUpdateProfileMutation } from '@/hooks/queries/use-user'
+import { useTheme } from '@/hooks/use-theme'
+import { useAuthStore } from '@/stores/auth-store'
 
-type SettingsRow =
-  | {
-      type: 'item'
-      key: string
-      title: string
-      icon: React.ReactNode
-      onPress: () => void
-      isDestructive?: boolean
-    }
-  | {
-      type: 'custom'
-      key: string
-      render: React.ReactNode
-    }
+import type { ThemePreference } from '@/config/tokens'
+import type { BottomSheetMethods } from '@expo/ui/community/bottom-sheet'
 
-interface SettingsListProps {
-  rows: SettingsRow[]
+interface ProfileActionsProps {
+  onEditProfile: () => void
+  onAddMeasurements: () => void
+  onUpdateNutrition: () => void
+  onFitnessProfile: () => void
 }
 
-const Divider = memo(() => {
-  return <View className="ml-14 h-[1px] bg-neutral-100 dark:bg-neutral-800" />
-})
+const ProfileActions = memo(({ onEditProfile, onAddMeasurements, onUpdateNutrition, onFitnessProfile }: ProfileActionsProps) => {
+  const { colors, spacing, typography, layout } = useTheme()
+  const { data: user } = useProfileQuery()
+  const updateProfile = useUpdateProfileMutation()
 
-Divider.displayName = 'Divider'
+  const weightUnit = user?.preferredWeightUnit || 'kg'
+  const lengthUnit = user?.preferredLengthUnit || 'cm'
 
-const SettingsList = memo(({ rows }: SettingsListProps) => {
+  const weightIcon = weightUnit === 'kg' ? 'weight-kilogram' : 'weight-pound'
+  const lengthIcon = lengthUnit === 'cm' ? 'ruler' : 'tape-measure'
+
   return (
-    <View className="overflow-hidden rounded-3xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-      {rows.map((row, index) => (
-        <View key={row.key}>
-          {row.type === 'item' ? (
-            <Button
-              title={row.title}
-              variant="ghost"
-              className="justify-start py-4"
-              textClassName={
-                row.isDestructive
-                  ? 'text-base font-medium text-red-600 dark:text-red-500'
-                  : 'text-base font-medium text-neutral-700 dark:text-neutral-300'
-              }
-              leftIcon={row.icon}
-              onPress={row.onPress}
-            />
-          ) : (
-            row.render
-          )}
+    <Card>
+      <Button
+        variant="ghost"
+        title="Edit Profile"
+        leftIcon={<Ionicons name="person" size={20} color={colors.text} style={{ marginRight: spacing.sm }} />}
+        style={{ justifyContent: 'flex-start', paddingHorizontal: 0, width: '100%' }}
+        textStyle={[typography.bodyStrong, { color: colors.text }]}
+        onPress={onEditProfile}
+      />
+      <View style={{ height: 1, backgroundColor: colors.border, marginVertical: spacing.sm }} />
+      <Button
+        variant="ghost"
+        title="Add Measurements"
+        leftIcon={<Ionicons name="body" size={20} color={colors.text} style={{ marginRight: spacing.sm }} />}
+        style={{ justifyContent: 'flex-start', paddingHorizontal: 0, width: '100%' }}
+        textStyle={[typography.bodyStrong, { color: colors.text }]}
+        onPress={onAddMeasurements}
+      />
+      <View style={{ height: 1, backgroundColor: colors.border, marginVertical: spacing.sm }} />
+      <Button
+        variant="ghost"
+        title="Update Nutrition Plan"
+        leftIcon={<Ionicons name="restaurant" size={20} color={colors.text} style={{ marginRight: spacing.sm }} />}
+        style={{ justifyContent: 'flex-start', paddingHorizontal: 0, width: '100%' }}
+        textStyle={[typography.bodyStrong, { color: colors.text }]}
+        onPress={onUpdateNutrition}
+      />
+      <View style={{ height: 1, backgroundColor: colors.border, marginVertical: spacing.sm }} />
+      <Button
+        variant="ghost"
+        title="Fitness Profile"
+        leftIcon={<Ionicons name="barbell" size={20} color={colors.text} style={{ marginRight: spacing.sm }} />}
+        style={{ justifyContent: 'flex-start', paddingHorizontal: 0, width: '100%' }}
+        textStyle={[typography.bodyStrong, { color: colors.text }]}
+        onPress={onFitnessProfile}
+      />
 
-          {index !== rows.length - 1 && <Divider />}
+      <View style={{ height: 1, backgroundColor: colors.border, marginVertical: spacing.sm }} />
+
+      {/* Weight Preference Unit Toggle */}
+      <View style={[layout.rowAlign, layout.rowBetween, { paddingVertical: spacing.xxs }]}>
+        <View style={[layout.rowAlign, { gap: spacing.sm }]}>
+          <MaterialCommunityIcons name={weightIcon} size={20} color={colors.text} />
+          <Text style={[typography.bodyStrong, { color: colors.text }]}>Weight Unit</Text>
         </View>
-      ))}
+        <SegmentedControl
+          values={['kg', 'lbs']}
+          selectedIndex={weightUnit === 'kg' ? 0 : 1}
+          onValueChange={(val) => {
+            updateProfile.mutate({ preferredWeightUnit: val as 'kg' | 'lbs' })
+          }}
+          style={{ width: 110 }}
+        />
+      </View>
+
+      <View style={{ height: 1, backgroundColor: colors.border, marginVertical: spacing.sm }} />
+
+      {/* Length Preference Unit Toggle */}
+      <View style={[layout.rowAlign, layout.rowBetween, { paddingVertical: spacing.xxs }]}>
+        <View style={[layout.rowAlign, { gap: spacing.sm }]}>
+          <MaterialCommunityIcons name={lengthIcon} size={20} color={colors.text} />
+          <Text style={[typography.bodyStrong, { color: colors.text }]}>Length Unit</Text>
+        </View>
+        <SegmentedControl
+          values={['cm', 'inches']}
+          selectedIndex={lengthUnit === 'cm' ? 0 : 1}
+          onValueChange={(val) => {
+            updateProfile.mutate({ preferredLengthUnit: val as 'cm' | 'inches' })
+          }}
+          style={{ width: 110 }}
+        />
+      </View>
+    </Card>
+  )
+})
+ProfileActions.displayName = 'ProfileActions'
+
+const ThemeSelector = memo(() => {
+  const { colors, spacing, typography, preference, setTheme } = useTheme()
+  const themeValues: ThemePreference[] = ['light', 'dark', 'system']
+  const themeLabels = ['Light', 'Dark', 'System']
+  const selectedThemeIndex = themeValues.indexOf(preference)
+
+  return (
+    <View style={{ gap: spacing.sm }}>
+      <Text style={[typography.bodySmStrong, { color: colors.textSecondary, marginLeft: spacing.sm }]}>
+        App Theme
+      </Text>
+      <SegmentedControl
+        values={themeLabels}
+        selectedIndex={selectedThemeIndex >= 0 ? selectedThemeIndex : 2}
+        onValueChange={(val) => {
+          setTheme(val.toLowerCase() as ThemePreference)
+        }}
+      />
     </View>
   )
 })
+ThemeSelector.displayName = 'ThemeSelector'
 
-SettingsList.displayName = 'SettingsList'
-
-export default function ProfileScreen() {
+export function ProfileScreen() {
+  const { colors, layout, spacing, radius } = useTheme()
+  const { data: user, isLoading } = useProfileQuery()
+  const clearSession = useAuthStore(state => state.clearSession)
   const router = useRouter()
 
-  const logout = useAuth((s) => s.logout)
+  const editProfileModalRef = useRef<BottomSheetMethods | null>(null)
+  const measurementsModalRef = useRef<BottomSheetMethods | null>(null)
+  const nutritionModalRef = useRef<BottomSheetMethods | null>(null)
+  const fitnessModalRef = useRef<BottomSheetMethods | null>(null)
 
-  const { data: user } = useProfileQuery()
+  const handleLogout = () => {
+    clearSession().catch(() => {})
+    router.replace('/(auth)/login')
+  }
 
-  const theme = useThemeColor()
-
-  const unitSheetRef = useRef<BaseModalHandle>(null)
-  const editProfileSheetRef = useRef<BaseModalHandle>(null)
-  const measurementsSheetRef = useRef<BaseModalHandle>(null)
-  const fitnessGoalsSheetRef = useRef<BaseModalHandle>(null)
-
-  const openEditProfile = useCallback(() => {
-    editProfileSheetRef.current?.present()
-  }, [])
-
-  const openMeasurements = useCallback(() => {
-    measurementsSheetRef.current?.present()
-  }, [])
-
-  const openFitnessGoals = useCallback(() => {
-    fitnessGoalsSheetRef.current?.present()
-  }, [])
-
-  const openUnitPreferences = useCallback(() => {
-    unitSheetRef.current?.present()
-  }, [])
-
-  const handleLogout = useCallback(() => {
-    logout()
-  }, [logout])
-
-  useEffect(() => {
-    const onBackPress = () => {
-      if (router.canGoBack()) {
-        router.back()
-      } else {
-        router.push('/(app)/(tabs)/home')
-      }
-
-      return true
-    }
-
-    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
-
-    return () => subscription.remove()
-  }, [router])
-
-  const rows = useMemo<SettingsRow[]>(
-    () => [
-      {
-        type: 'item',
-        key: 'account-details',
-        title: 'Account Details',
-        icon: <AntDesign name="user" size={20} color={theme.icon} />,
-        onPress: openEditProfile,
-      },
-      {
-        type: 'item',
-        key: 'measurements',
-        title: 'Measurements',
-        icon: <MaterialCommunityIcons name="ruler" size={20} color={theme.icon} />,
-        onPress: openMeasurements,
-      },
-      {
-        type: 'item',
-        key: 'fitness-goals',
-        title: 'Fitness Goals',
-        icon: <MaterialCommunityIcons name="bullseye-arrow" size={24} color={theme.icon} />,
-        onPress: openFitnessGoals,
-      },
-      {
-        type: 'item',
-        key: 'unit-preferences',
-        title: 'Unit Preferences',
-        icon: <MaterialCommunityIcons name="tune-variant" size={24} color={theme.icon} />,
-        onPress: openUnitPreferences,
-      },
-      {
-        type: 'custom',
-        key: 'theme-toggle',
-        render: <UserThemeToggle />,
-      },
-      {
-        type: 'item',
-        key: 'logout',
-        title: 'Logout',
-        icon: <AntDesign name="logout" size={22} color={theme.danger} />,
-        onPress: handleLogout,
-        isDestructive: true,
-      },
-    ],
-    [theme, handleLogout, openEditProfile, openFitnessGoals, openMeasurements, openUnitPreferences],
-  )
+  if (isLoading || !user) {
+    return (
+      <BaseScreen scrollable>
+        <View style={[layout.flex1, layout.center, { paddingTop: 100 }]}>
+          <ActivityIndicator size="large" color={colors.text} />
+        </View>
+      </BaseScreen>
+    )
+  }
 
   return (
-    <BaseScreen title="Profile">
-      <View className="flex-1 gap-6">
-        <UserHeader user={user ?? null} />
+    <BaseScreen title="Profile" scrollable>
+      <View style={{ gap: spacing.lg }}>
+        <ProfileCard
+          id={user.id}
+          imageUrl={user.profilePicUrl}
+          firstName={user.firstName}
+          lastName={user.lastName}
+          workoutsCount={user.workoutsCount}
+          followersCount={user.followersCount}
+          followingCount={user.followingCount}
+          proSubscriptionType={user.proSubscriptionType}
+          isPro={user.isPro}
+          isSelf
+        />
 
-        <SettingsList rows={rows} />
+        <ProfileActions
+          onEditProfile={() => editProfileModalRef.current?.present()}
+          onAddMeasurements={() => measurementsModalRef.current?.present()}
+          onUpdateNutrition={() => nutritionModalRef.current?.present()}
+          onFitnessProfile={() => fitnessModalRef.current?.present()}
+        />
+
+        <ThemeSelector />
+
+        <Button
+          title="Logout"
+          variant="danger"
+          style={[layout.wFull, { borderRadius: radius.full, marginTop: spacing.md }]}
+          onPress={handleLogout}
+        />
       </View>
 
-      <UserUnitPreferencesModal ref={unitSheetRef} />
-      <UserEditProfileModal ref={editProfileSheetRef} />
-      <UserMeasurementsModal ref={measurementsSheetRef} />
-      <UserFitnessGoalsModal ref={fitnessGoalsSheetRef} />
+      <EditProfileModal ref={editProfileModalRef} />
+      <MeasurementsModal ref={measurementsModalRef} />
+      <NutritionPlanModal ref={nutritionModalRef} />
+      <FitnessProfileModal ref={fitnessModalRef} />
     </BaseScreen>
   )
 }
+
+export default memo(ProfileScreen)

@@ -6,9 +6,10 @@ export interface AriseOptions {
   sound?: boolean | string
   haptic?: 'light' | 'medium' | 'heavy' | 'none'
   confetti?: boolean
-  // Custom-only overrides
-  icon?: string // e.g., 'checkmark-circle'
-  iconColor?: string // e.g., '#10b981'
+  /** Ionicons name, e.g., 'checkmark-circle' */
+  icon?: string
+  /** Hex or PALETTE color, e.g., '#10b981' */
+  iconColor?: string
 }
 
 export interface AriseCallParams extends AriseOptions {

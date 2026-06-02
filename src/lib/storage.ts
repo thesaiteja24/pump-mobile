@@ -1,24 +1,26 @@
 import { createMMKV } from 'react-native-mmkv'
-import { createJSONStorage, StateStorage } from 'zustand/middleware'
 
-// Create a shared MMKV instance
-export const storage = createMMKV({
-  id: 'pump-app-storage',
+import { ENV } from '@/config/env'
+
+/**
+ * We use the app scheme as the id so that in case we have multiple apps
+ * running on the same device we don't mess up the storage.
+ * MMKV instance for non-sensitive persisted data (e.g. theme preference).
+ * Do NOT store auth tokens here — use expo-secure-store for sensitive data.
+ */
+// Fallback to 'pump-default' if the env var is somehow missing at runtime.
+// env.ts validation should catch this first, but defense-in-depth for storage init.
+const storage = createMMKV({
+  id: ENV.EXPO_PUBLIC_APP_SCHEME || 'pump-default',
 })
 
-// Raw MMKV storage adapter
-const mmkvStorage: StateStorage = {
-  setItem: (name, value) => {
-    storage.set(name, value)
-  },
-  getItem: (name) => {
-    const value = storage.getString(name)
-    return value ?? null
-  },
-  removeItem: (name) => {
-    storage.remove(name)
-  },
+/**
+ * Shared MMKV storage adapter compatible with:
+ * - TanStack Query `createAsyncStoragePersister()`
+ * - Direct key/value access via `adapter.getItem` / `adapter.setItem`
+ */
+export const mmkvStorageAdapter = {
+  setItem: (key: string, value: string) => storage.set(key, value),
+  getItem: (key: string): string | null => storage.getString(key) ?? null,
+  removeItem: (key: string): void => { storage.remove(key) },
 }
-
-// Zustand persist storage adapter (with JSON serialization)
-export const zustandStorage = createJSONStorage(() => mmkvStorage)

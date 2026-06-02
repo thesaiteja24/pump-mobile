@@ -1,120 +1,59 @@
-import './globals.css'
-
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { useFonts } from 'expo-font'
 import { SplashScreen, Stack } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
-import { ActivityIndicator, StatusBar, View } from 'react-native'
-import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { vexo } from 'vexo-analytics'
 
-import { useThemeColor } from '@/hooks/theme'
-import { useInAppUpdate } from '@/hooks/useInAppUpdate'
+import { FallbackComponent } from '@/components/ui/fallback-component'
+import { useTheme } from '@/hooks/use-theme'
 import { AriseRoot } from '@/lib/arise'
-import { queryClient } from '@/lib/queryClient'
-import { useAuth } from '@/stores/auth.store'
+import { ConfettiRoot } from '@/lib/confetti'
+import { Sentry } from '@/lib/sentry'
+import { AppBootstrap } from '@/providers/app-bootstrap'
+import { AppProviders } from '@/providers/app-providers'
+import { useAuthStore } from '@/stores/auth-store'
 
-// ─────────────────────────────────────────────
-// Prevent splash auto-hide (explicit release only)
-// ─────────────────────────────────────────────
+// Must be called synchronously at module-level so the splash is held
+// before the first render cycle. Moving this into useEffect would cause
+// a flash because the JS bridge call would be deferred after paint.
 SplashScreen.preventAutoHideAsync()
 
-if (!__DEV__) {
-  vexo('8f13f010-99f1-4a89-881b-b1b0d2321412')
-}
+function RootNavigator() {
+  const { isDark } = useTheme()
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated)
 
-export default function RootLayout() {
-  const colors = useThemeColor()
-  // ───── Updates ─────
-  useInAppUpdate()
-
-  // ───── Fonts ─────
-  const [fontsLoaded] = useFonts({
-    Monoton: require('../assets/fonts/Monoton-Regular.ttf'),
-  })
-
-  // ───── Auth state ─────
-  const restoreFromStorage = useAuth((s) => s.restoreFromStorage)
-  const hasRestored = useAuth((s) => s.hasRestored)
-
-  // ─────────────────────────────────────────────
-  // 1️⃣ Restore auth from storage (once)
-  // ─────────────────────────────────────────────
   useEffect(() => {
-    restoreFromStorage()
-  }, [restoreFromStorage])
+    SplashScreen.hideAsync()
+  }, [])
 
-  // ─────────────────────────────────────────────
-  // 3️⃣ Release splash when boot is complete
-  // ─────────────────────────────────────────────
-  useEffect(() => {
-    if (fontsLoaded && hasRestored) {
-      SplashScreen.hideAsync()
-    }
-  }, [fontsLoaded, hasRestored])
-
-  // ─────────────────────────────────────────────
-  // 4️⃣ Absolute safety: never hang on splash
-  // ─────────────────────────────────────────────
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (!hasRestored) {
-        console.warn('Auth restore timeout — forcing app start')
-        SplashScreen.hideAsync()
-      }
-    }, 4000)
-
-    return () => clearTimeout(timeout)
-  }, [hasRestored])
-
-  // ─────────────────────────────────────────────
-  // 6️⃣ Fallback loader (should rarely appear)
-  // ─────────────────────────────────────────────
-  if (!fontsLoaded || !hasRestored) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: colors.background,
-        }}
-      >
-        <ActivityIndicator color={colors.primary} />
-      </View>
-    )
-  }
-
-  // ─────────────────────────────────────────────
-  // 7️⃣ App UI
-  // ─────────────────────────────────────────────
   return (
-    <QueryClientProvider client={queryClient}>
-      <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
-        <BottomSheetModalProvider>
-          <>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                animation: 'fade',
-                contentStyle: { backgroundColor: colors.background },
-              }}
-            >
-              <Stack.Screen name="index" />
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen name="(app)" />
-            </Stack>
-
-            <StatusBar
-              barStyle={colors.isDark ? 'light-content' : 'dark-content'}
-              backgroundColor={colors.background}
-            />
-
-            <AriseRoot />
-          </>
-        </BottomSheetModalProvider>
-      </GestureHandlerRootView>
-    </QueryClientProvider>
+    <>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      {/* Global overlay layers — rendered above all screens */}
+      <AriseRoot />
+      <ConfettiRoot />
+      {/* Headless startup effects (OneSignal init, permission prompt, analytics, etc.) */}
+      <AppBootstrap />
+      <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
+        <Stack.Protected guard={isAuthenticated}>
+          <Stack.Screen name="(app)" />
+        </Stack.Protected>
+        <Stack.Protected guard={!isAuthenticated}>
+          <Stack.Screen name="(auth)" />
+        </Stack.Protected>
+      </Stack>
+    </>
   )
 }
+
+function RootLayout() {
+  return (
+    <AppProviders>
+      <Sentry.ErrorBoundary fallback={FallbackComponent}>
+        <RootNavigator />
+      </Sentry.ErrorBoundary>
+    </AppProviders>
+  )
+}
+
+// Wrap with Sentry for automatic navigation instrumentation and breadcrumbs.
+// When EXPO_PUBLIC_SENTRY_DSN is unset, Sentry.wrap is a transparent pass-through.
+export default Sentry.wrap(RootLayout)

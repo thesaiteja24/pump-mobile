@@ -1,4 +1,5 @@
-import { globalAriseRef } from './ariseRef'
+import { globalAriseRef } from './arise-ref'
+
 import type { AriseOptions } from './types'
 
 export class Arise {
@@ -31,5 +32,5 @@ export class Arise {
   }
 }
 
-export { AriseRoot } from './AriseRoot'
+export { AriseRoot } from './arise-root'
 export * from './types'

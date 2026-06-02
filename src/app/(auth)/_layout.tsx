@@ -1,21 +1,11 @@
 import { Stack } from 'expo-router'
 
-import { useThemeColor } from '@/hooks/theme'
-
-export default function Layout() {
-  const colors = useThemeColor()
+/**
+ * Auth group layout — unauthenticated screens (login, onboarding, etc.)
+ * No header, fade transition — keeps the auth flow feeling clean.
+ */
+export default function AuthLayout() {
   return (
-    <>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: {
-            backgroundColor: colors.background,
-          },
-        }}
-      >
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-      </Stack>
-    </>
+    <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
   )
 }
