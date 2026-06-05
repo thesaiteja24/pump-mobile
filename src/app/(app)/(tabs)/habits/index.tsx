@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons'
+import { router } from 'expo-router'
 import { useRef, useState } from 'react'
 import { ActivityIndicator, Pressable, View } from 'react-native'
 
@@ -40,7 +41,15 @@ function formatProgress(habit: HabitTodayItem) {
   return `${value}${unit} / ${target}${unit}`
 }
 
-function HabitTodayCard({ habit, onEdit }: { habit: HabitTodayItem, onEdit: (habit: HabitTodayItem) => void }) {
+function HabitTodayCard({
+  habit,
+  onEdit,
+  onOpen,
+}: {
+  habit: HabitTodayItem
+  onEdit: (habit: HabitTodayItem) => void
+  onOpen: (habitId: string) => void
+}) {
   const { colorModes, spacing, radius } = useTheme()
 
   return (
@@ -98,6 +107,10 @@ function HabitTodayCard({ habit, onEdit }: { habit: HabitTodayItem, onEdit: (hab
       </View>
 
       <HabitLogControl habit={habit} />
+
+      <Pressable onPress={() => onOpen(habit.id)} style={{ alignSelf: 'flex-start' }}>
+        <CustomText variant="bodySmStrong" color="secondary">View Details</CustomText>
+      </Pressable>
     </Card>
   )
 }
@@ -144,6 +157,7 @@ export default function HabitsScreen() {
     setEditingHabit(habit)
     formModalRef.current?.present()
   }
+  const openHabit = (habitId: string) => router.push(`/(app)/(tabs)/habits/${habitId}`)
 
   return (
     <BaseScreen title="Habits" scrollable>
@@ -177,7 +191,9 @@ export default function HabitsScreen() {
 
       {!isLoading && !isError && habits.length > 0 && (
         <View style={{ gap: spacing.md }}>
-          {habits.map(habit => <HabitTodayCard key={habit.id} habit={habit} onEdit={openEditForm} />)}
+          {habits.map(habit => (
+            <HabitTodayCard key={habit.id} habit={habit} onEdit={openEditForm} onOpen={openHabit} />
+          ))}
         </View>
       )}
 
