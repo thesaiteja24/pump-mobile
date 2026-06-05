@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Dimensions, StyleSheet, View } from 'react-native'
 import ConfettiCannon from 'react-native-confetti-cannon'
 
-import { COLORS } from '@/config/tokens'
+import { colorModes } from '@/theme'
 
 import { globalConfettiRef } from './confetti-ref'
 
@@ -16,9 +16,9 @@ const styles = StyleSheet.create({
 })
 
 function ConfettiRenderer({ activeKeys }: { activeKeys: string[] }) {
-  const successColor = COLORS.dark.success
-  const accentColor = COLORS.dark.accent
-  const warningColor = COLORS.dark.warning
+  const successColor = colorModes.dark.foreground.success
+  const accentColor = colorModes.dark.foreground.accent
+  const warningColor = colorModes.dark.foreground.warning
 
   return (
     <>

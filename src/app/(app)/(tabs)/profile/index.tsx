@@ -16,7 +16,7 @@ import { useProfileQuery, useUpdateProfileMutation } from '@/hooks/queries/use-u
 import { useTheme } from '@/hooks/use-theme'
 import { useAuthStore } from '@/stores/auth-store'
 
-import type { ThemePreference } from '@/config/tokens'
+import type { ThemePreference } from '@/theme'
 import type { BottomSheetMethods } from '@expo/ui/community/bottom-sheet'
 
 interface ProfileActionsProps {

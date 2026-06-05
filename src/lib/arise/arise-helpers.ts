@@ -1,7 +1,7 @@
 import { setAudioModeAsync } from 'expo-audio'
 import * as Haptics from 'expo-haptics'
 
-import { COLORS } from '@/config/tokens'
+import { colorModes } from '@/theme'
 
 import type { AriseCallParams, AriseType } from './types'
 import type { Ionicons } from '@expo/vector-icons'
@@ -33,11 +33,11 @@ const HAPTIC_STYLE_MAP = {
 } as const
 
 const DEFAULT_ICON_CONFIGS: Record<AriseType, IconConfig> = {
-  success: { iconName: 'checkmark-circle', iconColor: COLORS.dark.success, iconSize: 36 },
-  error: { iconName: 'close-circle', iconColor: COLORS.dark.danger, iconSize: 36 },
-  info: { iconName: 'information-circle', iconColor: COLORS.dark.info, iconSize: 32 },
-  warn: { iconName: 'warning', iconColor: COLORS.dark.warning, iconSize: 32 },
-  custom: { iconName: 'information-circle', iconColor: COLORS.dark.info, iconSize: 32 },
+  success: { iconName: 'checkmark-circle', iconColor: colorModes.dark.foreground.success, iconSize: 36 },
+  error: { iconName: 'close-circle', iconColor: colorModes.dark.foreground.danger, iconSize: 36 },
+  info: { iconName: 'information-circle', iconColor: colorModes.dark.foreground.info, iconSize: 32 },
+  warn: { iconName: 'warning', iconColor: colorModes.dark.foreground.warning, iconSize: 32 },
+  custom: { iconName: 'information-circle', iconColor: colorModes.dark.foreground.info, iconSize: 32 },
 }
 
 export function triggerHaptics(type: AriseType, haptic?: 'light' | 'medium' | 'heavy' | 'none') {

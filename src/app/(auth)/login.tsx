@@ -1,6 +1,7 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, View } from 'react-native'
 
 import { Button } from '@/components/ui/button'
+import { CustomText } from '@/components/ui/custom-text'
 import { useGoogleSignIn } from '@/hooks/auth/use-google-sign-in'
 import { useTheme } from '@/hooks/use-theme'
 
@@ -18,13 +19,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  wordmark: {
-    fontSize: 64,
-    fontWeight: '800',
-    letterSpacing: -2,
-  },
   tagline: {
-    fontSize: 16,
     textAlign: 'center',
   },
   actions: {
@@ -35,13 +30,8 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 16,
   },
-  loaderLabel: {
-    fontSize: 14,
-  },
   legal: {
-    fontSize: 12,
     textAlign: 'center',
-    lineHeight: 18,
   },
 })
 
@@ -55,16 +45,18 @@ const styles = StyleSheet.create({
  */
 export default function LoginScreen() {
   const { signIn, isLoading } = useGoogleSignIn()
-  const { colors, spacing } = useTheme()
+  const { colorModes, spacing } = useTheme()
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
+    <View style={[styles.root, { backgroundColor: colorModes.background.primary }]}>
       {/* Branding */}
       <View style={styles.brand}>
-        <Text style={[styles.wordmark, { color: colors.text }]}>Pump</Text>
-        <Text style={[styles.tagline, { color: colors.textMuted }]}>
+        <CustomText variant="displayXl" weight="bold" style={{ color: colorModes.text.primary, fontSize: 64, lineHeight: 72 }}>
+          Pump
+        </CustomText>
+        <CustomText variant="body" color="muted" align="center" style={styles.tagline}>
           Your fitness journey starts here
-        </Text>
+        </CustomText>
       </View>
 
       {/* Actions */}
@@ -72,10 +64,10 @@ export default function LoginScreen() {
         {isLoading
           ? (
               <View style={styles.loader}>
-                <ActivityIndicator color={colors.accent} size="large" />
-                <Text style={[styles.loaderLabel, { color: colors.textMuted }]}>
+                <ActivityIndicator color={colorModes.foreground.accent} size="large" />
+                <CustomText variant="bodySm" color="muted">
                   Signing you in…
-                </Text>
+                </CustomText>
               </View>
             )
           : (
@@ -88,9 +80,9 @@ export default function LoginScreen() {
             )}
       </View>
 
-      <Text style={[styles.legal, { color: colors.textMuted }]}>
+      <CustomText variant="caption" color="muted" align="center" style={styles.legal}>
         By continuing you agree to our Terms of Service and Privacy Policy
-      </Text>
+      </CustomText>
     </View>
   )
 }

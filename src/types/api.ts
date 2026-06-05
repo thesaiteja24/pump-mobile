@@ -91,6 +91,8 @@ export class ApiRequestError extends Error {
     public readonly code: string,
     /** Full raw response envelope for debugging */
     public readonly envelope: ApiErrorResponse,
+    /** HTTP status when this error came from an axios response */
+    public readonly status?: number,
   ) {
     super(message)
     this.name = 'ApiRequestError'

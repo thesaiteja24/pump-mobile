@@ -42,7 +42,8 @@ export const queryClient = new QueryClient({
        * Retry everything else (network, 5xx) up to 2 times.
        */
       retry: (failureCount, error) => {
-        const httpStatus = (error as { response?: { status?: number } })?.response?.status
+        const httpStatus = (error as { status?: number, response?: { status?: number } })?.status
+          ?? (error as { response?: { status?: number } })?.response?.status
         if (httpStatus !== undefined && httpStatus >= 400 && httpStatus < 500) {
           return false
         }

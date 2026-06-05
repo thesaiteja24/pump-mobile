@@ -9,7 +9,7 @@ import { useTheme } from '@/hooks/use-theme'
  * is offline. Uses @react-native-community/netinfo for real-time connectivity.
  */
 export function OfflineBanner() {
-  const { colors, typography, spacing } = useTheme()
+  const { colorModes, typography, spacing } = useTheme()
   const [isOffline, setIsOffline] = useState(false)
 
   useEffect(() => {
@@ -25,13 +25,13 @@ export function OfflineBanner() {
   return (
     <View
       style={{
-        backgroundColor: colors.warning,
+        backgroundColor: colorModes.foreground.warning,
         paddingVertical: spacing.sm,
         paddingHorizontal: spacing.lg,
         alignItems: 'center',
       }}
     >
-      <Text style={[typography.bodySmStrong, { color: colors.black }]}>
+      <Text style={[typography.bodySmStrong, { color: colorModes.base.black }]}>
         No internet connection
       </Text>
     </View>

@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { OfflineBanner } from '@/components/ui/offline-banner'
 import { useTheme } from '@/hooks/use-theme'
 
-import type { ThemeColors } from '@/hooks/use-theme'
+import type { ThemeColorModes } from '@/hooks/use-theme'
 import type { StyleProp, ViewStyle } from 'react-native'
 import type { Edge } from 'react-native-safe-area-context'
 
@@ -38,7 +38,7 @@ interface HeaderConfigProps {
   title?: string
   hasHeader: boolean
   isDark: boolean
-  colors: ThemeColors
+  colorModes: ThemeColorModes
   headerLeft?: () => React.ReactNode
   headerRight?: () => React.ReactNode
 }
@@ -47,7 +47,7 @@ function HeaderConfig({
   title,
   hasHeader,
   isDark,
-  colors,
+  colorModes,
   headerLeft,
   headerRight,
 }: HeaderConfigProps) {
@@ -61,7 +61,7 @@ function HeaderConfig({
         headerTransparent: true,
         headerBlurEffect: isDark ? 'dark' : 'light',
         headerShadowVisible: false,
-        headerTintColor: colors.text,
+        headerTintColor: colorModes.text.primary,
         headerTitleAlign: headerLeft ? 'center' : 'left',
         headerBackground: () =>
           Platform.OS === 'ios'
@@ -70,9 +70,9 @@ function HeaderConfig({
                 <View
                   style={{
                     flex: 1,
-                    backgroundColor: colors.card,
+                    backgroundColor: colorModes.surface.primary,
                     borderBottomWidth: 0.5,
-                    borderBottomColor: colors.border,
+                    borderBottomColor: colorModes.border.primary,
                   }}
                 />
               ),
@@ -139,7 +139,7 @@ export function BaseScreen({
   scrollable = false,
   keyBoardAvoiding = true,
 }: BaseScreenProps) {
-  const { isDark, colors } = useTheme()
+  const { isDark, colorModes } = useTheme()
   const hasHeader = !(!title && !headerLeft && !headerRight)
   const contextHeaderHeight = useContext(HeaderHeightContext)
   const headerHeight = contextHeaderHeight ?? 0
@@ -148,14 +148,14 @@ export function BaseScreen({
 
   return (
     <SafeAreaView
-      style={[{ flex: 1, backgroundColor: colors.background }, style]}
+      style={[{ flex: 1, backgroundColor: colorModes.background.primary }, style]}
       edges={finalEdges}
     >
       <HeaderConfig
         title={title}
         hasHeader={hasHeader}
         isDark={isDark}
-        colors={colors}
+        colorModes={colorModes}
         headerLeft={headerLeft}
         headerRight={headerRight}
       />

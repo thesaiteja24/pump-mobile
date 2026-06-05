@@ -16,7 +16,7 @@ interface CardProps extends Omit<PressableProps, 'style'> {
  * If onPress is provided, it triggers light haptic impact feedback automatically.
  */
 export function Card({ children, style, onPress, ...props }: CardProps) {
-  const { colors, radius, spacing } = useTheme()
+  const { colorModes, effects, radius, spacing } = useTheme()
 
   const handlePress = (event: GestureResponderEvent) => {
     if (onPress) {
@@ -30,9 +30,12 @@ export function Card({ children, style, onPress, ...props }: CardProps) {
       onPress={onPress ? handlePress : undefined}
       style={state => [
         {
-          backgroundColor: colors.card,
+          backgroundColor: colorModes.surface.primary,
+          borderWidth: 1,
+          borderColor: colorModes.border.primary,
           borderRadius: radius.xl,
           padding: spacing.lg,
+          ...effects.subtle,
         },
         state.pressed && onPress && { opacity: 0.9 },
         typeof style === 'function' ? style(state) : style,

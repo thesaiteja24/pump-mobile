@@ -9,6 +9,11 @@ import type { AuthSession, AuthUser } from '@/types/auth'
 
 // ─── State shape ───────────────────────────────────────────────────────────────
 
+interface ClearSessionOptions {
+  /** Revoke the server-side session. Disable for 401-driven expiry handling. */
+  revoke?: boolean
+}
+
 interface AuthState {
   /** Opaque Redis session ID used as the Bearer token. */
   sessionId: string | null
@@ -30,8 +35,14 @@ interface AuthState {
    * resets TanStack Query cache, and resets PostHog identity.
    * OneSignal logout is handled in AppBootstrap by subscribing to this state.
    */
-  clearSession: () => Promise<void>
+  clearSession: (options?: ClearSessionOptions) => Promise<void>
 }
+
+// ─── MMKV direct persistence for sessionId ─────────────────────────────────────
+// We persist sessionId directly in MMKV (not through zustand/persist) so we can
+// read it synchronously in the axios interceptor without a Zustand subscribe.
+
+const SESSION_KEY = 'auth.sessionId'
 
 // ─── Cleared state constant ────────────────────────────────────────────────────
 
@@ -49,17 +60,22 @@ export const useAuthStore = create<AuthState>()(
       ...CLEARED,
 
       setSession: ({ sessionId, user }) => {
+        mmkvStorageAdapter.setItem(SESSION_KEY, sessionId)
         set({ sessionId, user, isAuthenticated: true })
       },
 
-      clearSession: async () => {
+      clearSession: async ({ revoke = true } = {}) => {
         // Best-effort server-side revocation — do not block local logout on failure.
-        try {
-          await logoutApi()
+        if (revoke) {
+          try {
+            await logoutApi()
+          }
+          catch {
+            // Session may already be expired or network unavailable — safe to ignore.
+          }
         }
-        catch {
-          // Session may already be expired or network unavailable — safe to ignore.
-        }
+
+        mmkvStorageAdapter.removeItem(SESSION_KEY)
 
         // Clear TanStack Query cache — import lazily to avoid circular imports.
         try {
@@ -91,38 +107,8 @@ export const useAuthStore = create<AuthState>()(
   ),
 )
 
-// ─── MMKV direct persistence for sessionId ─────────────────────────────────────
-// We persist sessionId directly in MMKV (not through zustand/persist) so we can
-// read it synchronously in the axios interceptor without a Zustand subscribe.
-
-const SESSION_KEY = 'auth.sessionId'
-
-// Patch setSession / clearSession to also sync sessionId to MMKV directly.
-const originalSetSession = useAuthStore.getState().setSession
-useAuthStore.setState({
-  setSession: (session) => {
-    mmkvStorageAdapter.setItem(SESSION_KEY, session.sessionId)
-    originalSetSession(session)
-    // Re-patch after zustand replaces the state object
-    useAuthStore.setState({
-      sessionId: session.sessionId,
-      isAuthenticated: true,
-      user: session.user,
-    })
-  },
-})
-
 // Hydrate sessionId from MMKV on module load (synchronous, zero latency).
 const storedSessionId = mmkvStorageAdapter.getItem(SESSION_KEY)
 if (storedSessionId) {
   useAuthStore.setState({ sessionId: storedSessionId })
 }
-
-// Patch clearSession to also remove sessionId from MMKV.
-const originalClearSession = useAuthStore.getState().clearSession
-useAuthStore.setState({
-  clearSession: async () => {
-    mmkvStorageAdapter.removeItem(SESSION_KEY)
-    await originalClearSession()
-  },
-})
