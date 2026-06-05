@@ -1,20 +1,17 @@
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
-import { useRef, useState } from 'react'
 import { Pressable, View } from 'react-native'
 
-import { HabitFormModal } from '@/components/habits/habit-form-modal'
 import { HabitLogControl } from '@/components/habits/habit-log-control'
 import { HabitEmptyState, HabitErrorState, HabitLoadingState } from '@/components/habits/habit-state'
 import { BaseScreen } from '@/components/ui/base-screen'
-import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { CustomText } from '@/components/ui/custom-text'
+import { Menu } from '@/components/ui/menu'
 import { useTodayHabitsQuery } from '@/hooks/queries/use-habits'
 import { useTheme } from '@/hooks/use-theme'
 
 import type { HabitCategory, HabitTodayItem, HabitTrackingType } from '@/types/habit'
-import type { BottomSheetMethods } from '@expo/ui/community/bottom-sheet'
 
 const categoryLabels: Record<HabitCategory, string> = {
   training: 'Training',
@@ -48,7 +45,7 @@ function HabitTodayCard({
   onOpen,
 }: {
   habit: HabitTodayItem
-  onEdit: (habit: HabitTodayItem) => void
+  onEdit: (habitId: string) => void
   onOpen: (habitId: string) => void
 }) {
   const { colorModes, spacing, radius } = useTheme()
@@ -68,7 +65,7 @@ function HabitTodayCard({
           {habit.source === 'manual' && (
             <Pressable
               accessibilityLabel="Edit habit"
-              onPress={() => onEdit(habit)}
+              onPress={() => onEdit(habit.id)}
               style={{
                 width: 36,
                 height: 36,
@@ -117,24 +114,23 @@ function HabitTodayCard({
 }
 
 export default function HabitsScreen() {
-  const { spacing } = useTheme()
+  const { colorModes, spacing } = useTheme()
   const { data: habits = [], isLoading, isError, refetch } = useTodayHabitsQuery()
-  const formModalRef = useRef<BottomSheetMethods | null>(null)
-  const [editingHabit, setEditingHabit] = useState<HabitTodayItem | null>(null)
   const completedCount = habits.filter(habit => habit.completed).length
-  const closeForm = () => formModalRef.current?.dismiss()
-  const openCreateForm = () => {
-    setEditingHabit(null)
-    formModalRef.current?.present()
-  }
-  const openEditForm = (habit: HabitTodayItem) => {
-    setEditingHabit(habit)
-    formModalRef.current?.present()
-  }
+  const openCreateForm = () => router.push('/(app)/(tabs)/habits/create')
+  const openEditForm = (habitId: string) => router.push(`/(app)/(tabs)/habits/edit/${habitId}`)
   const openHabit = (habitId: string) => router.push(`/(app)/(tabs)/habits/${habitId}`)
 
   return (
-    <BaseScreen title="Habits" scrollable>
+    <BaseScreen
+      title="Habits"
+      scrollable
+      headerRight={() => (
+        <Menu onPressTrigger={openCreateForm} roundedOutline>
+          <Ionicons name="add" size={24} color={colorModes.text.primary} />
+        </Menu>
+      )}
+    >
       <View style={{ gap: spacing.xxs }}>
         <CustomText variant="displayMd">Today</CustomText>
         <CustomText variant="bodySm" color="secondary">
@@ -144,11 +140,9 @@ export default function HabitsScreen() {
         </CustomText>
       </View>
 
-      <Button title="Create Habit" variant="secondary" onPress={openCreateForm} />
-
       {isLoading && <HabitLoadingState />}
       {isError && <HabitErrorState onAction={() => refetch()} />}
-      {!isLoading && !isError && habits.length === 0 && <HabitEmptyState onCreate={openCreateForm} />}
+      {!isLoading && !isError && habits.length === 0 && <HabitEmptyState />}
 
       {!isLoading && !isError && habits.length > 0 && (
         <View style={{ gap: spacing.md }}>
@@ -157,8 +151,6 @@ export default function HabitsScreen() {
           ))}
         </View>
       )}
-
-      <HabitFormModal ref={formModalRef} habit={editingHabit} onClose={closeForm} />
     </BaseScreen>
   )
 }

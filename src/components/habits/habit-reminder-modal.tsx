@@ -85,12 +85,12 @@ export function HabitReminderModal({ ref, habitId, onClose, onCreated }: HabitRe
   const submit = () => {
     const normalizedTime = normalizeTime(time)
     if (!normalizedTime) {
-      Arise.error({ heading: 'Use HH:mm time format' })
+      Arise.error({ heading: 'Use HH:mm time format', sound: true })
       return
     }
 
     if (daysOfWeek.length === 0) {
-      Arise.error({ heading: 'Select at least one day' })
+      Arise.error({ heading: 'Select at least one day', sound: true })
       return
     }
 
@@ -98,11 +98,11 @@ export function HabitReminderModal({ ref, habitId, onClose, onCreated }: HabitRe
       { habitId, data: { time: normalizedTime, daysOfWeek } },
       {
         onSuccess: (reminder) => {
-          Arise.success('Reminder created')
+          Arise.success({ heading: 'Reminder created', sound: true })
           onCreated(reminder)
           onClose()
         },
-        onError: () => Arise.error({ heading: 'Unable to create reminder' }),
+        onError: () => Arise.error({ heading: 'Unable to create reminder', sound: true }),
       },
     )
   }

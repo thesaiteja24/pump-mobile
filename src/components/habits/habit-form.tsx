@@ -1,16 +1,12 @@
-import { BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from '@expo/ui/community/bottom-sheet'
-import React, { memo, useEffect } from 'react'
+import { memo, useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { Pressable, View } from 'react-native'
+import { Pressable, TextInput, View } from 'react-native'
 
 import { Button } from '@/components/ui/button'
 import { CustomText } from '@/components/ui/custom-text'
-import { useCreateHabitMutation, useUpdateHabitMutation } from '@/hooks/queries/use-habits'
 import { useTheme } from '@/hooks/use-theme'
-import { Arise } from '@/lib/arise'
 
 import type { Habit, HabitCategory, HabitCreateInput, HabitTargetPeriod, HabitTrackingType } from '@/types/habit'
-import type { BottomSheetMethods } from '@expo/ui/community/bottom-sheet'
 import type { Control } from 'react-hook-form'
 
 interface HabitFormValues {
@@ -23,10 +19,12 @@ interface HabitFormValues {
   unit: string
 }
 
-interface HabitFormModalProps {
-  ref?: React.Ref<BottomSheetMethods>
+interface HabitFormProps {
   habit?: Habit | null
-  onClose: () => void
+  submitLabel: string
+  isPending: boolean
+  onCancel: () => void
+  onSubmit: (payload: HabitCreateInput) => void
 }
 
 const categoryOptions: { value: HabitCategory, label: string }[] = [
@@ -161,7 +159,7 @@ const TextField = memo(({
       render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
         <View style={{ gap: spacing.xxs }}>
           <CustomText variant="bodySmStrong" color="secondary">{label}</CustomText>
-          <BottomSheetTextInput
+          <TextInput
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
@@ -172,7 +170,7 @@ const TextField = memo(({
             style={[
               typography.body,
               {
-                minHeight: multiline ? 80 : 48,
+                minHeight: multiline ? 88 : 48,
                 borderRadius: radius.md,
                 borderWidth: 1,
                 borderColor: error ? colorModes.foreground.danger : colorModes.border.primary,
@@ -259,12 +257,8 @@ function TargetFields({ control, trackingType }: { control: Control<HabitFormVal
   )
 }
 
-export function HabitFormModal({ ref, habit, onClose }: HabitFormModalProps) {
-  const { colorModes, spacing } = useTheme()
-  const createHabit = useCreateHabitMutation()
-  const updateHabit = useUpdateHabitMutation()
-  const isEditing = !!habit
-  const isPending = createHabit.isPending || updateHabit.isPending
+export function HabitForm({ habit, submitLabel, isPending, onCancel, onSubmit }: HabitFormProps) {
+  const { spacing } = useTheme()
   const { control, handleSubmit, reset, watch } = useForm<HabitFormValues>({
     defaultValues: getDefaultValues(habit),
   })
@@ -274,52 +268,22 @@ export function HabitFormModal({ ref, habit, onClose }: HabitFormModalProps) {
     reset(getDefaultValues(habit))
   }, [habit, reset])
 
-  const submit = (values: HabitFormValues) => {
-    const payload = buildPayload(values)
-
-    if (habit) {
-      updateHabit.mutate(
-        { habitId: habit.id, data: { ...payload, startDate: undefined } },
-        {
-          onSuccess: () => {
-            Arise.success('Habit updated')
-            onClose()
-          },
-          onError: () => Arise.error({ heading: 'Unable to update habit' }),
-        },
-      )
-      return
-    }
-
-    createHabit.mutate(payload, {
-      onSuccess: () => {
-        Arise.success('Habit created')
-        onClose()
-      },
-      onError: () => Arise.error({ heading: 'Unable to create habit' }),
-    })
-  }
-
   return (
-    <BottomSheetModal ref={ref} enableDynamicSizing enablePanDownToClose={false} backgroundStyle={{ backgroundColor: colorModes.surface.primary }}>
-      <BottomSheetScrollView keyboardShouldPersistTaps="handled">
-        <BottomSheetView style={{ padding: spacing.lg, paddingBottom: spacing.xxxl, gap: spacing.xl }}>
-          <View style={{ gap: spacing.xxs }}>
-            <CustomText variant="displaySm">{isEditing ? 'Edit Habit' : 'Create Habit'}</CustomText>
-            <CustomText variant="bodySm" color="secondary">
-              Keep this simple. Habits work best when the target is obvious.
-            </CustomText>
-          </View>
+    <View style={{ gap: spacing.xl }}>
+      <View style={{ gap: spacing.xxs }}>
+        <CustomText variant="displaySm">{habit ? 'Edit Habit' : 'Create Habit'}</CustomText>
+        <CustomText variant="bodySm" color="secondary">
+          Keep this simple. Habits work best when the target is obvious.
+        </CustomText>
+      </View>
 
-          <HabitFormFields control={control} />
-          <TargetFields control={control} trackingType={trackingType} />
+      <HabitFormFields control={control} />
+      <TargetFields control={control} trackingType={trackingType} />
 
-          <View style={{ flexDirection: 'row', gap: spacing.md }}>
-            <Button title="Cancel" variant="outline" size="sm" onPress={onClose} />
-            <Button title={isEditing ? 'Save' : 'Create'} size="sm" loading={isPending} style={{ flex: 1 }} onPress={handleSubmit(submit)} />
-          </View>
-        </BottomSheetView>
-      </BottomSheetScrollView>
-    </BottomSheetModal>
+      <View style={{ flexDirection: 'row', gap: spacing.md }}>
+        <Button title="Cancel" variant="outline" size="sm" onPress={onCancel} />
+        <Button title={submitLabel} size="sm" loading={isPending} style={{ flex: 1 }} onPress={handleSubmit(values => onSubmit(buildPayload(values)))} />
+      </View>
+    </View>
   )
 }

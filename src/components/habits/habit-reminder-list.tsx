@@ -42,7 +42,7 @@ function ReminderRow({
       },
       {
         onSuccess: onChanged,
-        onError: () => Arise.error({ heading: 'Unable to update reminder' }),
+        onError: () => Arise.error({ heading: 'Unable to update reminder', sound: true }),
       },
     )
   }
@@ -52,7 +52,7 @@ function ReminderRow({
       { habitId: reminder.habitId, reminderId: reminder.id },
       {
         onSuccess: () => onDeleted(reminder.id),
-        onError: () => Arise.error({ heading: 'Unable to remove reminder' }),
+        onError: () => Arise.error({ heading: 'Unable to remove reminder', sound: true }),
       },
     )
   }

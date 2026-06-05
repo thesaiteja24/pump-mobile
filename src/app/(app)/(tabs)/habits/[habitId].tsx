@@ -11,6 +11,7 @@ import { BaseScreen } from '@/components/ui/base-screen'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { CustomText } from '@/components/ui/custom-text'
+import { Menu } from '@/components/ui/menu'
 import { useArchiveHabitMutation, useHabitQuery, useHabitStatsQuery } from '@/hooks/queries/use-habits'
 import { useTheme } from '@/hooks/use-theme'
 import { Arise } from '@/lib/arise'
@@ -88,10 +89,10 @@ function ArchiveHabitButton({ habit }: { habit: Habit }) {
   const handleArchive = () => {
     archiveHabit.mutate(habit.id, {
       onSuccess: () => {
-        Arise.success('Habit archived')
+        Arise.success({ heading: 'Habit archived', sound: true })
         router.back()
       },
-      onError: () => Arise.error({ heading: 'Unable to archive habit' }),
+      onError: () => Arise.error({ heading: 'Unable to archive habit', sound: true }),
     })
   }
 
@@ -130,12 +131,17 @@ export default function HabitDetailScreen() {
       title="Habit"
       scrollable
       headerLeft={() => (
-        <Button
-          variant="ghost"
-          leftIcon={<Ionicons name="chevron-back" size={24} color={colorModes.text.primary} />}
-          onPress={() => router.back()}
-        />
+        <Menu onPressTrigger={() => router.back()} roundedOutline>
+          <Ionicons name="chevron-back" size={24} color={colorModes.text.primary} />
+        </Menu>
       )}
+      headerRight={() => habit?.source === 'manual'
+        ? (
+            <Menu onPressTrigger={() => router.push(`/(app)/(tabs)/habits/edit/${habit.id}`)} roundedOutline>
+              <Ionicons name="create-outline" size={22} color={colorModes.text.primary} />
+            </Menu>
+          )
+        : null}
     >
       {habitQuery.isLoading && <HabitLoadingState />}
 
