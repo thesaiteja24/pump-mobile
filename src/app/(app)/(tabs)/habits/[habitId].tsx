@@ -5,6 +5,7 @@ import { ActivityIndicator, View } from 'react-native'
 
 import { HabitReminderList } from '@/components/habits/habit-reminder-list'
 import { HabitReminderModal } from '@/components/habits/habit-reminder-modal'
+import { HabitErrorState, HabitLoadingState } from '@/components/habits/habit-state'
 import { HabitStatsCard } from '@/components/habits/habit-stats-card'
 import { BaseScreen } from '@/components/ui/base-screen'
 import { Button } from '@/components/ui/button'
@@ -107,7 +108,7 @@ function ArchiveHabitButton({ habit }: { habit: Habit }) {
 
 export default function HabitDetailScreen() {
   const { habitId } = useLocalSearchParams<{ habitId: string }>()
-  const { colorModes, spacing } = useTheme()
+  const { colorModes } = useTheme()
   const reminderModalRef = useRef<BottomSheetMethods | null>(null)
   const [sessionReminders, setSessionReminders] = useState<HabitReminder[]>([])
   const habitQuery = useHabitQuery(habitId)
@@ -136,17 +137,14 @@ export default function HabitDetailScreen() {
         />
       )}
     >
-      {habitQuery.isLoading && (
-        <View style={{ paddingVertical: 80 }}>
-          <ActivityIndicator color={colorModes.text.primary} size="large" />
-        </View>
-      )}
+      {habitQuery.isLoading && <HabitLoadingState />}
 
       {habitQuery.isError && (
-        <Card style={{ gap: spacing.sm }}>
-          <CustomText variant="bodyStrong" color="danger">Unable to load habit</CustomText>
-          <CustomText variant="bodySm" color="secondary">Go back and try again.</CustomText>
-        </Card>
+        <HabitErrorState
+          title="Unable to load habit"
+          message="Go back or try loading this habit again."
+          onAction={() => habitQuery.refetch()}
+        />
       )}
 
       {habit && (
