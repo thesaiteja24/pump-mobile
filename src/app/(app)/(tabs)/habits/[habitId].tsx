@@ -1,7 +1,10 @@
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams } from 'expo-router'
+import { useRef, useState } from 'react'
 import { ActivityIndicator, View } from 'react-native'
 
+import { HabitReminderList } from '@/components/habits/habit-reminder-list'
+import { HabitReminderModal } from '@/components/habits/habit-reminder-modal'
 import { HabitStatsCard } from '@/components/habits/habit-stats-card'
 import { BaseScreen } from '@/components/ui/base-screen'
 import { Button } from '@/components/ui/button'
@@ -11,7 +14,8 @@ import { useArchiveHabitMutation, useHabitQuery, useHabitStatsQuery } from '@/ho
 import { useTheme } from '@/hooks/use-theme'
 import { Arise } from '@/lib/arise'
 
-import type { Habit } from '@/types/habit'
+import type { Habit, HabitReminder } from '@/types/habit'
+import type { BottomSheetMethods } from '@expo/ui/community/bottom-sheet'
 
 const categoryLabels = {
   training: 'Training',
@@ -104,9 +108,21 @@ function ArchiveHabitButton({ habit }: { habit: Habit }) {
 export default function HabitDetailScreen() {
   const { habitId } = useLocalSearchParams<{ habitId: string }>()
   const { colorModes, spacing } = useTheme()
+  const reminderModalRef = useRef<BottomSheetMethods | null>(null)
+  const [sessionReminders, setSessionReminders] = useState<HabitReminder[]>([])
   const habitQuery = useHabitQuery(habitId)
   const statsQuery = useHabitStatsQuery(habitId)
   const habit = habitQuery.data
+  const closeReminderModal = () => reminderModalRef.current?.dismiss()
+  const handleReminderChanged = (reminder: HabitReminder) => {
+    setSessionReminders(current => current.map(item => item.id === reminder.id ? reminder : item))
+  }
+  const handleReminderDeleted = (reminderId: string) => {
+    setSessionReminders(current => current.filter(item => item.id !== reminderId))
+  }
+  const handleReminderCreated = (reminder: HabitReminder) => {
+    setSessionReminders(current => [...current.filter(item => item.id !== reminder.id), reminder])
+  }
 
   return (
     <BaseScreen
@@ -142,7 +158,15 @@ export default function HabitDetailScreen() {
               <ActivityIndicator color={colorModes.text.primary} />
             </Card>
           )}
+          <HabitReminderList reminders={sessionReminders} onChanged={handleReminderChanged} onDeleted={handleReminderDeleted} />
+          <Button title="Add Reminder" variant="secondary" onPress={() => reminderModalRef.current?.present()} />
           <ArchiveHabitButton habit={habit} />
+          <HabitReminderModal
+            ref={reminderModalRef}
+            habitId={habit.id}
+            onClose={closeReminderModal}
+            onCreated={handleReminderCreated}
+          />
         </>
       )}
     </BaseScreen>
