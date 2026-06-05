@@ -2,7 +2,7 @@ import { Stack } from 'expo-router'
 import { HeaderHeightContext } from 'expo-router/react-navigation'
 import React, { useContext } from 'react'
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { OfflineBanner } from '@/components/ui/offline-banner'
 import { useTheme } from '@/hooks/use-theme'
@@ -13,20 +13,33 @@ import type { Edge } from 'react-native-safe-area-context'
 
 export interface BaseScreenProps {
   children: React.ReactNode
+  footer?: React.ReactNode
   title?: string
   headerLeft?: () => React.ReactNode
   headerRight?: () => React.ReactNode
   edges?: Edge[]
   style?: StyleProp<ViewStyle>
+  footerStyle?: StyleProp<ViewStyle>
   contentStyle?: StyleProp<ViewStyle>
   scrollable?: boolean
   keyBoardAvoiding?: boolean
+  hasTabBar?: boolean
 }
 
 function getFinalEdges(edges: Edge[] | undefined, hasHeader: boolean): Edge[] {
   if (edges)
     return edges
   return hasHeader ? ['left', 'right'] : ['top', 'left', 'right']
+}
+
+function getKeyboardBehavior(keyBoardAvoiding: boolean, scrollable: boolean) {
+  if (!keyBoardAvoiding)
+    return undefined
+
+  if (Platform.OS !== 'ios')
+    return 'height'
+
+  return scrollable ? 'height' : 'padding'
 }
 
 /**
@@ -86,6 +99,8 @@ interface ScreenContentProps {
   children: React.ReactNode
   headerHeight: number
   contentStyle: StyleProp<ViewStyle>
+  hasFooter: boolean
+  hasTabBar: boolean
 }
 
 function ScreenContent({
@@ -93,6 +108,8 @@ function ScreenContent({
   children,
   headerHeight,
   contentStyle,
+  hasFooter,
+  hasTabBar,
 }: ScreenContentProps) {
   const { layout, spacing } = useTheme()
   return scrollable
@@ -103,7 +120,7 @@ function ScreenContent({
             {
               padding: spacing.lg,
               gap: spacing.md,
-              paddingBottom: spacing.tabBar,
+              paddingBottom: hasFooter ? spacing.lg : (hasTabBar ? spacing.tabBar : spacing.lg),
             },
             Platform.OS !== 'ios' && { paddingTop: headerHeight },
             contentStyle,
@@ -128,16 +145,51 @@ function ScreenContent({
       )
 }
 
+function ScreenFooter({
+  children,
+  hasTabBar,
+  style,
+}: {
+  children: React.ReactNode
+  hasTabBar: boolean
+  style: StyleProp<ViewStyle>
+}) {
+  const { colorModes, spacing } = useTheme()
+  const insets = useSafeAreaInsets()
+
+  return (
+    <View
+      style={[
+        {
+          borderTopWidth: 1,
+          borderTopColor: colorModes.border.primary,
+          backgroundColor: colorModes.surface.primary,
+          paddingHorizontal: spacing.lg,
+          paddingTop: spacing.md,
+          paddingBottom: hasTabBar ? spacing.lg : insets.bottom + spacing.lg,
+          marginBottom: hasTabBar ? spacing.tabBar : 0,
+        },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  )
+}
+
 export function BaseScreen({
   children,
+  footer,
   title,
   headerLeft,
   headerRight,
   edges,
   style,
+  footerStyle,
   contentStyle,
   scrollable = false,
   keyBoardAvoiding = true,
+  hasTabBar = true,
 }: BaseScreenProps) {
   const { isDark, colorModes } = useTheme()
   const hasHeader = !(!title && !headerLeft && !headerRight)
@@ -161,17 +213,22 @@ export function BaseScreen({
       />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={keyBoardAvoiding
-          ? (Platform.OS === 'ios' ? (scrollable ? 'height' : 'padding') : 'height')
-          : undefined}
+        behavior={getKeyboardBehavior(keyBoardAvoiding, scrollable)}
       >
         <ScreenContent
           scrollable={scrollable}
           headerHeight={headerHeight}
           contentStyle={contentStyle}
+          hasFooter={!!footer}
+          hasTabBar={hasTabBar}
         >
           {children}
         </ScreenContent>
+        {footer && (
+          <ScreenFooter hasTabBar={hasTabBar} style={footerStyle}>
+            {footer}
+          </ScreenFooter>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   )

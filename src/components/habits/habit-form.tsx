@@ -2,11 +2,11 @@ import { memo, useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { Pressable, TextInput, View } from 'react-native'
 
-import { Button } from '@/components/ui/button'
 import { CustomText } from '@/components/ui/custom-text'
 import { useTheme } from '@/hooks/use-theme'
 
 import type { Habit, HabitCategory, HabitCreateInput, HabitTargetPeriod, HabitTrackingType } from '@/types/habit'
+import type { MutableRefObject } from 'react'
 import type { Control } from 'react-hook-form'
 
 interface HabitFormValues {
@@ -21,9 +21,7 @@ interface HabitFormValues {
 
 interface HabitFormProps {
   habit?: Habit | null
-  submitLabel: string
-  isPending: boolean
-  onCancel: () => void
+  submitRef: MutableRefObject<() => void>
   onSubmit: (payload: HabitCreateInput) => void
 }
 
@@ -257,7 +255,7 @@ function TargetFields({ control, trackingType }: { control: Control<HabitFormVal
   )
 }
 
-export function HabitForm({ habit, submitLabel, isPending, onCancel, onSubmit }: HabitFormProps) {
+export function HabitForm({ habit, submitRef, onSubmit }: HabitFormProps) {
   const { spacing } = useTheme()
   const { control, handleSubmit, reset, watch } = useForm<HabitFormValues>({
     defaultValues: getDefaultValues(habit),
@@ -267,6 +265,10 @@ export function HabitForm({ habit, submitLabel, isPending, onCancel, onSubmit }:
   useEffect(() => {
     reset(getDefaultValues(habit))
   }, [habit, reset])
+
+  useEffect(() => {
+    submitRef.current = handleSubmit(values => onSubmit(buildPayload(values)))
+  }, [handleSubmit, onSubmit, submitRef])
 
   return (
     <View style={{ gap: spacing.xl }}>
@@ -279,11 +281,6 @@ export function HabitForm({ habit, submitLabel, isPending, onCancel, onSubmit }:
 
       <HabitFormFields control={control} />
       <TargetFields control={control} trackingType={trackingType} />
-
-      <View style={{ flexDirection: 'row', gap: spacing.md }}>
-        <Button title="Cancel" variant="outline" size="sm" onPress={onCancel} />
-        <Button title={submitLabel} size="sm" loading={isPending} style={{ flex: 1 }} onPress={handleSubmit(values => onSubmit(buildPayload(values)))} />
-      </View>
     </View>
   )
 }

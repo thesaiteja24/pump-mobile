@@ -117,8 +117,8 @@ export default function HabitsScreen() {
   const { colorModes, spacing } = useTheme()
   const { data: habits = [], isLoading, isError, refetch } = useTodayHabitsQuery()
   const completedCount = habits.filter(habit => habit.completed).length
-  const openCreateForm = () => router.push('/(app)/(tabs)/habits/create')
-  const openEditForm = (habitId: string) => router.push(`/(app)/(tabs)/habits/edit/${habitId}`)
+  const openCreateForm = () => router.push('/(app)/habits/create')
+  const openEditForm = (habitId: string) => router.push(`/(app)/habits/edit/${habitId}`)
   const openHabit = (habitId: string) => router.push(`/(app)/(tabs)/habits/${habitId}`)
 
   return (

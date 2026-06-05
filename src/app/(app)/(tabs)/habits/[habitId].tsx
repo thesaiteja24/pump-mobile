@@ -137,7 +137,7 @@ export default function HabitDetailScreen() {
       )}
       headerRight={() => habit?.source === 'manual'
         ? (
-            <Menu onPressTrigger={() => router.push(`/(app)/(tabs)/habits/edit/${habit.id}`)} roundedOutline>
+            <Menu onPressTrigger={() => router.push(`/(app)/habits/edit/${habit.id}`)} roundedOutline>
               <Ionicons name="create-outline" size={22} color={colorModes.text.primary} />
             </Menu>
           )
