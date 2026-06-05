@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons'
 import { ActivityIndicator, View } from 'react-native'
 
+import { HabitLogControl } from '@/components/habits/habit-log-control'
 import { BaseScreen } from '@/components/ui/base-screen'
 import { Card } from '@/components/ui/card'
 import { CustomText } from '@/components/ui/custom-text'
@@ -73,6 +74,8 @@ function HabitTodayCard({ habit }: { habit: HabitTodayItem }) {
           {habit.currentStreak > 0 ? `${habit.currentStreak} period streak` : 'Build a streak by logging this habit'}
         </CustomText>
       </View>
+
+      <HabitLogControl habit={habit} />
     </Card>
   )
 }
