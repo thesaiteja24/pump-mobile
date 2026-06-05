@@ -1,14 +1,18 @@
 import { Ionicons } from '@expo/vector-icons'
-import { ActivityIndicator, View } from 'react-native'
+import { useRef, useState } from 'react'
+import { ActivityIndicator, Pressable, View } from 'react-native'
 
+import { HabitFormModal } from '@/components/habits/habit-form-modal'
 import { HabitLogControl } from '@/components/habits/habit-log-control'
 import { BaseScreen } from '@/components/ui/base-screen'
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { CustomText } from '@/components/ui/custom-text'
 import { useTodayHabitsQuery } from '@/hooks/queries/use-habits'
 import { useTheme } from '@/hooks/use-theme'
 
 import type { HabitCategory, HabitTodayItem, HabitTrackingType } from '@/types/habit'
+import type { BottomSheetMethods } from '@expo/ui/community/bottom-sheet'
 
 const categoryLabels: Record<HabitCategory, string> = {
   training: 'Training',
@@ -36,7 +40,7 @@ function formatProgress(habit: HabitTodayItem) {
   return `${value}${unit} / ${target}${unit}`
 }
 
-function HabitTodayCard({ habit }: { habit: HabitTodayItem }) {
+function HabitTodayCard({ habit, onEdit }: { habit: HabitTodayItem, onEdit: (habit: HabitTodayItem) => void }) {
   const { colorModes, spacing, radius } = useTheme()
 
   return (
@@ -50,21 +54,39 @@ function HabitTodayCard({ habit }: { habit: HabitTodayItem }) {
             {trackingLabels[habit.trackingType]}
           </CustomText>
         </View>
-        <View
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: radius.full,
-            backgroundColor: habit.completed ? colorModes.foreground.success : colorModes.surface.secondary,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Ionicons
-            name={habit.completed ? 'checkmark' : 'ellipse-outline'}
-            size={20}
-            color={habit.completed ? colorModes.base.white : colorModes.text.muted}
-          />
+        <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+          {habit.source === 'manual' && (
+            <Pressable
+              accessibilityLabel="Edit habit"
+              onPress={() => onEdit(habit)}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: radius.full,
+                backgroundColor: colorModes.surface.secondary,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Ionicons name="create-outline" size={18} color={colorModes.text.secondary} />
+            </Pressable>
+          )}
+          <View
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: radius.full,
+              backgroundColor: habit.completed ? colorModes.foreground.success : colorModes.surface.secondary,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Ionicons
+              name={habit.completed ? 'checkmark' : 'ellipse-outline'}
+              size={20}
+              color={habit.completed ? colorModes.base.white : colorModes.text.muted}
+            />
+          </View>
         </View>
       </View>
 
@@ -110,7 +132,18 @@ function HabitsEmptyState() {
 export default function HabitsScreen() {
   const { colorModes, spacing } = useTheme()
   const { data: habits = [], isLoading, isError } = useTodayHabitsQuery()
+  const formModalRef = useRef<BottomSheetMethods | null>(null)
+  const [editingHabit, setEditingHabit] = useState<HabitTodayItem | null>(null)
   const completedCount = habits.filter(habit => habit.completed).length
+  const closeForm = () => formModalRef.current?.dismiss()
+  const openCreateForm = () => {
+    setEditingHabit(null)
+    formModalRef.current?.present()
+  }
+  const openEditForm = (habit: HabitTodayItem) => {
+    setEditingHabit(habit)
+    formModalRef.current?.present()
+  }
 
   return (
     <BaseScreen title="Habits" scrollable>
@@ -122,6 +155,8 @@ export default function HabitsScreen() {
             : 'Track the daily actions that move your fitness forward.'}
         </CustomText>
       </View>
+
+      <Button title="Create Habit" variant="secondary" onPress={openCreateForm} />
 
       {isLoading && (
         <View style={{ paddingVertical: 80 }}>
@@ -142,9 +177,11 @@ export default function HabitsScreen() {
 
       {!isLoading && !isError && habits.length > 0 && (
         <View style={{ gap: spacing.md }}>
-          {habits.map(habit => <HabitTodayCard key={habit.id} habit={habit} />)}
+          {habits.map(habit => <HabitTodayCard key={habit.id} habit={habit} onEdit={openEditForm} />)}
         </View>
       )}
+
+      <HabitFormModal ref={formModalRef} habit={editingHabit} onClose={closeForm} />
     </BaseScreen>
   )
 }
