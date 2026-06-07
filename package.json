@@ -22,7 +22,6 @@
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
     "@expo/ui": "~56.0.16",
-    "@expo/vector-icons": "^15.1.1",
     "@react-native-community/netinfo": "12.0.1",
     "@react-native-google-signin/google-signin": "^16.1.2",
     "@sentry/react-native": "~7.11.0",

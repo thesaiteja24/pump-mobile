@@ -4,16 +4,13 @@ import * as Haptics from 'expo-haptics'
 import { colorModes } from '@/theme'
 
 import type { AriseCallParams, AriseType } from './types'
-import type { Ionicons } from '@expo/vector-icons'
 import type { useAudioPlayer } from 'expo-audio'
-
-export type IoniconName = keyof typeof Ionicons.glyphMap
 
 // eslint-disable-next-line ts/no-require-imports
 export const TOAST_SOUND = require('./toast-sound.wav')
 
 interface IconConfig {
-  iconName: IoniconName
+  iconName: string
   iconColor: string
   iconSize: number
 }
@@ -33,11 +30,11 @@ const HAPTIC_STYLE_MAP = {
 } as const
 
 const DEFAULT_ICON_CONFIGS: Record<AriseType, IconConfig> = {
-  success: { iconName: 'checkmark-circle', iconColor: colorModes.dark.foreground.success, iconSize: 36 },
-  error: { iconName: 'close-circle', iconColor: colorModes.dark.foreground.danger, iconSize: 36 },
-  info: { iconName: 'information-circle', iconColor: colorModes.dark.foreground.info, iconSize: 32 },
-  warn: { iconName: 'warning', iconColor: colorModes.dark.foreground.warning, iconSize: 32 },
-  custom: { iconName: 'information-circle', iconColor: colorModes.dark.foreground.info, iconSize: 32 },
+  success: { iconName: 'CheckCircle', iconColor: colorModes.dark.foreground.success, iconSize: 36 },
+  error: { iconName: 'XCircle', iconColor: colorModes.dark.foreground.danger, iconSize: 36 },
+  info: { iconName: 'Info', iconColor: colorModes.dark.foreground.info, iconSize: 32 },
+  warn: { iconName: 'TriangleAlert', iconColor: colorModes.dark.foreground.warning, iconSize: 32 },
+  custom: { iconName: 'Info', iconColor: colorModes.dark.foreground.info, iconSize: 32 },
 }
 
 export function triggerHaptics(type: AriseType, haptic?: 'light' | 'medium' | 'heavy' | 'none') {

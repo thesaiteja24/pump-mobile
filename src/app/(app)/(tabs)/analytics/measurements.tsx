@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
+import { LucideChevronLeft, LucidePlus } from 'lucide-react-native'
 import React, { useCallback, useRef, useState } from 'react'
 import { ActivityIndicator, Alert, View } from 'react-native'
 
@@ -17,7 +17,7 @@ import type { BottomSheetMethods } from '@expo/ui/community/bottom-sheet'
 
 export default function MeasurementsHistoryScreen() {
   const router = useRouter()
-  const { colors, layout } = useTheme()
+  const { colorModes, layout } = useTheme()
 
   const { data, isLoading } = useMeasurementsQuery('all')
   const history = data?.history || []
@@ -66,19 +66,19 @@ export default function MeasurementsHistoryScreen() {
       scrollable
       headerLeft={() => (
         <Menu onPressTrigger={() => router.back()} roundedOutline>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
+          <LucideChevronLeft size={24} color={colorModes.text.primary} />
         </Menu>
       )}
       headerRight={() => (
         <Menu onPressTrigger={handleOpenAdd} roundedOutline>
-          <Ionicons name="add" size={24} color={colors.text} />
+          <LucidePlus size={24} color={colorModes.text.primary} />
         </Menu>
       )}
     >
       {isLoading
         ? (
             <View style={[layout.flex1, layout.center, { paddingVertical: 100 }]}>
-              <ActivityIndicator size="large" color={colors.text} />
+              <ActivityIndicator size="large" color={colorModes.text.primary} />
             </View>
           )
         : (

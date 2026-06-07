@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import { BottomSheetScrollView, BottomSheetView } from '@expo/ui/community/bottom-sheet'
-import { Ionicons } from '@expo/vector-icons'
 import * as Localization from 'expo-localization'
+import { LucideChevronDown, LucideChevronLeft, LucideChevronRight } from 'lucide-react-native'
 import React, { memo, useCallback, useMemo } from 'react'
 import { Pressable, Text, View } from 'react-native'
 
@@ -287,7 +287,7 @@ const CalendarHeader = memo(({ state }: { state: ReturnType<typeof usePickerStat
         style={({ pressed }) => [{ padding: spacing.sm, borderRadius: radius.full }, pressed && { backgroundColor: colors.input }]}
         hitSlop={12}
       >
-        <Ionicons name="chevron-back" size={20} color={colors.text} />
+        <LucideChevronLeft size={20} color={colors.text} />
       </Pressable>
 
       <View style={[layout.rowAlign, { gap: spacing.sm }]}>
@@ -296,7 +296,7 @@ const CalendarHeader = memo(({ state }: { state: ReturnType<typeof usePickerStat
           <Text style={[typography.bodyStrong, { color: colors.text }]}>
             {MONTHS[state.currentNavDate.getMonth()]}
           </Text>
-          <Ionicons name="chevron-down" size={13} color={colors.textSecondary} />
+          <LucideChevronDown size={13} color={colors.textSecondary} />
         </Pressable>
 
         {/* Year pill */}
@@ -304,7 +304,7 @@ const CalendarHeader = memo(({ state }: { state: ReturnType<typeof usePickerStat
           <Text style={[typography.bodyStrong, { color: colors.text }]}>
             {state.currentNavDate.getFullYear()}
           </Text>
-          <Ionicons name="chevron-down" size={13} color={colors.textSecondary} />
+          <LucideChevronDown size={13} color={colors.textSecondary} />
         </Pressable>
       </View>
 
@@ -313,7 +313,7 @@ const CalendarHeader = memo(({ state }: { state: ReturnType<typeof usePickerStat
         style={({ pressed }) => [{ padding: spacing.sm, borderRadius: radius.full }, pressed && { backgroundColor: colors.input }]}
         hitSlop={12}
       >
-        <Ionicons name="chevron-forward" size={20} color={colors.text} />
+        <LucideChevronRight size={20} color={colors.text} />
       </Pressable>
     </View>
   )

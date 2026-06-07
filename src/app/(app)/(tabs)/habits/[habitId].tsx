@@ -1,6 +1,6 @@
-import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams } from 'expo-router'
-import { useRef, useState } from 'react'
+import { LucideCheckCircle, LucideChevronLeft, LucidePenSquare } from 'lucide-react-native'
+import { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, View } from 'react-native'
 
 import { HabitReminderList } from '@/components/habits/habit-reminder-list'
@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { CustomText } from '@/components/ui/custom-text'
 import { Menu } from '@/components/ui/menu'
-import { useArchiveHabitMutation, useHabitQuery, useHabitStatsQuery } from '@/hooks/queries/use-habits'
+import { useArchiveHabitMutation, useHabitQuery, useHabitRemindersQuery, useHabitStatsQuery } from '@/hooks/queries/use-habits'
 import { useTheme } from '@/hooks/use-theme'
 import { Arise } from '@/lib/arise'
 
@@ -59,7 +59,7 @@ function HabitHeaderCard({ habit }: { habit: Habit }) {
             justifyContent: 'center',
           }}
         >
-          <Ionicons name="checkmark-circle-outline" size={24} color={colorModes.text.primary} />
+          <LucideCheckCircle size={24} color={colorModes.text.primary} />
         </View>
       </View>
 
@@ -114,7 +114,16 @@ export default function HabitDetailScreen() {
   const [sessionReminders, setSessionReminders] = useState<HabitReminder[]>([])
   const habitQuery = useHabitQuery(habitId)
   const statsQuery = useHabitStatsQuery(habitId)
+  const remindersQuery = useHabitRemindersQuery(habitId)
   const habit = habitQuery.data
+
+  useEffect(() => {
+    if (remindersQuery.data) {
+      // eslint-disable-next-line react/set-state-in-effect
+      setSessionReminders(remindersQuery.data)
+    }
+  }, [remindersQuery.data])
+
   const closeReminderModal = () => reminderModalRef.current?.dismiss()
   const handleReminderChanged = (reminder: HabitReminder) => {
     setSessionReminders(current => current.map(item => item.id === reminder.id ? reminder : item))
@@ -132,13 +141,13 @@ export default function HabitDetailScreen() {
       scrollable
       headerLeft={() => (
         <Menu onPressTrigger={() => router.back()} roundedOutline>
-          <Ionicons name="chevron-back" size={24} color={colorModes.text.primary} />
+          <LucideChevronLeft size={24} color={colorModes.text.primary} />
         </Menu>
       )}
       headerRight={() => habit?.source === 'manual'
         ? (
             <Menu onPressTrigger={() => router.push(`/(app)/habits/edit/${habit.id}`)} roundedOutline>
-              <Ionicons name="create-outline" size={22} color={colorModes.text.primary} />
+              <LucidePenSquare size={22} color={colorModes.text.primary} />
             </Menu>
           )
         : null}

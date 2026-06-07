@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
+import { LucidePlus, LucideSettings } from 'lucide-react-native'
 import { View } from 'react-native'
 
 import { HabitCard } from '@/components/habits/habit-card'
@@ -30,10 +30,10 @@ export default function HabitsScreen() {
       headerRight={() => (
         <View style={{ flexDirection: 'row', gap: spacing.sm }}>
           <Menu onPressTrigger={openInternalHabits} roundedOutline>
-            <Ionicons name="settings-outline" size={20} color={colorModes.text.primary} />
+            <LucideSettings size={20} color={colorModes.text.primary} />
           </Menu>
           <Menu onPressTrigger={openCreateForm} roundedOutline>
-            <Ionicons name="add" size={24} color={colorModes.text.primary} />
+            <LucidePlus size={24} color={colorModes.text.primary} />
           </Menu>
         </View>
       )}

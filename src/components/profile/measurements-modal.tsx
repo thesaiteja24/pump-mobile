@@ -1,5 +1,5 @@
 import { BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from '@expo/ui/community/bottom-sheet'
-import { Ionicons } from '@expo/vector-icons'
+import { LucideTrash, LucideX } from 'lucide-react-native'
 import React, { forwardRef, memo, useEffect, useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { Text, View } from 'react-native'
@@ -127,7 +127,7 @@ export const MeasurementsModal = memo(forwardRef<BottomSheetMethods, { measureme
         <View style={[layout.row, { gap: spacing.md, marginTop: spacing.lg }]}>
           {measurement && (
             <Button
-              leftIcon={<Ionicons name="trash" size={24} color={colors.danger} />}
+              leftIcon={<LucideTrash size={20} color={colors.danger} />}
               variant="outline"
               loading={state.isDeletePending}
               onPress={state.handleDelete}
@@ -136,7 +136,7 @@ export const MeasurementsModal = memo(forwardRef<BottomSheetMethods, { measureme
           )}
           <Button
             variant="outline"
-            leftIcon={<Ionicons name="close" size={24} color={colors.text} />}
+            leftIcon={<LucideX size={20} color={colors.text} />}
             onPress={() => {
               state.reset()
               dismiss()

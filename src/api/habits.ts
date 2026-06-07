@@ -101,3 +101,9 @@ export async function deleteHabitReminderApi(habitId: string, reminderId: string
     apiClient.delete(habitEndpoints.reminder(habitId, reminderId)),
   )
 }
+
+export async function getHabitRemindersApi(habitId: string): Promise<HabitReminder[]> {
+  return apiRequest<HabitReminder[]>(() =>
+    apiClient.get(habitEndpoints.reminders(habitId)),
+  )
+}

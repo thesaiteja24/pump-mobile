@@ -15,6 +15,7 @@ export const queryKeys = {
     internal: () => [...queryKeys.habits.lists(), 'internal'] as const,
     today: () => [...queryKeys.habits.all, 'today'] as const,
     detail: (habitId: string) => [...queryKeys.habits.all, 'detail', habitId] as const,
+    reminders: (habitId: string) => [...queryKeys.habits.all, 'reminders', habitId] as const,
     stats: (habitId: string) => [...queryKeys.habits.all, 'stats', habitId] as const,
   },
 } as const

@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
+import { LucideChevronLeft } from 'lucide-react-native'
 import { useCallback, useRef } from 'react'
 import { View } from 'react-native'
 
@@ -34,7 +34,7 @@ export default function CreateHabitScreen() {
       scrollable
       headerLeft={() => (
         <Menu onPressTrigger={() => router.back()} roundedOutline>
-          <Ionicons name="chevron-back" size={24} color={colorModes.text.primary} />
+          <LucideChevronLeft size={24} color={colorModes.text.primary} />
         </Menu>
       )}
       footer={(

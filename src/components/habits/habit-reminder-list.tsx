@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons'
+import { LucideTrash } from 'lucide-react-native'
 import { View } from 'react-native'
 
 import { Button } from '@/components/ui/button'
@@ -78,7 +78,7 @@ function ReminderRow({
         disabled={isPending}
         onPress={remove}
         variant="secondary"
-        leftIcon={<Ionicons name="trash-outline" size={18} color={colorModes.foreground.danger} />}
+        leftIcon={<LucideTrash size={18} color={colorModes.foreground.danger} />}
         style={{
           width: 36,
           height: 36,

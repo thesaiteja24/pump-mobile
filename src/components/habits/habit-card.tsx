@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons'
+import { LucideCheck, LucideCheckCircle, LucideCircle, LucideMinus, LucidePencil, LucidePlus } from 'lucide-react-native'
 import { View } from 'react-native'
 
 import { Button } from '@/components/ui/button'
@@ -78,7 +78,7 @@ function HabitTodayCardActions({ habit, onEdit }: { habit: HabitTodayItem, onEdi
           accessibilityLabel="Edit habit"
           variant="secondary"
           onPress={() => onEdit(habit.id)}
-          leftIcon={<Ionicons name="create-outline" size={18} color={colorModes.text.secondary} />}
+          leftIcon={<LucidePencil size={18} color={colorModes.text.secondary} />}
           style={{ width: 36, height: 36, paddingHorizontal: 0, paddingVertical: 0 }}
         />
       )}
@@ -87,13 +87,9 @@ function HabitTodayCardActions({ habit, onEdit }: { habit: HabitTodayItem, onEdi
         variant={habit.completed ? 'success' : 'secondary'}
         onPress={handleToggle}
         disabled={habit.source !== 'manual' || isPending}
-        leftIcon={(
-          <Ionicons
-            name={habit.completed ? 'checkmark' : 'ellipse-outline'}
-            size={20}
-            color={habit.completed ? colorModes.base.white : colorModes.text.muted}
-          />
-        )}
+        leftIcon={habit.completed
+          ? <LucideCheck size={20} color={colorModes.base.white} />
+          : <LucideCircle size={20} color={colorModes.text.muted} />}
         style={{ width: 36, height: 36, paddingHorizontal: 0, paddingVertical: 0 }}
       />
     </View>
@@ -106,20 +102,18 @@ function IconButton({
   disabled,
   onPress,
 }: {
-  icon: React.ComponentProps<typeof Ionicons>['name']
+  icon: React.ReactNode
   label: string
   disabled?: boolean
   onPress: () => void
 }) {
-  const { colorModes } = useTheme()
-
   return (
     <Button
       accessibilityLabel={label}
       disabled={disabled}
       onPress={onPress}
       variant="secondary"
-      leftIcon={<Ionicons name={icon} size={20} color={colorModes.text.primary} />}
+      leftIcon={icon}
       style={{
         width: 40,
         height: 40,
@@ -139,13 +133,9 @@ function BinaryLogControl({ habit }: { habit: HabitTodayItem }) {
     <Button
       title={habit.completed ? 'Completed' : 'Mark Done'}
       variant={habit.completed ? 'primary' : 'secondary'}
-      leftIcon={(
-        <Ionicons
-          name={habit.completed ? 'checkmark-circle' : 'ellipse-outline'}
-          size={20}
-          color={habit.completed ? colorModes.text.inverse : colorModes.text.primary}
-        />
-      )}
+      leftIcon={habit.completed
+        ? <LucideCheckCircle size={20} color={colorModes.text.inverse} />
+        : <LucideCircle size={20} color={colorModes.text.primary} />}
       disabled={isReadOnly || upsertLog.isPending}
       onPress={() => {
         upsertLog.mutate({
@@ -186,18 +176,18 @@ function NumericStepper({
   disabled: boolean
   onSetValue: (value: number) => void
 }) {
-  const { spacing } = useTheme()
+  const { colorModes, spacing } = useTheme()
 
   return (
     <View style={{ flexDirection: 'row', gap: spacing.xxs }}>
       <IconButton
-        icon="remove"
+        icon={<LucideMinus size={20} color={colorModes.text.primary} />}
         label="Decrease habit value"
         disabled={disabled || currentValue <= 0}
         onPress={() => onSetValue(Math.max(0, currentValue - 1))}
       />
       <IconButton
-        icon="add"
+        icon={<LucidePlus size={20} color={colorModes.text.primary} />}
         label="Increase habit value"
         disabled={disabled}
         onPress={() => onSetValue(currentValue + 1)}

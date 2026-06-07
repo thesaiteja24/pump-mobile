@@ -7,6 +7,7 @@ import {
   deleteHabitLogApi,
   deleteHabitReminderApi,
   getHabitApi,
+  getHabitRemindersApi,
   getHabitsApi,
   getHabitStatsApi,
   getInternalHabitsApi,
@@ -21,6 +22,7 @@ import { queryKeys } from '@/api/query-keys'
 import type {
   Habit,
   HabitLogUpsertInput,
+  HabitReminder,
   HabitReminderCreateInput,
   HabitReminderUpdateInput,
   HabitStats,
@@ -176,6 +178,15 @@ export function useDeleteHabitLogMutation() {
   })
 }
 
+export function useHabitRemindersQuery(habitId: string): UseQueryResult<HabitReminder[], Error> {
+  return useQuery<HabitReminder[]>({
+    queryKey: queryKeys.habits.reminders(habitId),
+    queryFn: () => getHabitRemindersApi(habitId),
+    enabled: !!habitId,
+    networkMode: 'offlineFirst',
+  })
+}
+
 export function useCreateHabitReminderMutation() {
   const queryClient = useQueryClient()
 
@@ -184,6 +195,7 @@ export function useCreateHabitReminderMutation() {
       createHabitReminderApi(habitId, data),
     onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.habits.detail(variables.habitId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.habits.reminders(variables.habitId) })
     },
   })
 }
@@ -196,6 +208,7 @@ export function useUpdateHabitReminderMutation() {
       updateHabitReminderApi(habitId, reminderId, data),
     onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.habits.detail(variables.habitId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.habits.reminders(variables.habitId) })
     },
   })
 }
@@ -208,6 +221,7 @@ export function useDeleteHabitReminderMutation() {
       deleteHabitReminderApi(habitId, reminderId),
     onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.habits.detail(variables.habitId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.habits.reminders(variables.habitId) })
     },
   })
 }
