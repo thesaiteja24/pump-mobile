@@ -226,6 +226,23 @@ export function useToggleInternalHabitMutation() {
   return useMutation({
     mutationFn: ({ metric, isActive }: { metric: string, isActive: boolean }) =>
       toggleInternalHabitApi(metric, isActive),
+    onMutate: async ({ metric, isActive }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.habits.internal() })
+      const previousHabits = queryClient.getQueryData<Habit[]>(queryKeys.habits.internal())
+
+      queryClient.setQueryData<Habit[]>(
+        queryKeys.habits.internal(),
+        (old: Habit[] | undefined) =>
+          old?.map(habit => (habit.internalMetric === metric ? { ...habit, isActive } : habit)),
+      )
+
+      return { previousHabits }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousHabits) {
+        queryClient.setQueryData(queryKeys.habits.internal(), context.previousHabits)
+      }
+    },
     onSuccess: (habit) => {
       queryClient.setQueryData(queryKeys.habits.detail(habit.id), habit)
     },

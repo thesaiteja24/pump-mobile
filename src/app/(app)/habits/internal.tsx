@@ -1,4 +1,6 @@
 import { Ionicons } from '@expo/vector-icons'
+import * as Haptics from 'expo-haptics'
+import React, { useState } from 'react'
 import { Switch, View } from 'react-native'
 
 import { BaseScreen } from '@/components/ui/base-screen'
@@ -8,12 +10,21 @@ import { useInternalHabitsQuery, useToggleInternalHabitMutation } from '@/hooks/
 import { useTheme } from '@/hooks/use-theme'
 import { Arise } from '@/lib/arise'
 
-import type React from 'react'
-
 export default function InternalHabitsScreen() {
   const { colorModes, spacing } = useTheme()
-  const { data: habits = [], isLoading, isError, isRefetching, refetch } = useInternalHabitsQuery()
+  const { data: habits = [], isLoading, isError, refetch } = useInternalHabitsQuery()
   const toggleMutation = useToggleInternalHabitMutation()
+  const [isRefreshingByUser, setIsRefreshingByUser] = useState(false)
+
+  const handleRefresh = async () => {
+    setIsRefreshingByUser(true)
+    try {
+      await refetch()
+    }
+    finally {
+      setIsRefreshingByUser(false)
+    }
+  }
 
   const handleToggle = (metric: string, isActive: boolean) => {
     toggleMutation.mutate(
@@ -28,8 +39,8 @@ export default function InternalHabitsScreen() {
     <BaseScreen
       title="Internal Habits"
       scrollable
-      onRefresh={() => refetch()}
-      refreshing={isRefetching}
+      onRefresh={handleRefresh}
+      refreshing={isRefreshingByUser}
     >
       <View style={{ gap: spacing.lg }}>
         <CustomText variant="bodySm" color="secondary">
@@ -53,6 +64,7 @@ export default function InternalHabitsScreen() {
             <Switch
               value={habit.isActive}
               onValueChange={(val) => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
                 if (habit.internalMetric) {
                   handleToggle(habit.internalMetric, val)
                 }
