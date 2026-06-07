@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons'
-import { Pressable, View } from 'react-native'
+import { View } from 'react-native'
 
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { CustomText } from '@/components/ui/custom-text'
 import { useDeleteHabitReminderMutation, useUpdateHabitReminderMutation } from '@/hooks/queries/use-habits'
@@ -28,7 +29,7 @@ function ReminderRow({
   onChanged: (reminder: HabitReminder) => void
   onDeleted: (reminderId: string) => void
 }) {
-  const { colorModes, radius, spacing } = useTheme()
+  const { colorModes, spacing } = useTheme()
   const updateReminder = useUpdateHabitReminderMutation()
   const deleteReminder = useDeleteHabitReminderMutation()
   const isPending = updateReminder.isPending || deleteReminder.isPending
@@ -64,37 +65,28 @@ function ReminderRow({
         <CustomText variant="caption" color="secondary">{formatDays(reminder.daysOfWeek)}</CustomText>
       </View>
 
-      <Pressable
+      <Button
         disabled={isPending}
         onPress={toggle}
-        style={{
-          borderRadius: radius.full,
-          backgroundColor: reminder.isEnabled ? colorModes.background.inverse : colorModes.surface.secondary,
-          paddingHorizontal: spacing.md,
-          paddingVertical: spacing.sm,
-          opacity: isPending ? 0.5 : 1,
-        }}
-      >
-        <CustomText variant="caption" color={reminder.isEnabled ? 'inverse' : 'secondary'}>
-          {reminder.isEnabled ? 'On' : 'Off'}
-        </CustomText>
-      </Pressable>
+        title={reminder.isEnabled ? 'On' : 'Off'}
+        variant={reminder.isEnabled ? 'primary' : 'secondary'}
+        size="xs"
+        style={{ opacity: isPending ? 0.5 : 1 }}
+      />
 
-      <Pressable
+      <Button
         disabled={isPending}
         onPress={remove}
+        variant="secondary"
+        leftIcon={<Ionicons name="trash-outline" size={18} color={colorModes.foreground.danger} />}
         style={{
           width: 36,
           height: 36,
-          borderRadius: radius.full,
-          backgroundColor: colorModes.surface.secondary,
-          alignItems: 'center',
-          justifyContent: 'center',
+          paddingHorizontal: 0,
+          paddingVertical: 0,
           opacity: isPending ? 0.5 : 1,
         }}
-      >
-        <Ionicons name="trash-outline" size={18} color={colorModes.foreground.danger} />
-      </Pressable>
+      />
     </View>
   )
 }
@@ -112,15 +104,8 @@ export function HabitReminderList({
 
   return (
     <Card style={{ gap: spacing.lg }}>
-      <View style={{ gap: spacing.xxs }}>
-        <CustomText variant="bodyStrong">Reminders</CustomText>
-        <CustomText variant="caption" color="muted">
-          Existing reminders are not returned by the current API yet. New reminders appear here after creation.
-        </CustomText>
-      </View>
-
       {reminders.length === 0
-        ? <CustomText variant="bodySm" color="secondary">No reminders added in this session.</CustomText>
+        ? <CustomText variant="bodySm" color="secondary">No reminders found, create a new one.</CustomText>
         : reminders.map(reminder => (
             <ReminderRow key={reminder.id} reminder={reminder} onChanged={onChanged} onDeleted={onDeleted} />
           ))}

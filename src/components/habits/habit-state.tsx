@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons'
+import { LucideCheckCircle } from 'lucide-react-native'
 import { ActivityIndicator, View } from 'react-native'
 
 import { Button } from '@/components/ui/button'
@@ -28,30 +28,44 @@ export function HabitLoadingState() {
   )
 }
 
+/**
+ * Habit empty state component.
+ * @returns Habit empty state component.
+ */
 export function HabitEmptyState({ onCreate }: HabitEmptyStateProps) {
   const { colorModes, spacing, radius } = useTheme()
 
   return (
-    <View style={{ alignItems: 'center', paddingVertical: 80, gap: spacing.md }}>
-      <View
-        style={{
-          width: 64,
-          height: 64,
-          borderRadius: radius.full,
-          backgroundColor: colorModes.surface.secondary,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Ionicons name="checkmark-circle-outline" size={34} color={colorModes.text.secondary} />
-      </View>
-      <View style={{ gap: spacing.xxs, alignItems: 'center' }}>
+    <View style={{
+      flex: 1,
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: spacing.xl,
+    }}
+    >
+      <View style={{ gap: spacing.sm, alignItems: 'center' }}>
+        {/* check icon */}
+        <View
+          style={{
+            width: 48,
+            height: 48,
+            borderRadius: radius.full,
+            backgroundColor: colorModes.surface.secondary,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <LucideCheckCircle size={28} color={colorModes.text.secondary} />
+        </View>
+        {/* heading */}
         <CustomText variant="bodyStrong" align="center">No habits yet</CustomText>
+        {/* description */}
         <CustomText variant="bodySm" color="secondary" align="center">
           Create your first habit to start tracking consistency.
         </CustomText>
       </View>
-      {onCreate && <Button title="Create Habit" variant="secondary" size="sm" onPress={onCreate} />}
+      {onCreate && <Button title="Create Habit" variant="primary" size="sm" onPress={onCreate} />}
     </View>
   )
 }

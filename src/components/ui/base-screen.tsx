@@ -1,29 +1,35 @@
-import { Stack } from 'expo-router'
+import { Stack, useNavigation } from 'expo-router'
 import { HeaderHeightContext } from 'expo-router/react-navigation'
 import React, { useContext } from 'react'
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native'
+import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { OfflineBanner } from '@/components/ui/offline-banner'
 import { useTheme } from '@/hooks/use-theme'
 
-import type { ThemeColorModes } from '@/hooks/use-theme'
 import type { StyleProp, ViewStyle } from 'react-native'
 import type { Edge } from 'react-native-safe-area-context'
 
 export interface BaseScreenProps {
   children: React.ReactNode
-  footer?: React.ReactNode
   title?: string
   headerLeft?: () => React.ReactNode
   headerRight?: () => React.ReactNode
   edges?: Edge[]
   style?: StyleProp<ViewStyle>
-  footerStyle?: StyleProp<ViewStyle>
   contentStyle?: StyleProp<ViewStyle>
   scrollable?: boolean
   keyBoardAvoiding?: boolean
+  footer?: React.ReactNode
   hasTabBar?: boolean
+  onRefresh?: () => void
+  refreshing?: boolean
+}
+
+function getKeyboardBehavior(keyBoardAvoiding: boolean) {
+  if (!keyBoardAvoiding)
+    return undefined
+  return Platform.OS === 'ios' ? 'padding' : 'height'
 }
 
 function getFinalEdges(edges: Edge[] | undefined, hasHeader: boolean): Edge[] {
@@ -32,14 +38,18 @@ function getFinalEdges(edges: Edge[] | undefined, hasHeader: boolean): Edge[] {
   return hasHeader ? ['left', 'right'] : ['top', 'left', 'right']
 }
 
-function getKeyboardBehavior(keyBoardAvoiding: boolean, scrollable: boolean) {
-  if (!keyBoardAvoiding)
-    return undefined
+function useAutoTabBar(hasTabBarProp?: boolean): boolean {
+  const navigation = useNavigation()
+  if (hasTabBarProp !== undefined)
+    return hasTabBarProp
 
-  if (Platform.OS !== 'ios')
-    return 'height'
-
-  return scrollable ? 'height' : 'padding'
+  try {
+    const parent = navigation.getParent()
+    return parent?.getState()?.type === 'tab'
+  }
+  catch {
+    return false
+  }
 }
 
 /**
@@ -50,8 +60,6 @@ function getKeyboardBehavior(keyBoardAvoiding: boolean, scrollable: boolean) {
 interface HeaderConfigProps {
   title?: string
   hasHeader: boolean
-  isDark: boolean
-  colorModes: ThemeColorModes
   headerLeft?: () => React.ReactNode
   headerRight?: () => React.ReactNode
 }
@@ -59,11 +67,11 @@ interface HeaderConfigProps {
 function HeaderConfig({
   title,
   hasHeader,
-  isDark,
-  colorModes,
   headerLeft,
   headerRight,
 }: HeaderConfigProps) {
+  const { isDark, colorModes } = useTheme()
+
   return (
     <Stack.Screen
       options={{
@@ -94,109 +102,155 @@ function HeaderConfig({
   )
 }
 
-interface ScreenContentProps {
-  scrollable: boolean
+interface ScrollableContentProps {
   children: React.ReactNode
   headerHeight: number
+  bottomInset: number
   contentStyle: StyleProp<ViewStyle>
-  hasFooter: boolean
-  hasTabBar: boolean
+  footer: React.ReactNode
+  onRefresh?: () => void
+  refreshing?: boolean
 }
 
-function ScreenContent({
-  scrollable,
+function ScrollableContent({
   children,
   headerHeight,
+  bottomInset,
   contentStyle,
-  hasFooter,
-  hasTabBar,
-}: ScreenContentProps) {
-  const { layout, spacing } = useTheme()
-  return scrollable
+  footer,
+  onRefresh,
+  refreshing = false,
+}: ScrollableContentProps) {
+  const { layout, spacing, colorModes } = useTheme()
+
+  const refreshControl = onRefresh
     ? (
-        <ScrollView
-          style={layout.flex1}
-          contentContainerStyle={[
-            {
-              padding: spacing.lg,
-              gap: spacing.md,
-              paddingBottom: hasFooter ? spacing.lg : (hasTabBar ? spacing.tabBar : spacing.lg),
-            },
-            Platform.OS !== 'ios' && { paddingTop: headerHeight },
-            contentStyle,
-          ]}
-          contentInsetAdjustmentBehavior="automatic"
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          alwaysBounceVertical={true}
-          stickyHeaderIndices={[0]}
-        >
-          <OfflineBanner />
-          {children}
-        </ScrollView>
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colorModes.text.primary}
+          colors={[colorModes.text.primary]}
+          progressBackgroundColor={colorModes.surface.primary}
+        />
       )
-    : (
-        <View style={[layout.flex1, { paddingTop: headerHeight }]}>
-          <OfflineBanner />
-          <View style={[{ padding: spacing.lg, gap: spacing.md }, contentStyle]}>
-            {children}
-          </View>
-        </View>
-      )
+    : undefined
+
+  return (
+    <View style={[{ flexGrow: 1 }, { paddingTop: headerHeight }]}>
+      <OfflineBanner />
+      <ScrollView
+        style={layout.flex1}
+        contentContainerStyle={[
+          {
+            paddingHorizontal: spacing.lg,
+            paddingTop: spacing.lg,
+            paddingBottom: footer ? 100 : bottomInset,
+            gap: spacing.lg,
+            flexGrow: 1,
+          },
+          contentStyle,
+        ]}
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        alwaysBounceVertical={true}
+        refreshControl={refreshControl}
+      >
+        {children}
+      </ScrollView>
+    </View>
+  )
 }
 
-function ScreenFooter({
-  children,
-  hasTabBar,
-  style,
-}: {
+interface StaticContentProps {
   children: React.ReactNode
+  headerHeight: number
+  bottomInset: number
+  contentStyle: StyleProp<ViewStyle>
+  footer: React.ReactNode
+}
+
+function StaticContent({
+  children,
+  headerHeight,
+  bottomInset,
+  contentStyle,
+  footer,
+}: StaticContentProps) {
+  const { layout, spacing } = useTheme()
+
+  return (
+    <View style={[layout.flex1, { paddingTop: headerHeight }]}>
+      <OfflineBanner />
+      <View
+        style={[
+          {
+            flex: 1,
+            paddingHorizontal: spacing.lg,
+            paddingTop: spacing.lg,
+            paddingBottom: footer ? spacing.lg : bottomInset,
+          },
+          contentStyle,
+        ]}
+      >
+        {children}
+      </View>
+    </View>
+  )
+}
+
+interface ScreenFooterProps {
+  footer: React.ReactNode
   hasTabBar: boolean
-  style: StyleProp<ViewStyle>
-}) {
+  insetsBottom: number
+}
+
+function ScreenFooter({ footer, hasTabBar, insetsBottom }: ScreenFooterProps) {
   const { colorModes, spacing } = useTheme()
-  const insets = useSafeAreaInsets()
+  if (!footer)
+    return null
 
   return (
     <View
-      style={[
-        {
-          borderTopWidth: 1,
-          borderTopColor: colorModes.border.primary,
-          backgroundColor: colorModes.surface.primary,
-          paddingHorizontal: spacing.lg,
-          paddingTop: spacing.md,
-          paddingBottom: hasTabBar ? spacing.lg : insets.bottom + spacing.lg,
-          marginBottom: hasTabBar ? spacing.tabBar : 0,
-        },
-        style,
-      ]}
+      style={{
+        borderTopWidth: 1,
+        borderTopColor: colorModes.border.primary,
+        backgroundColor: colorModes.surface.primary,
+        paddingHorizontal: spacing.lg,
+        paddingTop: spacing.md,
+        paddingBottom: hasTabBar ? spacing.lg : insetsBottom + spacing.lg,
+        marginBottom: hasTabBar ? spacing.tabBar : 0,
+      }}
     >
-      {children}
+      {footer}
     </View>
   )
 }
 
 export function BaseScreen({
   children,
-  footer,
   title,
   headerLeft,
   headerRight,
   edges,
   style,
-  footerStyle,
   contentStyle,
   scrollable = false,
   keyBoardAvoiding = true,
-  hasTabBar = true,
+  footer,
+  hasTabBar: hasTabBarProp,
+  onRefresh,
+  refreshing,
 }: BaseScreenProps) {
-  const { isDark, colorModes } = useTheme()
+  const { colorModes, spacing } = useTheme()
+  const insets = useSafeAreaInsets()
   const hasHeader = !(!title && !headerLeft && !headerRight)
   const contextHeaderHeight = useContext(HeaderHeightContext)
   const headerHeight = contextHeaderHeight ?? 0
 
+  const hasTabBar = useAutoTabBar(hasTabBarProp)
   const finalEdges = getFinalEdges(edges, hasHeader)
+  const bottomInset = hasTabBar ? spacing.tabBar : insets.bottom + spacing.lg
 
   return (
     <SafeAreaView
@@ -206,30 +260,39 @@ export function BaseScreen({
       <HeaderConfig
         title={title}
         hasHeader={hasHeader}
-        isDark={isDark}
-        colorModes={colorModes}
         headerLeft={headerLeft}
         headerRight={headerRight}
       />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={getKeyboardBehavior(keyBoardAvoiding, scrollable)}
+        behavior={getKeyboardBehavior(keyBoardAvoiding)}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight : 0}
       >
-        <ScreenContent
-          scrollable={scrollable}
-          headerHeight={headerHeight}
-          contentStyle={contentStyle}
-          hasFooter={!!footer}
-          hasTabBar={hasTabBar}
-        >
-          {children}
-        </ScreenContent>
-        {footer && (
-          <ScreenFooter hasTabBar={hasTabBar} style={footerStyle}>
-            {footer}
-          </ScreenFooter>
-        )}
+        {scrollable
+          ? (
+              <ScrollableContent
+                headerHeight={headerHeight}
+                bottomInset={bottomInset}
+                contentStyle={contentStyle}
+                footer={footer}
+                onRefresh={onRefresh}
+                refreshing={refreshing}
+              >
+                {children}
+              </ScrollableContent>
+            )
+          : (
+              <StaticContent
+                headerHeight={headerHeight}
+                bottomInset={bottomInset}
+                contentStyle={contentStyle}
+                footer={footer}
+              >
+                {children}
+              </StaticContent>
+            )}
       </KeyboardAvoidingView>
+      <ScreenFooter footer={footer} hasTabBar={hasTabBar} insetsBottom={insets.bottom} />
     </SafeAreaView>
   )
 }

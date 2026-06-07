@@ -39,7 +39,6 @@ export default function EditHabitScreen() {
     <BaseScreen
       title="Edit Habit"
       scrollable
-      hasTabBar={false}
       headerLeft={() => (
         <Menu onPressTrigger={() => router.back()} roundedOutline>
           <Ionicons name="chevron-back" size={24} color={colorModes.text.primary} />

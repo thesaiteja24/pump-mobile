@@ -1,6 +1,7 @@
 /* eslint-disable max-lines */
 import { BottomSheetScrollView, BottomSheetView } from '@expo/ui/community/bottom-sheet'
 import { Ionicons } from '@expo/vector-icons'
+import * as Localization from 'expo-localization'
 import React, { memo, useCallback, useMemo } from 'react'
 import { Pressable, Text, View } from 'react-native'
 
@@ -21,10 +22,24 @@ const TimeColumn = memo(({ title, values, selectedValue, onSelect }: {
   onSelect: (val: string | number) => void
 }) => {
   const { colors, spacing, radius, typography, layout } = useTheme()
+
+  const scrollRef = React.useRef<React.ElementRef<typeof BottomSheetScrollView>>(null)
+  const selectedIndex = Math.max(0, values.indexOf(selectedValue as never))
+  const safeInitialIndex = Math.max(0, Math.min(selectedIndex, values.length - 4))
+
+  const handleLayout = useCallback(() => {
+    if (scrollRef.current && safeInitialIndex > 0) {
+      scrollRef.current.scrollTo({
+        y: safeInitialIndex * 40,
+        animated: false,
+      })
+    }
+  }, [safeInitialIndex])
+
   return (
     <View style={[layout.flex1, { height: 180 }]}>
       <Text style={[typography.caption, { color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xxs }]}>{title}</Text>
-      <BottomSheetScrollView showsVerticalScrollIndicator={false}>
+      <BottomSheetScrollView ref={scrollRef} onLayout={handleLayout} showsVerticalScrollIndicator={false}>
         {values.map((val) => {
           const isSelected = val === selectedValue
           return (
@@ -32,7 +47,7 @@ const TimeColumn = memo(({ title, values, selectedValue, onSelect }: {
               key={val}
               onPress={() => onSelect(val)}
               style={({ pressed }) => [
-                { paddingVertical: spacing.sm, alignItems: 'center', borderRadius: radius.md },
+                { height: 40, justifyContent: 'center', alignItems: 'center', borderRadius: radius.md },
                 isSelected ? { backgroundColor: colors.text } : pressed && { backgroundColor: colors.input },
               ]}
             >
@@ -57,15 +72,23 @@ const TimeSelector = memo(({ currentNavDate, onSelectTime }: {
   const { spacing, layout } = useTheme()
   const hours = currentNavDate.getHours()
   const minutes = currentNavDate.getMinutes()
+
+  const use24HourClock = Localization.getCalendars()[0]?.uses24hourClock ?? false
+
   const isPM = hours >= 12
-  const dHours = hours % 12 === 0 ? 12 : hours % 12
+  const dHours = use24HourClock ? hours : (hours % 12 === 0 ? 12 : hours % 12)
   const dMinutes = Math.floor(minutes / 5) * 5
 
   const handleHourSelect = useCallback((h: string | number) => {
     const nextH = Number(h)
-    const finalH = isPM ? (nextH === 12 ? 12 : nextH + 12) : (nextH === 12 ? 0 : nextH)
-    onSelectTime(finalH, minutes)
-  }, [isPM, minutes, onSelectTime])
+    if (use24HourClock) {
+      onSelectTime(nextH, minutes)
+    }
+    else {
+      const finalH = isPM ? (nextH === 12 ? 12 : nextH + 12) : (nextH === 12 ? 0 : nextH)
+      onSelectTime(finalH, minutes)
+    }
+  }, [isPM, minutes, onSelectTime, use24HourClock])
 
   const handleMinuteSelect = useCallback((m: string | number) => {
     onSelectTime(hours, Number(m))
@@ -80,9 +103,26 @@ const TimeSelector = memo(({ currentNavDate, onSelectTime }: {
 
   return (
     <View style={[layout.row, { gap: spacing.md, paddingVertical: spacing.sm }]}>
-      <TimeColumn title="Hours" values={Array.from({ length: 12 }, (_, i) => i + 1)} selectedValue={dHours} onSelect={handleHourSelect} />
-      <TimeColumn title="Minutes" values={Array.from({ length: 12 }, (_, i) => i * 5)} selectedValue={dMinutes} onSelect={handleMinuteSelect} />
-      <TimeColumn title="Period" values={['AM', 'PM']} selectedValue={isPM ? 'PM' : 'AM'} onSelect={handlePeriodSelect} />
+      <TimeColumn
+        title="Hours"
+        values={Array.from({ length: use24HourClock ? 24 : 12 }, (_, i) => use24HourClock ? i : i + 1)}
+        selectedValue={dHours}
+        onSelect={handleHourSelect}
+      />
+      <TimeColumn
+        title="Minutes"
+        values={Array.from({ length: 12 }, (_, i) => i * 5)}
+        selectedValue={dMinutes}
+        onSelect={handleMinuteSelect}
+      />
+      {!use24HourClock && (
+        <TimeColumn
+          title="Period"
+          values={['AM', 'PM']}
+          selectedValue={isPM ? 'PM' : 'AM'}
+          onSelect={handlePeriodSelect}
+        />
+      )}
     </View>
   )
 })

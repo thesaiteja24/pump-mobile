@@ -1,12 +1,13 @@
-import { BottomSheetModal, BottomSheetTextInput, BottomSheetView } from '@expo/ui/community/bottom-sheet'
-import { useState } from 'react'
-import { Pressable, View } from 'react-native'
+import { BottomSheetModal, BottomSheetView } from '@expo/ui/community/bottom-sheet'
+import { useMemo, useState } from 'react'
+import { View } from 'react-native'
 
 import { Button } from '@/components/ui/button'
 import { CustomText } from '@/components/ui/custom-text'
 import { useCreateHabitReminderMutation } from '@/hooks/queries/use-habits'
 import { useTheme } from '@/hooks/use-theme'
 import { Arise } from '@/lib/arise'
+import DateTimePicker from '@/lib/datetimepicker'
 
 import type { HabitReminder } from '@/types/habit'
 import type { BottomSheetMethods } from '@expo/ui/community/bottom-sheet'
@@ -44,15 +45,17 @@ function normalizeTime(value: string) {
 }
 
 function DaySelector({ selectedDays, onChange }: { selectedDays: number[], onChange: (days: number[]) => void }) {
-  const { colorModes, radius, spacing } = useTheme()
+  const { spacing } = useTheme()
 
   return (
     <View style={{ flexDirection: 'row', gap: spacing.sm }}>
       {dayOptions.map((day) => {
         const selected = selectedDays.includes(day.value)
         return (
-          <Pressable
+          <Button
             key={`${day.value}-${day.label}`}
+            title={day.label}
+            variant={selected ? 'primary' : 'secondary'}
             onPress={() => {
               const next = selected
                 ? selectedDays.filter(value => value !== day.value)
@@ -62,14 +65,10 @@ function DaySelector({ selectedDays, onChange }: { selectedDays: number[], onCha
             style={{
               width: 36,
               height: 36,
-              borderRadius: radius.full,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: selected ? colorModes.background.inverse : colorModes.surface.secondary,
+              paddingHorizontal: 0,
+              paddingVertical: 0,
             }}
-          >
-            <CustomText variant="caption" color={selected ? 'inverse' : 'secondary'}>{day.label}</CustomText>
-          </Pressable>
+          />
         )
       })}
     </View>
@@ -77,10 +76,17 @@ function DaySelector({ selectedDays, onChange }: { selectedDays: number[], onCha
 }
 
 export function HabitReminderModal({ ref, habitId, onClose, onCreated }: HabitReminderModalProps) {
-  const { colorModes, radius, spacing, typography } = useTheme()
+  const { colorModes, spacing } = useTheme()
   const createReminder = useCreateHabitReminderMutation()
   const [time, setTime] = useState('08:00')
   const [daysOfWeek, setDaysOfWeek] = useState([1, 2, 3, 4, 5])
+
+  const timeDate = useMemo(() => {
+    const [h, m] = time.split(':')
+    const d = new Date()
+    d.setHours(Number(h) || 8, Number(m) || 0, 0, 0)
+    return d
+  }, [time])
 
   const submit = () => {
     const normalizedTime = normalizeTime(time)
@@ -115,26 +121,16 @@ export function HabitReminderModal({ ref, habitId, onClose, onCreated }: HabitRe
           <CustomText variant="bodySm" color="secondary">Pick a local time and days for this habit.</CustomText>
         </View>
 
-        <View style={{ gap: spacing.sm }}>
-          <CustomText variant="bodySmStrong" color="secondary">Time</CustomText>
-          <BottomSheetTextInput
-            value={time}
-            onChangeText={setTime}
-            placeholder="08:00"
-            placeholderTextColor={colorModes.text.muted}
-            keyboardType="numbers-and-punctuation"
-            style={[
-              typography.body,
-              {
-                height: 48,
-                borderRadius: radius.md,
-                borderWidth: 1,
-                borderColor: colorModes.border.primary,
-                backgroundColor: colorModes.surface.secondary,
-                color: colorModes.text.primary,
-                paddingHorizontal: spacing.md,
-              },
-            ]}
+        <View>
+          <DateTimePicker
+            label="Time"
+            mode="time"
+            value={timeDate}
+            onChange={(d) => {
+              if (d) {
+                setTime(`${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`)
+              }
+            }}
           />
         </View>
 

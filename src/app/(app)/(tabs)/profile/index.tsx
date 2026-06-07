@@ -166,36 +166,34 @@ export function ProfileScreen() {
 
   return (
     <BaseScreen title="Profile" scrollable>
-      <View style={{ gap: spacing.lg }}>
-        <ProfileCard
-          id={user.id}
-          imageUrl={user.profilePicUrl}
-          firstName={user.firstName}
-          lastName={user.lastName}
-          workoutsCount={user.workoutsCount}
-          followersCount={user.followersCount}
-          followingCount={user.followingCount}
-          proSubscriptionType={user.proSubscriptionType}
-          isPro={user.isPro}
-          isSelf
-        />
+      <ProfileCard
+        id={user.id}
+        imageUrl={user.profilePicUrl}
+        firstName={user.firstName}
+        lastName={user.lastName}
+        workoutsCount={user.workoutsCount}
+        followersCount={user.followersCount}
+        followingCount={user.followingCount}
+        proSubscriptionType={user.proSubscriptionType}
+        isPro={user.isPro}
+        isSelf
+      />
 
-        <ProfileActions
-          onEditProfile={() => editProfileModalRef.current?.present()}
-          onAddMeasurements={() => measurementsModalRef.current?.present()}
-          onUpdateNutrition={() => nutritionModalRef.current?.present()}
-          onFitnessProfile={() => fitnessModalRef.current?.present()}
-        />
+      <ProfileActions
+        onEditProfile={() => editProfileModalRef.current?.present()}
+        onAddMeasurements={() => measurementsModalRef.current?.present()}
+        onUpdateNutrition={() => nutritionModalRef.current?.present()}
+        onFitnessProfile={() => fitnessModalRef.current?.present()}
+      />
 
-        <ThemeSelector />
+      <ThemeSelector />
 
-        <Button
-          title="Logout"
-          variant="danger"
-          style={[layout.wFull, { borderRadius: radius.full, marginTop: spacing.md }]}
-          onPress={handleLogout}
-        />
-      </View>
+      <Button
+        title="Logout"
+        variant="danger"
+        style={[layout.wFull, { borderRadius: radius.full, marginTop: spacing.md }]}
+        onPress={handleLogout}
+      />
 
       <EditProfileModal ref={editProfileModalRef} />
       <MeasurementsModal ref={measurementsModalRef} />

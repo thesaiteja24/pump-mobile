@@ -1,7 +1,8 @@
 import { memo, useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { Pressable, TextInput, View } from 'react-native'
+import { TextInput, View } from 'react-native'
 
+import { Button } from '@/components/ui/button'
 import { CustomText } from '@/components/ui/custom-text'
 import { useTheme } from '@/hooks/use-theme'
 
@@ -103,27 +104,21 @@ function OptionSelector<T extends string>({
   options: { value: T, label: string }[]
   onChange: (value: T) => void
 }) {
-  const { colorModes, radius, spacing } = useTheme()
+  const { spacing } = useTheme()
 
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
       {options.map((option) => {
         const selected = value === option.value
         return (
-          <Pressable
+          <Button
             key={option.value}
+            title={option.label}
+            variant={selected ? 'primary' : 'outline'}
+            size="xs"
             onPress={() => onChange(option.value)}
-            style={{
-              borderWidth: 1,
-              borderColor: selected ? colorModes.text.primary : colorModes.border.primary,
-              borderRadius: radius.full,
-              backgroundColor: selected ? colorModes.background.inverse : colorModes.surface.primary,
-              paddingHorizontal: spacing.md,
-              paddingVertical: spacing.sm,
-            }}
-          >
-            <CustomText variant="bodySmStrong" color={selected ? 'inverse' : 'secondary'}>{option.label}</CustomText>
-          </Pressable>
+            style={{ alignSelf: 'auto' }}
+          />
         )
       })}
     </View>
@@ -263,7 +258,9 @@ export function HabitForm({ habit, submitRef, onSubmit }: HabitFormProps) {
   const trackingType = watch('trackingType')
 
   useEffect(() => {
-    reset(getDefaultValues(habit))
+    if (habit) {
+      reset(getDefaultValues(habit))
+    }
   }, [habit, reset])
 
   useEffect(() => {
