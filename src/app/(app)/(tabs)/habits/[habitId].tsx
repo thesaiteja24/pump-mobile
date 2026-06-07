@@ -163,7 +163,7 @@ export default function HabitDetailScreen() {
             </Card>
           )}
           <HabitReminderList reminders={sessionReminders} onChanged={handleReminderChanged} onDeleted={handleReminderDeleted} />
-          <Button title="Add Reminder" variant="secondary" onPress={() => reminderModalRef.current?.present()} />
+          <Button title="Add Reminder" variant="ghost" onPress={() => reminderModalRef.current?.present()} />
           <ArchiveHabitButton habit={habit} />
           <HabitReminderModal
             ref={reminderModalRef}

@@ -26,6 +26,18 @@ export async function getTodayHabitsApi(): Promise<HabitTodayItem[]> {
   )
 }
 
+export async function getInternalHabitsApi(): Promise<Habit[]> {
+  return apiRequest<Habit[]>(() =>
+    apiClient.get(habitEndpoints.internal),
+  )
+}
+
+export async function toggleInternalHabitApi(metric: string, isActive: boolean): Promise<Habit> {
+  return apiRequest<Habit>(() =>
+    apiClient.patch(habitEndpoints.toggleInternal(metric), { isActive }),
+  )
+}
+
 export async function createHabitApi(data: HabitCreateInput): Promise<Habit> {
   return apiRequest<Habit>(() =>
     apiClient.post(habitEndpoints.list, data),

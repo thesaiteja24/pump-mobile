@@ -12,6 +12,7 @@ export const queryKeys = {
     all: ['habits'] as const,
     lists: () => [...queryKeys.habits.all, 'list'] as const,
     list: () => [...queryKeys.habits.lists(), 'all'] as const,
+    internal: () => [...queryKeys.habits.lists(), 'internal'] as const,
     today: () => [...queryKeys.habits.all, 'today'] as const,
     detail: (habitId: string) => [...queryKeys.habits.all, 'detail', habitId] as const,
     stats: (habitId: string) => [...queryKeys.habits.all, 'stats', habitId] as const,

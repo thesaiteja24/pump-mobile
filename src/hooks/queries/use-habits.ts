@@ -9,7 +9,9 @@ import {
   getHabitApi,
   getHabitsApi,
   getHabitStatsApi,
+  getInternalHabitsApi,
   getTodayHabitsApi,
+  toggleInternalHabitApi,
   updateHabitApi,
   updateHabitReminderApi,
   upsertHabitLogApi,
@@ -106,7 +108,7 @@ export function useArchiveHabitMutation() {
       queryClient.setQueryData(queryKeys.habits.detail(habit.id), habit)
       queryClient.setQueryData<HabitTodayItem[]>(
         queryKeys.habits.today(),
-        items => items?.filter(item => item.id !== habit.id),
+        (items: HabitTodayItem[] | undefined) => items?.filter(item => item.id !== habit.id),
       )
     },
     onSettled: (_data, _error, habitId) => {
@@ -144,7 +146,7 @@ export function useUpsertHabitLogMutation() {
 
       queryClient.setQueryData<HabitTodayItem[]>(
         queryKeys.habits.today(),
-        items => items?.map(item => item.id === habitId ? getOptimisticTodayItem(item, data) : item),
+        (items: HabitTodayItem[] | undefined) => items?.map(item => item.id === habitId ? getOptimisticTodayItem(item, data) : item),
       )
 
       return { previousToday }
@@ -206,6 +208,30 @@ export function useDeleteHabitReminderMutation() {
       deleteHabitReminderApi(habitId, reminderId),
     onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.habits.detail(variables.habitId) })
+    },
+  })
+}
+
+export function useInternalHabitsQuery(): UseQueryResult<Habit[], Error> {
+  return useQuery<Habit[]>({
+    queryKey: queryKeys.habits.internal(),
+    queryFn: getInternalHabitsApi,
+    networkMode: 'offlineFirst',
+  })
+}
+
+export function useToggleInternalHabitMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ metric, isActive }: { metric: string, isActive: boolean }) =>
+      toggleInternalHabitApi(metric, isActive),
+    onSuccess: (habit) => {
+      queryClient.setQueryData(queryKeys.habits.detail(habit.id), habit)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.habits.internal() })
+      invalidateHabitCollections(queryClient)
     },
   })
 }

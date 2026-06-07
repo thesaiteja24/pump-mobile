@@ -19,6 +19,8 @@ export const userEndpoints = {
 
 export const habitEndpoints = {
   list: '/habits',
+  internal: '/habits/internal',
+  toggleInternal: (metric: string) => `/habits/internal/${metric}`,
   today: '/habits/today',
   item: (habitId: string) => `/habits/${habitId}`,
   stats: (habitId: string) => `/habits/${habitId}/stats`,
