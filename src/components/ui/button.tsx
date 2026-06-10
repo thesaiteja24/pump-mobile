@@ -14,9 +14,10 @@ export interface ButtonProps {
   rightIcon?: React.ReactNode
   loading?: boolean
   disabled?: boolean
+  accessibilityLabel?: string
   onPress?: () => void
   variant?: 'primary' | 'secondary' | 'success' | 'info' | 'outline' | 'ghost' | 'danger' | 'warning'
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
   style?: StyleProp<ViewStyle>
   textStyle?: StyleProp<TextStyle>
   durationSeconds?: number
@@ -47,6 +48,8 @@ function getVariantStyles(variant: string, colorModes: ThemeColorModes) {
 
 function getSizeStyles(size: string, spacing: ThemeSpacing, radius: ThemeRadius) {
   switch (size) {
+    case 'xs':
+      return { paddingVertical: spacing.xxs, paddingHorizontal: spacing.md, borderRadius: radius.pill }
     case 'sm':
       return { paddingVertical: spacing.sm, paddingHorizontal: spacing.lg, borderRadius: radius.pill }
     case 'lg':
@@ -60,6 +63,7 @@ function getSizeStyles(size: string, spacing: ThemeSpacing, radius: ThemeRadius)
 const baseStyle: ViewStyle = {
   flexDirection: 'row',
   justifyContent: 'center',
+  alignItems: 'center',
   alignSelf: 'center',
 }
 
@@ -121,6 +125,7 @@ export const Button = memo(({
   textStyle,
   durationSeconds,
   cooldownTrigger,
+  accessibilityLabel,
 }: ButtonProps) => {
   const { colorModes, spacing, radius } = useTheme()
   const secondsLeft = useButtonCooldown(durationSeconds, cooldownTrigger)
@@ -138,6 +143,7 @@ export const Button = memo(({
 
   return (
     <Pressable
+      accessibilityLabel={accessibilityLabel}
       onPress={handlePress}
       disabled={isDisabled}
       style={({ pressed }) => [
@@ -156,7 +162,10 @@ export const Button = memo(({
             <>
               {leftIcon}
               {title && (
-                <CustomText variant="bodyStrong" weight="semibold" style={[{ color: variantStyles.color }, textStyle]}>
+                <CustomText
+                  variant="bodyStrong"
+                  style={[{ color: variantStyles.color }, textStyle]}
+                >
                   {title}
                   {secondsLeft > 0 ? ` (${secondsLeft}s)` : ''}
                 </CustomText>

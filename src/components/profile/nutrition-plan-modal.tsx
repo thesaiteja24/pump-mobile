@@ -1,5 +1,5 @@
 import { BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from '@expo/ui/community/bottom-sheet'
-import { Ionicons } from '@expo/vector-icons'
+import { LucideX } from 'lucide-react-native'
 import React, { memo, useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { Text, View } from 'react-native'
@@ -138,7 +138,7 @@ const NutritionPlanForm = memo(({ onClose }: { onClose: () => void }) => {
       </BottomSheetScrollView>
 
       <View style={[layout.row, { gap: spacing.md, marginTop: spacing.lg }]}>
-        <Button leftIcon={<Ionicons name="close" size={24} color={colors.text} />} variant="outline" size="sm" onPress={onClose} />
+        <Button leftIcon={<LucideX size={20} color={colors.text} />} variant="outline" size="sm" onPress={onClose} />
         <Button title="Save Targets" style={[layout.flex1, { borderRadius: radius.full }]} size="sm" loading={upsertNutritionPlan.isPending} disabled={!isValid || !isDirty} onPress={handleSubmit(onSubmit)} />
       </View>
     </View>

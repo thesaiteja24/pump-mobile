@@ -1,15 +1,8 @@
 import { MenuView } from '@expo/ui/community/menu'
-import { Ionicons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
+import { ChevronDown, ChevronUp } from 'lucide-react-native'
 import React, { createContext, memo, useContext, useRef, useState } from 'react'
-import {
-  Dimensions,
-  Modal,
-  Platform,
-  Pressable,
-  Text,
-  View,
-} from 'react-native'
+import { Dimensions, Modal, Platform, Pressable, Text, View } from 'react-native'
 
 import { useTheme } from '@/hooks/use-theme'
 
@@ -168,7 +161,8 @@ function PopoverContent({ children, style }: { children: ReactNode, style?: View
 export interface MenuItem {
   id: string
   title: string
-  icon?: React.ComponentProps<typeof Ionicons>['name']
+  icon?: ReactNode
+  systemIcon?: string
   destructive?: boolean
   onPress?: () => void
   subItems?: MenuItem[]
@@ -187,6 +181,7 @@ const AndroidMenuItemRow = memo(({ item, onClose }: { item: MenuItem, onClose: (
   const { setIsDimmed } = usePopover()
   const [isExpanded, setIsExpanded] = useState(false)
   const hasSubItems = item.subItems && item.subItems.length > 0
+  const ChevronIcon = isExpanded ? ChevronUp : ChevronDown
 
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
@@ -211,35 +206,37 @@ const AndroidMenuItemRow = memo(({ item, onClose }: { item: MenuItem, onClose: (
         ]}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-          {item.icon && <Ionicons name={item.icon} size={18} color={item.destructive ? colors.danger : colors.text} />}
+          {item.icon && <View>{item.icon}</View>}
           <Text style={[typography.bodyStrong, { color: item.destructive ? colors.danger : colors.text }]}>
             {item.title}
           </Text>
         </View>
-        {hasSubItems && <Ionicons name={isExpanded ? 'chevron-up' : 'chevron-down'} size={16} color={colors.textSecondary} />}
+        {hasSubItems && <ChevronIcon size={16} color={colors.textSecondary} />}
       </Pressable>
 
       {hasSubItems && isExpanded && (
         <View style={{ paddingLeft: spacing.md, borderLeftWidth: 1, borderLeftColor: colors.border, marginLeft: spacing.md + 7, marginTop: spacing.xxs, marginBottom: spacing.sm }}>
-          {item.subItems?.map(sub => (
-            <Pressable
-              key={sub.id}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
-                onClose()
-                sub.onPress?.()
-              }}
-              style={({ pressed }) => [
-                { flexDirection: 'row', alignItems: 'center', borderRadius: radius.sm, minWidth: 140, paddingVertical: spacing.md, paddingHorizontal: spacing.sm, gap: spacing.sm },
-                pressed && { backgroundColor: colors.input },
-              ]}
-            >
-              {sub.icon && <Ionicons name={sub.icon} size={16} color={sub.destructive ? colors.danger : colors.text} />}
-              <Text style={[typography.body, { color: sub.destructive ? colors.danger : colors.text }]}>
-                {sub.title}
-              </Text>
-            </Pressable>
-          ))}
+          {item.subItems?.map((sub) => {
+            return (
+              <Pressable
+                key={sub.id}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
+                  onClose()
+                  sub.onPress?.()
+                }}
+                style={({ pressed }) => [
+                  { flexDirection: 'row', alignItems: 'center', borderRadius: radius.sm, minWidth: 140, paddingVertical: spacing.md, paddingHorizontal: spacing.sm, gap: spacing.sm },
+                  pressed && { backgroundColor: colors.input },
+                ]}
+              >
+                {sub.icon && <View>{sub.icon}</View>}
+                <Text style={[typography.body, { color: sub.destructive ? colors.danger : colors.text }]}>
+                  {sub.title}
+                </Text>
+              </Pressable>
+            )
+          })}
         </View>
       )}
     </View>
@@ -297,11 +294,7 @@ export const Menu = memo(({ children, items = [], onPressTrigger, align: _align 
   }
 
   const nativeActions = items.map((item) => {
-    let imageName = item.icon
-    if (imageName === 'pencil-outline')
-      imageName = 'pencil'
-    if (imageName === 'trash-outline')
-      imageName = 'trash'
+    const imageName = item.systemIcon
     return {
       id: item.id,
       title: item.title,

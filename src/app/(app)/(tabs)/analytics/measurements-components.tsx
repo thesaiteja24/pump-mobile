@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons'
+import { LucideCalendarDays, LucideMoreHorizontal, LucidePencil, LucidePencilRuler, LucideTrash } from 'lucide-react-native'
 import React, { memo, useMemo } from 'react'
 import { Pressable, Text, View } from 'react-native'
 
@@ -86,17 +86,19 @@ const CardActionsMenu = memo(({ entry, onEdit, onDelete }: {
     {
       id: 'edit',
       title: 'Edit Entry',
-      icon: 'pencil-outline' as const,
+      icon: <LucidePencil size={18} color={colors.text} />,
+      systemIcon: 'pencil',
       onPress: () => onEdit(entry),
     },
     {
       id: 'delete',
       title: 'Delete Entry',
-      icon: 'trash-outline' as const,
+      icon: <LucideTrash size={18} color={colors.danger} />,
+      systemIcon: 'trash',
       destructive: true,
       onPress: () => onDelete(entry),
     },
-  ], [entry, onEdit, onDelete])
+  ], [entry, onEdit, onDelete, colors])
 
   return (
     <Menu items={items}>
@@ -112,7 +114,7 @@ const CardActionsMenu = memo(({ entry, onEdit, onDelete }: {
           justifyContent: 'center',
         })}
       >
-        <Ionicons name="ellipsis-horizontal" size={18} color={colors.textSecondary} />
+        <LucideMoreHorizontal size={18} color={colors.textSecondary} />
       </Pressable>
     </Menu>
   )
@@ -142,7 +144,7 @@ export const MeasurementCard = memo(({ entry, onEdit, onDelete, formatWeight, fo
     <Card style={{ padding: spacing.md, marginBottom: spacing.md }}>
       <View style={[layout.rowAlign, layout.rowBetween, { marginBottom: spacing.sm }]}>
         <View style={[layout.rowAlign, { gap: spacing.sm }]}>
-          <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
+          <LucideCalendarDays size={16} color={colors.textSecondary} />
           <Text style={[typography.bodySmStrong, { color: colors.text }]}>{formattedDate}</Text>
         </View>
         <CardActionsMenu entry={entry} onEdit={onEdit} onDelete={onDelete} />
@@ -202,7 +204,7 @@ export const EmptyState = memo(({ onAdd }: { onAdd: () => void }) => {
           marginBottom: spacing.md,
         }}
       >
-        <Ionicons name="body-outline" size={32} color={colors.textSecondary} />
+        <LucidePencilRuler size={32} color={colors.textSecondary} />
       </View>
       <Text style={[typography.bodyStrong, { color: colors.text, marginBottom: spacing.sm, textAlign: 'center' }]}>
         No measurements logged yet

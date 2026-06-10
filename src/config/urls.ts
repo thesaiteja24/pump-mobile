@@ -16,3 +16,15 @@ export const userEndpoints = {
 
   },
 } as const
+
+export const habitEndpoints = {
+  list: '/habits',
+  internal: '/habits/internal',
+  toggleInternal: (metric: string) => `/habits/internal/${metric}`,
+  today: '/habits/today',
+  item: (habitId: string) => `/habits/${habitId}`,
+  stats: (habitId: string) => `/habits/${habitId}/stats`,
+  log: (habitId: string, date: string) => `/habits/${habitId}/logs/${date}`,
+  reminders: (habitId: string) => `/habits/${habitId}/reminders`,
+  reminder: (habitId: string, reminderId: string) => `/habits/${habitId}/reminders/${reminderId}`,
+} as const

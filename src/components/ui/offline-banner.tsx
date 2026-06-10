@@ -4,11 +4,13 @@ import { Text, View } from 'react-native'
 
 import { useTheme } from '@/hooks/use-theme'
 
+import type { StyleProp, ViewStyle } from 'react-native'
+
 /**
  * Displays a non-intrusive banner at the top of the screen when the device
  * is offline. Uses @react-native-community/netinfo for real-time connectivity.
  */
-export function OfflineBanner() {
+export function OfflineBanner({ style }: { style?: StyleProp<ViewStyle> }) {
   const { colorModes, typography, spacing } = useTheme()
   const [isOffline, setIsOffline] = useState(false)
 
@@ -24,12 +26,15 @@ export function OfflineBanner() {
 
   return (
     <View
-      style={{
-        backgroundColor: colorModes.foreground.warning,
-        paddingVertical: spacing.sm,
-        paddingHorizontal: spacing.lg,
-        alignItems: 'center',
-      }}
+      style={[
+        {
+          backgroundColor: colorModes.foreground.warning,
+          paddingVertical: spacing.sm,
+          paddingHorizontal: spacing.lg,
+          alignItems: 'center',
+        },
+        style,
+      ]}
     >
       <Text style={[typography.bodySmStrong, { color: colorModes.base.black }]}>
         No internet connection

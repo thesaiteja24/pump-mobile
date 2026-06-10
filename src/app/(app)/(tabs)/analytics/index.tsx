@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
+import { LucideChevronRight, LucidePencilRuler } from 'lucide-react-native'
 import React, { memo } from 'react'
 import { ActivityIndicator, Text, View } from 'react-native'
 
@@ -109,14 +109,14 @@ const MeasurementsSummaryCard = memo(() => {
       <View style={[layout.rowAlign, layout.rowBetween, { marginBottom: spacing.md }]}>
         <View style={[layout.rowAlign, { gap: spacing.sm }]}>
           <View style={{ backgroundColor: colors.input, padding: spacing.sm, borderRadius: radius.md }}>
-            <Ionicons name="body-outline" size={20} color={colors.text} />
+            <LucidePencilRuler size={20} color={colors.text} />
           </View>
           <View>
             <Text style={[typography.bodyStrong, { color: colors.text }]}>Body Measurements</Text>
             <Text style={[typography.caption, { color: colors.textSecondary }]}>Track physical progress</Text>
           </View>
         </View>
-        <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+        <LucideChevronRight size={20} color={colors.textSecondary} />
       </View>
 
       {hasAnyMeasurement

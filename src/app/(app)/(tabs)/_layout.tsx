@@ -4,15 +4,15 @@ import { Platform } from 'react-native'
 import { useTheme } from '@/hooks/use-theme'
 
 export default function TabLayout() {
-  const { isDark, colors } = useTheme()
+  const { isDark, colorModes } = useTheme()
   const iconColor = Platform.OS === 'ios'
     ? {
-        default: colors.textSecondary,
-        selected: colors.text,
+        default: colorModes.text.secondary,
+        selected: colorModes.text.primary,
       }
     : {
-        default: colors.textSecondary,
-        selected: colors.card,
+        default: colorModes.text.secondary,
+        selected: colorModes.surface.primary,
       }
 
   return (
@@ -20,22 +20,22 @@ export default function TabLayout() {
       backgroundColor={
         Platform.OS === 'ios'
           ? 'transparent'
-          : colors.card
+          : colorModes.surface.primary
       }
       rippleColor="transparent"
-      indicatorColor={colors.text}
+      indicatorColor={colorModes.text.primary}
       iconColor={iconColor}
       labelStyle={{
         default: {
-          color: colors.textSecondary,
+          color: colorModes.text.secondary,
         },
         selected: {
-          color: colors.text,
+          color: colorModes.text.primary,
         },
       }}
       disableTransparentOnScrollEdge={true}
       blurEffect={Platform.OS === 'ios' ? 'none' : (isDark ? 'dark' : 'light')}
-      shadowColor={Platform.OS === 'ios' ? 'transparent' : colors.border}
+      shadowColor={Platform.OS === 'ios' ? 'transparent' : colorModes.border.primary}
       // Minimize behavior: collapses full tab bar into a single floating pill on scroll
       minimizeBehavior="onScrollDown"
       // Enable floating bar / sidebar transitions on iPadOS and macOS
@@ -44,6 +44,10 @@ export default function TabLayout() {
       <NativeTabs.Trigger name="home">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="house.fill" md="home" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="habits">
+        <NativeTabs.Trigger.Label>Habits</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="checkmark.circle.fill" md="check_circle" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="analytics">
         <NativeTabs.Trigger.Label>Analytics</NativeTabs.Trigger.Label>
