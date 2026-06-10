@@ -18,7 +18,7 @@ function resolveAppEnv(): string {
 
 const appEnv = resolveAppEnv()
 const isProd = appEnv === 'production'
-const easProjectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID ?? process.env.EAS_PROJECT_ID
+const easProjectId = '46384027-b755-4a49-9a73-31783f8b85fe'
 const appScheme = process.env.EXPO_PUBLIC_APP_SCHEME ?? 'pump'
 const webHost = process.env.EXPO_PUBLIC_WEB_HOST
 
