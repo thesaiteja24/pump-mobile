@@ -38,7 +38,6 @@ const optionalEnv = {
   // Infrastructure
   NODE_ENV: process.env.NODE_ENV,
   EXPO_PUBLIC_WEB_HOST: process.env.EXPO_PUBLIC_WEB_HOST,
-  EXPO_PUBLIC_EAS_PROJECT_ID: process.env.EXPO_PUBLIC_EAS_PROJECT_ID,
 } as const
 
 // ─── Validation ───────────────────────────────────────────────────────────────
