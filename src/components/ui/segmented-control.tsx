@@ -10,7 +10,7 @@ export type { NativeSegmentedControlChangeEvent, SegmentedControlProps }
 
 function CustomSegmentedControl(props: SegmentedControlProps) {
   const { onChange, onValueChange, ...rest } = props
-  const { colors } = useTheme()
+  const { colorModes, effects, typography } = useTheme()
 
   const handleValueChange = (value: string, index: number) => {
     if (Platform.OS !== 'web') {
@@ -32,7 +32,7 @@ function CustomSegmentedControl(props: SegmentedControlProps) {
       style={[
         {
           flexDirection: 'row',
-          backgroundColor: colors.input,
+          backgroundColor: colorModes.surface.secondary,
           borderRadius: 999,
           padding: 2,
         },
@@ -55,21 +55,17 @@ function CustomSegmentedControl(props: SegmentedControlProps) {
                 borderRadius: 999,
               },
               isActive && {
-                backgroundColor: colors.card,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.1,
-                shadowRadius: 2,
-                elevation: 2,
+                backgroundColor: colorModes.surface.primary,
+                ...effects.subtle,
               },
             ]}
           >
             <Text
               style={[
                 {
+                  fontFamily: isActive ? typography.fontFamily.interSemiBold : typography.fontFamily.interMedium,
                   fontSize: 13,
-                  fontWeight: isActive ? '600' : '500',
-                  color: colors.text,
+                  color: colorModes.text.primary,
                 },
               ]}
             >

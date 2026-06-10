@@ -1,5 +1,5 @@
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
+import { LucideDumbbell, LucidePencilRuler, LucideRulerDimensionLine, LucideUser, LucideUtensils, LucideWeight } from 'lucide-react-native'
 import React, { memo, useRef } from 'react'
 import { ActivityIndicator, Text, View } from 'react-native'
 
@@ -16,7 +16,7 @@ import { useProfileQuery, useUpdateProfileMutation } from '@/hooks/queries/use-u
 import { useTheme } from '@/hooks/use-theme'
 import { useAuthStore } from '@/stores/auth-store'
 
-import type { ThemePreference } from '@/config/tokens'
+import type { ThemePreference } from '@/theme'
 import type { BottomSheetMethods } from '@expo/ui/community/bottom-sheet'
 
 interface ProfileActionsProps {
@@ -34,15 +34,12 @@ const ProfileActions = memo(({ onEditProfile, onAddMeasurements, onUpdateNutriti
   const weightUnit = user?.preferredWeightUnit || 'kg'
   const lengthUnit = user?.preferredLengthUnit || 'cm'
 
-  const weightIcon = weightUnit === 'kg' ? 'weight-kilogram' : 'weight-pound'
-  const lengthIcon = lengthUnit === 'cm' ? 'ruler' : 'tape-measure'
-
   return (
     <Card>
       <Button
         variant="ghost"
         title="Edit Profile"
-        leftIcon={<Ionicons name="person" size={20} color={colors.text} style={{ marginRight: spacing.sm }} />}
+        leftIcon={<LucideUser size={20} color={colors.text} style={{ marginRight: spacing.sm }} />}
         style={{ justifyContent: 'flex-start', paddingHorizontal: 0, width: '100%' }}
         textStyle={[typography.bodyStrong, { color: colors.text }]}
         onPress={onEditProfile}
@@ -51,7 +48,7 @@ const ProfileActions = memo(({ onEditProfile, onAddMeasurements, onUpdateNutriti
       <Button
         variant="ghost"
         title="Add Measurements"
-        leftIcon={<Ionicons name="body" size={20} color={colors.text} style={{ marginRight: spacing.sm }} />}
+        leftIcon={<LucidePencilRuler size={20} color={colors.text} style={{ marginRight: spacing.sm }} />}
         style={{ justifyContent: 'flex-start', paddingHorizontal: 0, width: '100%' }}
         textStyle={[typography.bodyStrong, { color: colors.text }]}
         onPress={onAddMeasurements}
@@ -60,7 +57,7 @@ const ProfileActions = memo(({ onEditProfile, onAddMeasurements, onUpdateNutriti
       <Button
         variant="ghost"
         title="Update Nutrition Plan"
-        leftIcon={<Ionicons name="restaurant" size={20} color={colors.text} style={{ marginRight: spacing.sm }} />}
+        leftIcon={<LucideUtensils size={20} color={colors.text} style={{ marginRight: spacing.sm }} />}
         style={{ justifyContent: 'flex-start', paddingHorizontal: 0, width: '100%' }}
         textStyle={[typography.bodyStrong, { color: colors.text }]}
         onPress={onUpdateNutrition}
@@ -69,7 +66,7 @@ const ProfileActions = memo(({ onEditProfile, onAddMeasurements, onUpdateNutriti
       <Button
         variant="ghost"
         title="Fitness Profile"
-        leftIcon={<Ionicons name="barbell" size={20} color={colors.text} style={{ marginRight: spacing.sm }} />}
+        leftIcon={<LucideDumbbell size={20} color={colors.text} style={{ marginRight: spacing.sm }} />}
         style={{ justifyContent: 'flex-start', paddingHorizontal: 0, width: '100%' }}
         textStyle={[typography.bodyStrong, { color: colors.text }]}
         onPress={onFitnessProfile}
@@ -80,7 +77,7 @@ const ProfileActions = memo(({ onEditProfile, onAddMeasurements, onUpdateNutriti
       {/* Weight Preference Unit Toggle */}
       <View style={[layout.rowAlign, layout.rowBetween, { paddingVertical: spacing.xxs }]}>
         <View style={[layout.rowAlign, { gap: spacing.sm }]}>
-          <MaterialCommunityIcons name={weightIcon} size={20} color={colors.text} />
+          <LucideWeight size={20} color={colors.text} />
           <Text style={[typography.bodyStrong, { color: colors.text }]}>Weight Unit</Text>
         </View>
         <SegmentedControl
@@ -98,7 +95,7 @@ const ProfileActions = memo(({ onEditProfile, onAddMeasurements, onUpdateNutriti
       {/* Length Preference Unit Toggle */}
       <View style={[layout.rowAlign, layout.rowBetween, { paddingVertical: spacing.xxs }]}>
         <View style={[layout.rowAlign, { gap: spacing.sm }]}>
-          <MaterialCommunityIcons name={lengthIcon} size={20} color={colors.text} />
+          <LucideRulerDimensionLine size={20} color={colors.text} />
           <Text style={[typography.bodyStrong, { color: colors.text }]}>Length Unit</Text>
         </View>
         <SegmentedControl
@@ -166,36 +163,34 @@ export function ProfileScreen() {
 
   return (
     <BaseScreen title="Profile" scrollable>
-      <View style={{ gap: spacing.lg }}>
-        <ProfileCard
-          id={user.id}
-          imageUrl={user.profilePicUrl}
-          firstName={user.firstName}
-          lastName={user.lastName}
-          workoutsCount={user.workoutsCount}
-          followersCount={user.followersCount}
-          followingCount={user.followingCount}
-          proSubscriptionType={user.proSubscriptionType}
-          isPro={user.isPro}
-          isSelf
-        />
+      <ProfileCard
+        id={user.id}
+        imageUrl={user.profilePicUrl}
+        firstName={user.firstName}
+        lastName={user.lastName}
+        workoutsCount={user.workoutsCount}
+        followersCount={user.followersCount}
+        followingCount={user.followingCount}
+        proSubscriptionType={user.proSubscriptionType}
+        isPro={user.isPro}
+        isSelf
+      />
 
-        <ProfileActions
-          onEditProfile={() => editProfileModalRef.current?.present()}
-          onAddMeasurements={() => measurementsModalRef.current?.present()}
-          onUpdateNutrition={() => nutritionModalRef.current?.present()}
-          onFitnessProfile={() => fitnessModalRef.current?.present()}
-        />
+      <ProfileActions
+        onEditProfile={() => editProfileModalRef.current?.present()}
+        onAddMeasurements={() => measurementsModalRef.current?.present()}
+        onUpdateNutrition={() => nutritionModalRef.current?.present()}
+        onFitnessProfile={() => fitnessModalRef.current?.present()}
+      />
 
-        <ThemeSelector />
+      <ThemeSelector />
 
-        <Button
-          title="Logout"
-          variant="danger"
-          style={[layout.wFull, { borderRadius: radius.full, marginTop: spacing.md }]}
-          onPress={handleLogout}
-        />
-      </View>
+      <Button
+        title="Logout"
+        variant="danger"
+        style={[layout.wFull, { borderRadius: radius.full, marginTop: spacing.md }]}
+        onPress={handleLogout}
+      />
 
       <EditProfileModal ref={editProfileModalRef} />
       <MeasurementsModal ref={measurementsModalRef} />

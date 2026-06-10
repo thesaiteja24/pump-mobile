@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons'
 import { useAudioPlayer } from 'expo-audio'
+import { CheckCircle, Info, TriangleAlert, XCircle } from 'lucide-react-native'
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { Dimensions, StyleSheet, Text, View } from 'react-native'
 import Animated, { FadeIn, LinearTransition, SlideInUp, SlideOutUp } from 'react-native-reanimated'
@@ -17,12 +17,17 @@ import {
 } from './arise-helpers'
 import { globalAriseRef } from './arise-ref'
 
-import type { IoniconName } from './arise-helpers'
 import type { AriseCallParams } from './types'
 import type { ThemeColors, ThemeRadius, ThemeSpacing, ThemeTypography } from '@/hooks/use-theme'
 
 const { width: screenWidth } = Dimensions.get('window')
 
+const ARISE_ICONS: Record<string, React.ElementType> = {
+  CheckCircle,
+  XCircle,
+  Info,
+  TriangleAlert,
+}
 function createStyles(
   colors: ThemeColors,
   spacing: ThemeSpacing,
@@ -80,6 +85,8 @@ interface ArisePillProps {
 
 function ArisePill({ options, isExpanded, styles, spacing }: ArisePillProps) {
   const { iconName, iconColor, iconSize } = resolveIconConfig(options)
+  const IconComponent = ARISE_ICONS[iconName as string] || Info
+
   return (
     <Animated.View
       entering={SlideInUp.springify().damping(24).stiffness(120).mass(1.1)}
@@ -93,7 +100,7 @@ function ArisePill({ options, isExpanded, styles, spacing }: ArisePillProps) {
       ]}
     >
       <Animated.View>
-        <Ionicons name={iconName as IoniconName} size={iconSize} color={iconColor} />
+        <IconComponent size={iconSize} color={iconColor} />
       </Animated.View>
 
       {isExpanded && (

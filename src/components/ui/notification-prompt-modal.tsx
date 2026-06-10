@@ -1,5 +1,6 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 
+import { Button } from '@/components/ui/button'
 import { useTheme } from '@/hooks/use-theme'
 
 interface NotificationPromptModalProps {
@@ -8,27 +9,11 @@ interface NotificationPromptModalProps {
 }
 
 function ModalActions({ onAccept, onDecline }: NotificationPromptModalProps) {
-  const { colors, spacing, typography, layout, radius } = useTheme()
+  const { spacing, layout } = useTheme()
   return (
     <View style={[layout.wFull, { gap: spacing.md }]}>
-      <Pressable
-        style={({ pressed }) => [
-          { borderRadius: radius.pill, paddingVertical: spacing.md, alignItems: 'center' as const, width: '100%' as const },
-          { backgroundColor: colors.accent, opacity: pressed ? 0.85 : 1 },
-        ]}
-        onPress={onAccept}
-      >
-        <Text style={[typography.bodyStrong, { color: colors.white }]}>Enable</Text>
-      </Pressable>
-      <Pressable
-        style={({ pressed }) => [
-          { borderRadius: radius.pill, paddingVertical: spacing.md, alignItems: 'center' as const, width: '100%' as const },
-          { opacity: pressed ? 0.6 : 1 },
-        ]}
-        onPress={onDecline}
-      >
-        <Text style={[typography.bodyStrong, { color: colors.textSecondary }]}>Maybe Later</Text>
-      </Pressable>
+      <Button title="Enable" onPress={onAccept} variant="primary" style={{ width: '100%' }} />
+      <Button title="Maybe Later" onPress={onDecline} variant="ghost" style={{ width: '100%' }} />
     </View>
   )
 }

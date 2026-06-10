@@ -2,11 +2,11 @@ import * as SystemUI from 'expo-system-ui'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Appearance, useColorScheme } from 'react-native'
 
-import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '@/config/tokens'
 import { layoutStyles, ThemeContext } from '@/context/theme-context'
 import { mmkvStorageAdapter } from '@/lib/storage'
+import { colorModes, createLegacyColors, effects, radius, spacing, typography } from '@/theme'
 
-import type { ThemePreference } from '@/config/tokens'
+import type { ThemePreference } from '@/theme'
 
 const THEME_KEY = 'theme.preference'
 
@@ -33,7 +33,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   }, [preference, systemScheme])
 
   useEffect(() => {
-    const bg = isDark ? COLORS.dark.background : COLORS.light.background
+    const bg = isDark ? colorModes.dark.background.primary : colorModes.light.background.primary
     SystemUI.setBackgroundColorAsync(bg).catch(() => {})
 
     Appearance.setColorScheme(
@@ -52,16 +52,21 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   }, [])
 
   const value = useMemo(
-    () => ({
-      isDark,
-      preference,
-      setTheme,
-      colors: isDark ? COLORS.dark : COLORS.light,
-      spacing: SPACING,
-      radius: RADIUS,
-      typography: TYPOGRAPHY,
-      layout: layoutStyles,
-    }),
+    () => {
+      const activeColorModes = isDark ? colorModes.dark : colorModes.light
+      return {
+        isDark,
+        preference,
+        setTheme,
+        colorModes: activeColorModes,
+        colors: createLegacyColors(activeColorModes),
+        spacing,
+        radius,
+        typography,
+        effects,
+        layout: layoutStyles,
+      }
+    },
     [isDark, preference, setTheme],
   )
 

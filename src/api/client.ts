@@ -49,13 +49,13 @@ apiClient.interceptors.response.use(
       // Import lazily to avoid circular dependency.
       // eslint-disable-next-line ts/no-require-imports
       const { useAuthStore } = require('@/stores/auth-store') as typeof import('@/stores/auth-store')
-      await useAuthStore.getState().clearSession()
+      await useAuthStore.getState().clearSession({ revoke: false })
     }
 
     // Re-throw as ApiRequestError when the server returned a structured error body.
     const data = error.response?.data as ApiResponse<unknown> | undefined
     if (data && !data.success) {
-      throw new ApiRequestError(data.message, data.error.code, data)
+      throw new ApiRequestError(data.message, data.error.code, data, status)
     }
 
     return Promise.reject(error)

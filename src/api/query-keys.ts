@@ -8,4 +8,14 @@ export const queryKeys = {
     measurementList: (duration?: string) => [...queryKeys.user.measurements(), { duration }] as const,
     analytics: () => [...queryKeys.user.all, 'analytics'] as const,
   },
+  habits: {
+    all: ['habits'] as const,
+    lists: () => [...queryKeys.habits.all, 'list'] as const,
+    list: () => [...queryKeys.habits.lists(), 'all'] as const,
+    internal: () => [...queryKeys.habits.lists(), 'internal'] as const,
+    today: () => [...queryKeys.habits.all, 'today'] as const,
+    detail: (habitId: string) => [...queryKeys.habits.all, 'detail', habitId] as const,
+    reminders: (habitId: string) => [...queryKeys.habits.all, 'reminders', habitId] as const,
+    stats: (habitId: string) => [...queryKeys.habits.all, 'stats', habitId] as const,
+  },
 } as const

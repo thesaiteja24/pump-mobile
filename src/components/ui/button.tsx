@@ -1,10 +1,11 @@
 import * as Haptics from 'expo-haptics'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { ActivityIndicator, Pressable, Text } from 'react-native'
+import { ActivityIndicator, Pressable } from 'react-native'
 
+import { CustomText } from '@/components/ui/custom-text'
 import { useTheme } from '@/hooks/use-theme'
 
-import type { ThemeColors, ThemeRadius, ThemeSpacing } from '@/hooks/use-theme'
+import type { ThemeColorModes, ThemeRadius, ThemeSpacing } from '@/hooks/use-theme'
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native'
 
 export interface ButtonProps {
@@ -13,39 +14,42 @@ export interface ButtonProps {
   rightIcon?: React.ReactNode
   loading?: boolean
   disabled?: boolean
+  accessibilityLabel?: string
   onPress?: () => void
   variant?: 'primary' | 'secondary' | 'success' | 'info' | 'outline' | 'ghost' | 'danger' | 'warning'
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
   style?: StyleProp<ViewStyle>
   textStyle?: StyleProp<TextStyle>
   durationSeconds?: number
   cooldownTrigger?: number | string
 }
 
-function getVariantStyles(variant: string, colors: ThemeColors) {
+function getVariantStyles(variant: string, colorModes: ThemeColorModes) {
   switch (variant) {
     case 'success':
-      return { backgroundColor: colors.success, color: colors.white, borderWidth: 0, borderColor: 'transparent' }
+      return { backgroundColor: colorModes.foreground.success, color: colorModes.base.white, borderWidth: 0, borderColor: 'transparent' }
     case 'info':
-      return { backgroundColor: colors.info, color: colors.white, borderWidth: 0, borderColor: 'transparent' }
+      return { backgroundColor: colorModes.foreground.info, color: colorModes.base.white, borderWidth: 0, borderColor: 'transparent' }
     case 'secondary':
-      return { backgroundColor: colors.input, color: colors.text, borderWidth: 0, borderColor: 'transparent' }
+      return { backgroundColor: colorModes.surface.secondary, color: colorModes.text.primary, borderWidth: 0, borderColor: 'transparent' }
     case 'outline':
-      return { backgroundColor: 'transparent', borderColor: colors.border, borderWidth: 1, color: colors.text }
+      return { backgroundColor: 'transparent', borderColor: colorModes.border.primary, borderWidth: 1, color: colorModes.text.primary }
     case 'ghost':
-      return { backgroundColor: 'transparent', color: colors.text, borderWidth: 0, borderColor: 'transparent' }
+      return { backgroundColor: 'transparent', color: colorModes.text.primary, borderWidth: 0, borderColor: 'transparent' }
     case 'danger':
-      return { backgroundColor: colors.danger, color: colors.white, borderWidth: 0, borderColor: 'transparent' }
+      return { backgroundColor: colorModes.foreground.danger, color: colorModes.base.white, borderWidth: 0, borderColor: 'transparent' }
     case 'warning':
-      return { backgroundColor: colors.warning, color: colors.white, borderWidth: 0, borderColor: 'transparent' }
+      return { backgroundColor: colorModes.foreground.warning, color: colorModes.base.black, borderWidth: 0, borderColor: 'transparent' }
     case 'primary':
     default:
-      return { backgroundColor: colors.text, color: colors.card, borderWidth: 0, borderColor: 'transparent' }
+      return { backgroundColor: colorModes.background.inverse, color: colorModes.text.inverse, borderWidth: 0, borderColor: 'transparent' }
   }
 }
 
 function getSizeStyles(size: string, spacing: ThemeSpacing, radius: ThemeRadius) {
   switch (size) {
+    case 'xs':
+      return { paddingVertical: spacing.xxs, paddingHorizontal: spacing.md, borderRadius: radius.pill }
     case 'sm':
       return { paddingVertical: spacing.sm, paddingHorizontal: spacing.lg, borderRadius: radius.pill }
     case 'lg':
@@ -59,6 +63,7 @@ function getSizeStyles(size: string, spacing: ThemeSpacing, radius: ThemeRadius)
 const baseStyle: ViewStyle = {
   flexDirection: 'row',
   justifyContent: 'center',
+  alignItems: 'center',
   alignSelf: 'center',
 }
 
@@ -120,8 +125,9 @@ export const Button = memo(({
   textStyle,
   durationSeconds,
   cooldownTrigger,
+  accessibilityLabel,
 }: ButtonProps) => {
-  const { colors, typography, spacing, radius } = useTheme()
+  const { colorModes, spacing, radius } = useTheme()
   const secondsLeft = useButtonCooldown(durationSeconds, cooldownTrigger)
   const isDisabled = disabled || loading || secondsLeft > 0
 
@@ -132,11 +138,12 @@ export const Button = memo(({
     }
   }, [isDisabled, onPress])
 
-  const variantStyles = useMemo(() => getVariantStyles(variant, colors), [variant, colors])
+  const variantStyles = useMemo(() => getVariantStyles(variant, colorModes), [variant, colorModes])
   const sizeStyles = useMemo(() => getSizeStyles(size, spacing, radius), [size, spacing, radius])
 
   return (
     <Pressable
+      accessibilityLabel={accessibilityLabel}
       onPress={handlePress}
       disabled={isDisabled}
       style={({ pressed }) => [
@@ -155,10 +162,13 @@ export const Button = memo(({
             <>
               {leftIcon}
               {title && (
-                <Text style={[typography.bodyStrong, { color: variantStyles.color }, textStyle]}>
+                <CustomText
+                  variant="bodyStrong"
+                  style={[{ color: variantStyles.color }, textStyle]}
+                >
                   {title}
                   {secondsLeft > 0 ? ` (${secondsLeft}s)` : ''}
-                </Text>
+                </CustomText>
               )}
               {rightIcon}
             </>

@@ -1,22 +1,23 @@
 import { createContext } from 'react'
 
-import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '@/config/tokens'
+import { colorModes, createLegacyColors, effects, radius, spacing, typography } from '@/theme'
 
-import type { ThemePreference } from '@/config/tokens'
+import type { ThemeColorModes, ThemeEffects, ThemeLegacyColors, ThemePreference, ThemeRadius, ThemeSpacing, ThemeTypography } from '@/theme'
 
-export type ThemeColors = typeof COLORS.light | typeof COLORS.dark
-export type ThemeSpacing = typeof SPACING
-export type ThemeRadius = typeof RADIUS
-export type ThemeTypography = typeof TYPOGRAPHY
+export type { ThemeColorModes, ThemeEffects, ThemeLegacyColors, ThemeRadius, ThemeSpacing, ThemeTypography }
+export type ThemeColors = ThemeLegacyColors
 
 export interface ThemeContextValue {
   isDark: boolean
   preference: ThemePreference
   setTheme: (pref: ThemePreference) => void
+  colorModes: ThemeColorModes
+  /** @deprecated Use colorModes instead. Kept while screens migrate. */
   colors: ThemeColors
   spacing: ThemeSpacing
   radius: ThemeRadius
   typography: ThemeTypography
+  effects: ThemeEffects
   layout: {
     flex1: { flex: number }
     center: { justifyContent: 'center', alignItems: 'center' }
@@ -46,9 +47,11 @@ export const ThemeContext = createContext<ThemeContextValue>({
   isDark: false,
   preference: 'system',
   setTheme: () => undefined,
-  colors: COLORS.light,
-  spacing: SPACING,
-  radius: RADIUS,
-  typography: TYPOGRAPHY,
+  colorModes: colorModes.light,
+  colors: createLegacyColors(colorModes.light),
+  spacing,
+  radius,
+  typography,
+  effects,
   layout: layoutStyles,
 })
