@@ -1,10 +1,10 @@
 import { BottomSheetModal, BottomSheetView } from '@expo/ui/community/bottom-sheet'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { View } from 'react-native'
 
 import { Button } from '@/components/ui/button'
 import { CustomText } from '@/components/ui/custom-text'
-import { useCreateHabitReminderMutation } from '@/hooks/queries/use-habits'
+import { useCreateHabitReminderMutation, useUpdateHabitReminderMutation } from '@/hooks/queries/use-habits'
 import { useTheme } from '@/hooks/use-theme'
 import { Arise } from '@/lib/arise'
 import DateTimePicker from '@/lib/datetimepicker'
@@ -16,7 +16,9 @@ interface HabitReminderModalProps {
   ref?: React.Ref<BottomSheetMethods>
   habitId: string
   onClose: () => void
-  onCreated: (reminder: HabitReminder) => void
+  onCreated?: (reminder: HabitReminder) => void
+  onUpdated?: (reminder: HabitReminder) => void
+  reminderToEdit?: HabitReminder
 }
 
 const dayOptions = [
@@ -75,11 +77,22 @@ function DaySelector({ selectedDays, onChange }: { selectedDays: number[], onCha
   )
 }
 
-export function HabitReminderModal({ ref, habitId, onClose, onCreated }: HabitReminderModalProps) {
+// eslint-disable-next-line max-lines-per-function
+export function HabitReminderModal({ ref, habitId, onClose, onCreated, onUpdated, reminderToEdit }: HabitReminderModalProps) {
   const { colorModes, spacing } = useTheme()
   const createReminder = useCreateHabitReminderMutation()
-  const [time, setTime] = useState('08:00')
-  const [daysOfWeek, setDaysOfWeek] = useState([1, 2, 3, 4, 5])
+  const updateReminder = useUpdateHabitReminderMutation()
+
+  const [time, setTime] = useState(reminderToEdit?.time || '08:00')
+  const [daysOfWeek, setDaysOfWeek] = useState<number[]>(reminderToEdit?.daysOfWeek || [1, 2, 3, 4, 5])
+
+  // Reset state when reminderToEdit changes
+  useEffect(() => {
+    // eslint-disable-next-line react/set-state-in-effect
+    setTime(reminderToEdit?.time || '08:00')
+    // eslint-disable-next-line react/set-state-in-effect
+    setDaysOfWeek(reminderToEdit?.daysOfWeek || [1, 2, 3, 4, 5])
+  }, [reminderToEdit])
 
   const timeDate = useMemo(() => {
     const [h, m] = time.split(':')
@@ -100,24 +113,41 @@ export function HabitReminderModal({ ref, habitId, onClose, onCreated }: HabitRe
       return
     }
 
-    createReminder.mutate(
-      { habitId, data: { time: normalizedTime, daysOfWeek } },
-      {
-        onSuccess: (reminder) => {
-          Arise.success({ heading: 'Reminder created', sound: true })
-          onCreated(reminder)
-          onClose()
+    if (reminderToEdit) {
+      updateReminder.mutate(
+        { habitId, reminderId: reminderToEdit.id, data: { time: normalizedTime, daysOfWeek } },
+        {
+          onSuccess: (reminder) => {
+            Arise.success({ heading: 'Reminder updated', sound: true })
+            onUpdated?.(reminder)
+            onClose()
+          },
+          onError: () => Arise.error({ heading: 'Unable to update reminder', sound: true }),
         },
-        onError: () => Arise.error({ heading: 'Unable to create reminder', sound: true }),
-      },
-    )
+      )
+    }
+    else {
+      createReminder.mutate(
+        { habitId, data: { time: normalizedTime, daysOfWeek } },
+        {
+          onSuccess: (reminder) => {
+            Arise.success({ heading: 'Reminder created', sound: true })
+            onCreated?.(reminder)
+            onClose()
+          },
+          onError: () => Arise.error({ heading: 'Unable to create reminder', sound: true }),
+        },
+      )
+    }
   }
+
+  const isPending = createReminder.isPending || updateReminder.isPending
 
   return (
     <BottomSheetModal ref={ref} enableDynamicSizing enablePanDownToClose={false} backgroundStyle={{ backgroundColor: colorModes.surface.primary }}>
       <BottomSheetView style={{ padding: spacing.lg, paddingBottom: spacing.xxxl, gap: spacing.xl }}>
         <View style={{ gap: spacing.xxs }}>
-          <CustomText variant="displaySm">Add Reminder</CustomText>
+          <CustomText variant="displaySm">{reminderToEdit ? 'Edit Reminder' : 'Add Reminder'}</CustomText>
           <CustomText variant="bodySm" color="secondary">Pick a local time and days for this habit.</CustomText>
         </View>
 
@@ -141,7 +171,7 @@ export function HabitReminderModal({ ref, habitId, onClose, onCreated }: HabitRe
 
         <View style={{ flexDirection: 'row', gap: spacing.md }}>
           <Button title="Cancel" variant="outline" size="sm" onPress={onClose} />
-          <Button title="Create" loading={createReminder.isPending} size="sm" style={{ flex: 1 }} onPress={submit} />
+          <Button title={reminderToEdit ? 'Save' : 'Create'} loading={isPending} size="sm" style={{ flex: 1 }} onPress={submit} />
         </View>
       </BottomSheetView>
     </BottomSheetModal>

@@ -1,7 +1,9 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { router } from 'expo-router'
 import { LucidePlus, LucideSettings } from 'lucide-react-native'
 import { View } from 'react-native'
 
+import { queryKeys } from '@/api/query-keys'
 import { HabitCard } from '@/components/habits/habit-card'
 import { HabitEmptyState, HabitErrorState, HabitLoadingState } from '@/components/habits/habit-state'
 import { BaseScreen } from '@/components/ui/base-screen'
@@ -14,6 +16,7 @@ export default function HabitsScreen() {
   const { colorModes, spacing } = useTheme()
 
   const { data: habits = [], isLoading, isError, isRefetching, refetch } = useTodayHabitsQuery()
+  const queryClient = useQueryClient()
   const completedCount = habits.filter(habit => habit.completed).length
 
   const openCreateForm = () => router.push('/(app)/habits/create')
@@ -21,11 +24,15 @@ export default function HabitsScreen() {
   const openHabit = (habitId: string) => router.push(`/(app)/(tabs)/habits/${habitId}`)
   const openInternalHabits = () => router.push('/(app)/habits/internal')
 
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.habits.all })
+  }
+
   return (
     <BaseScreen
       title="Habits"
       scrollable
-      onRefresh={() => refetch()}
+      onRefresh={handleRefresh}
       refreshing={isRefetching}
       headerRight={() => (
         <View style={{ flexDirection: 'row', gap: spacing.sm }}>

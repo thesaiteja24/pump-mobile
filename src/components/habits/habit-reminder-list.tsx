@@ -1,4 +1,4 @@
-import { LucideTrash } from 'lucide-react-native'
+import { LucidePencil, LucideTrash } from 'lucide-react-native'
 import { View } from 'react-native'
 
 import { Button } from '@/components/ui/button'
@@ -24,10 +24,12 @@ function ReminderRow({
   reminder,
   onChanged,
   onDeleted,
+  onEdit,
 }: {
   reminder: HabitReminder
   onChanged: (reminder: HabitReminder) => void
   onDeleted: (reminderId: string) => void
+  onEdit: (reminder: HabitReminder) => void
 }) {
   const { colorModes, spacing } = useTheme()
   const updateReminder = useUpdateHabitReminderMutation()
@@ -76,6 +78,20 @@ function ReminderRow({
 
       <Button
         disabled={isPending}
+        onPress={() => onEdit(reminder)}
+        variant="secondary"
+        leftIcon={<LucidePencil size={18} color={colorModes.text.primary} />}
+        style={{
+          width: 36,
+          height: 36,
+          paddingHorizontal: 0,
+          paddingVertical: 0,
+          opacity: isPending ? 0.5 : 1,
+        }}
+      />
+
+      <Button
+        disabled={isPending}
         onPress={remove}
         variant="secondary"
         leftIcon={<LucideTrash size={18} color={colorModes.foreground.danger} />}
@@ -95,10 +111,12 @@ export function HabitReminderList({
   reminders,
   onChanged,
   onDeleted,
+  onEdit,
 }: {
   reminders: HabitReminder[]
   onChanged: (reminder: HabitReminder) => void
   onDeleted: (reminderId: string) => void
+  onEdit: (reminder: HabitReminder) => void
 }) {
   const { spacing } = useTheme()
 
@@ -107,7 +125,7 @@ export function HabitReminderList({
       {reminders.length === 0
         ? <CustomText variant="bodySm" color="secondary">No reminders found, create a new one.</CustomText>
         : reminders.map(reminder => (
-            <ReminderRow key={reminder.id} reminder={reminder} onChanged={onChanged} onDeleted={onDeleted} />
+            <ReminderRow key={reminder.id} reminder={reminder} onChanged={onChanged} onDeleted={onDeleted} onEdit={onEdit} />
           ))}
     </Card>
   )

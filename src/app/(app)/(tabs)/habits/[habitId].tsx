@@ -1,8 +1,10 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { router, useLocalSearchParams } from 'expo-router'
 import { LucideCheckCircle, LucideChevronLeft, LucidePenSquare } from 'lucide-react-native'
 import { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, View } from 'react-native'
 
+import { queryKeys } from '@/api/query-keys'
 import { HabitReminderList } from '@/components/habits/habit-reminder-list'
 import { HabitReminderModal } from '@/components/habits/habit-reminder-modal'
 import { HabitErrorState, HabitLoadingState } from '@/components/habits/habit-state'
@@ -107,15 +109,24 @@ function ArchiveHabitButton({ habit }: { habit: Habit }) {
   )
 }
 
+// eslint-disable-next-line max-lines-per-function
 export default function HabitDetailScreen() {
   const { habitId } = useLocalSearchParams<{ habitId: string }>()
   const { colorModes } = useTheme()
+  const queryClient = useQueryClient()
   const reminderModalRef = useRef<BottomSheetMethods | null>(null)
   const [sessionReminders, setSessionReminders] = useState<HabitReminder[]>([])
+  const [reminderToEdit, setReminderToEdit] = useState<HabitReminder | undefined>(undefined)
   const habitQuery = useHabitQuery(habitId)
   const statsQuery = useHabitStatsQuery(habitId)
   const remindersQuery = useHabitRemindersQuery(habitId)
   const habit = habitQuery.data
+
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.habits.detail(habitId) })
+    await queryClient.invalidateQueries({ queryKey: queryKeys.habits.stats(habitId) })
+    await queryClient.invalidateQueries({ queryKey: queryKeys.habits.reminders(habitId) })
+  }
 
   useEffect(() => {
     if (remindersQuery.data) {
@@ -124,7 +135,11 @@ export default function HabitDetailScreen() {
     }
   }, [remindersQuery.data])
 
-  const closeReminderModal = () => reminderModalRef.current?.dismiss()
+  const closeReminderModal = () => {
+    reminderModalRef.current?.dismiss()
+    setTimeout(setReminderToEdit, 300, undefined) // Clear state after modal animation
+  }
+
   const handleReminderChanged = (reminder: HabitReminder) => {
     setSessionReminders(current => current.map(item => item.id === reminder.id ? reminder : item))
   }
@@ -135,10 +150,22 @@ export default function HabitDetailScreen() {
     setSessionReminders(current => [...current.filter(item => item.id !== reminder.id), reminder])
   }
 
+  const handleEditReminder = (reminder: HabitReminder) => {
+    setReminderToEdit(reminder)
+    reminderModalRef.current?.present()
+  }
+
+  const handleAddReminder = () => {
+    setReminderToEdit(undefined)
+    reminderModalRef.current?.present()
+  }
+
   return (
     <BaseScreen
       title="Habit"
       scrollable
+      onRefresh={handleRefresh}
+      refreshing={habitQuery.isRefetching || statsQuery.isRefetching || remindersQuery.isRefetching}
       headerLeft={() => (
         <Menu onPressTrigger={() => router.back()} roundedOutline>
           <LucideChevronLeft size={24} color={colorModes.text.primary} />
@@ -171,14 +198,16 @@ export default function HabitDetailScreen() {
               <ActivityIndicator color={colorModes.text.primary} />
             </Card>
           )}
-          <HabitReminderList reminders={sessionReminders} onChanged={handleReminderChanged} onDeleted={handleReminderDeleted} />
-          <Button title="Add Reminder" variant="ghost" onPress={() => reminderModalRef.current?.present()} />
+          <HabitReminderList reminders={sessionReminders} onChanged={handleReminderChanged} onDeleted={handleReminderDeleted} onEdit={handleEditReminder} />
+          <Button title="Add Reminder" variant="ghost" onPress={handleAddReminder} />
           <ArchiveHabitButton habit={habit} />
           <HabitReminderModal
             ref={reminderModalRef}
             habitId={habit.id}
             onClose={closeReminderModal}
             onCreated={handleReminderCreated}
+            onUpdated={handleReminderChanged}
+            reminderToEdit={reminderToEdit}
           />
         </>
       )}
