@@ -41,7 +41,7 @@ const plugins: ExpoConfig['plugins'] = [
   [
     '@react-native-google-signin/google-signin',
     {
-      iosUrlScheme: getGoogleScheme(process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID) || '',
+      iosUrlScheme: getGoogleScheme(process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID) || 'com.googleusercontent.apps.dummy',
     },
   ],
   [
